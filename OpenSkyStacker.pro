@@ -1,5 +1,5 @@
 
-+#-------------------------------------------------
+#-------------------------------------------------
 #
 # Project created by QtCreator 2017-03-14T21:16:33
 #
@@ -50,5 +50,6 @@ macx {
         -lopencv_imgcodecs \
         -lopencv_imgproc \
         -lopencv_features2d \
-        -lopencv_calib3d
+        -lopencv_calib3d \
+        -lopencv_video
 }
