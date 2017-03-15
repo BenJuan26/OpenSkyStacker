@@ -31,11 +31,23 @@ HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
-INCLUDEPATH += C:\OpenCV-Build\install\include
-LIBS += -LC:\OpenCV-Build\install\x86\mingw\bin \
-    -lopencv_core310.dll \
-    -lopencv_highgui310.dll \
-    -lopencv_imgcodecs310.dll \
-    -lopencv_imgproc310.dll \
-    -lopencv_features2d310.dll \
-    -lopencv_calib3d310.dll
+win32 {
+    INCLUDEPATH += C:\OpenCV-Build\install\include
+    LIBS += -LC:\OpenCV-Build\install\x86\mingw\bin \
+        -lopencv_core310.dll \
+        -lopencv_highgui310.dll \
+        -lopencv_imgcodecs310.dll \
+        -lopencv_imgproc310.dll \
+        -lopencv_features2d310.dll \
+        -lopencv_calib3d310.dll
+}
+macx {
+    INCLUDEPATH += /usr/local/Cellar/opencv3/3.2.0/include
+    LIBS += -L/usr/local/lib \
+        -lopencv_core \
+        -lopencv_highgui \
+        -lopencv_imgcodecs \
+        -lopencv_imgproc \
+        -lopencv_features2d \
+        -lopencv_calib3d
+}
