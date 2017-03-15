@@ -39,7 +39,8 @@ win32 {
         -lopencv_imgcodecs310.dll \
         -lopencv_imgproc310.dll \
         -lopencv_features2d310.dll \
-        -lopencv_calib3d310.dll
+        -lopencv_calib3d310.dll \
+        -lopencv_video310.dll
 }
 macx {
     INCLUDEPATH += /usr/local/Cellar/opencv3/3.2.0/include
