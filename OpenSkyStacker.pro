@@ -25,9 +25,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    imagestacker.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    imagestacker.h
 
 FORMS    += mainwindow.ui
 
