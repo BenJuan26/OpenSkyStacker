@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include <QGraphicsPixMapItem>
 
 using namespace cv;
 
@@ -98,6 +99,7 @@ void MainWindow::handleButtonStack() {
     }
 
     imwrite(saveFilePath.toUtf8().constData(), workingImage);
+    setImage(saveFilePath);
     qDebug() << "Done stacking";
 }
 
@@ -115,6 +117,7 @@ cv::Mat MainWindow::averageImages32F(cv::Mat img1, cv::Mat img2) {
             int b2 = img2.at<unsigned char>(img1.cols * j + i) * 256;
             int g2 = img2.at<unsigned char>(img1.cols * j + i + 1) * 256;
             int r2 = img2.at<unsigned char>(img1.cols * j + i + 2) * 256;
+
 
             result.at<unsigned short>(img1.cols * j + i) = (b1 + b2) / 2;
             result.at<unsigned short>(img1.cols * j + i + 1) = (g1 + g2) / 2;
@@ -140,8 +143,10 @@ void MainWindow::handleButtonRefImage() {
     }
 
     refImageFileName = dialog.selectedFiles().at(0);
+
     QFileInfo info(refImageFileName);
     selectedDir = QDir(info.absoluteFilePath());
+    setImage(refImageFileName);
     qDebug() <<  refImageFileName;
 
     ui->buttonSelectTargetImages->setEnabled(true);
@@ -169,6 +174,13 @@ void MainWindow::handleButtonTargetImages() {
 
     ui->buttonStack->setEnabled(true);
     ui->progressBar->setMaximum(targetImageFileNames.length() * 2);
+}
+
+void MainWindow::setImage(QString filename) {
+    QGraphicsScene* scene = new QGraphicsScene(this);
+    QGraphicsPixmapItem *p = scene->addPixmap(QPixmap(filename));
+    ui->imageHolder->setScene(scene);
+    ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
 }
 
 MainWindow::~MainWindow()
