@@ -73,44 +73,65 @@ cv::Mat MainWindow::generateAlignedImage(Mat ref, Mat target) {
 
 void MainWindow::handleButtonStack() {
 
+    QString saveFilePath = QFileDialog::getSaveFileName(
+                this, "Select Output Image", selectedDir.absolutePath(), "TIFF Image (*.tif)");
+
+    if (saveFilePath.isEmpty()) {
+        qDebug() << "No output file selected. Cancelling.";
+        return;
+    }
+
     Mat refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-    workingImage = Mat(refImage);
+    refImage.convertTo(workingImage, CV_16UC3, 256);
 
     for (int k = 0; k < targetImageFileNames.length(); k++) {
         Mat targetImage = imread(targetImageFileNames.at(k).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+        //targetImage.convertTo(targetImage, CV_32F);
 
         Mat targetAligned = generateAlignedImage(refImage, targetImage);
+        qDebug() << "Aligned image " << k+1 << " of " << targetImageFileNames.length();
+        ui->progressBar->setValue(k*2 + 1);
 
-        unsigned char *targetInput = (unsigned char*)(targetAligned.data);
-        unsigned char *workingInput = (unsigned char*)(workingImage.data);
-
-        for(int i = 0; i < workingImage.cols; i++) {
-            for(int j = 0; j < workingImage.rows * 3; j++) {
-                int b1 = workingInput[workingImage.cols * j + i ] ;
-                int g1 = workingInput[workingImage.cols * j + i + 1];
-                int r1 = workingInput[workingImage.cols * j + i + 2];
-
-                int b2 = targetInput[workingImage.cols * j + i ] ;
-                int g2 = targetInput[workingImage.cols * j + i + 1];
-                int r2 = targetInput[workingImage.cols * j + i + 2];
-
-                workingInput[workingImage.cols * j + i ] = (b1 + b2) / 2;
-                workingInput[workingImage.cols * j + i + 1] = (g1 + g2) / 2;
-                workingInput[workingImage.cols * j + i + 2] = (r1 + r2) / 2;
-            }
-        }
-
-        imwrite("stacked2.png", workingImage);
-        setImage("stacked2.png");
-        qDebug() << "Done stacking";
+        workingImage = averageImages32F(workingImage, targetAligned);
+        qDebug() << "Stacked image " << k+1 << " of " << targetImageFileNames.length();
+        ui->progressBar->setValue(k*2 + 2);
     }
+
+    imwrite(saveFilePath.toUtf8().constData(), workingImage);
+    setImage(saveFilePath);
+    qDebug() << "Done stacking";
+}
+
+cv::Mat MainWindow::averageImages32F(cv::Mat img1, cv::Mat img2) {
+    Mat result = Mat(img1.rows, img1.cols, CV_16UC3);
+
+    // TODO: Making some BRUTAL assumptions here.
+    // Should be checking the depth of both the source and target images!
+    for(int i = 0; i < img1.cols; i++) {
+        for(int j = 0; j < img1.rows * 3; j++) {
+            int b1 = img1.at<unsigned short>(img1.cols * j + i);
+            int g1 = img1.at<unsigned short>(img1.cols * j + i + 1);
+            int r1 = img1.at<unsigned short>(img1.cols * j + i + 2);
+
+            int b2 = img2.at<unsigned char>(img1.cols * j + i) * 256;
+            int g2 = img2.at<unsigned char>(img1.cols * j + i + 1) * 256;
+            int r2 = img2.at<unsigned char>(img1.cols * j + i + 2) * 256;
+
+
+            result.at<unsigned short>(img1.cols * j + i) = (b1 + b2) / 2;
+            result.at<unsigned short>(img1.cols * j + i + 1) = (g1 + g2) / 2;
+            result.at<unsigned short>(img1.cols * j + i + 2) = (r1 + r2) / 2;
+        }
+    }
+
+    return result;
 }
 
 void MainWindow::handleButtonRefImage() {
     QFileDialog dialog(this);
     dialog.setDirectory(QDir::homePath());
     dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setNameFilter("All images (*.jpg *.jpeg *.png)");
+    dialog.setNameFilter("All images (*.jpg *.jpeg *.png *.tif)");
 
     if (!dialog.exec()) {
         QMessageBox box;
@@ -122,6 +143,8 @@ void MainWindow::handleButtonRefImage() {
 
     refImageFileName = dialog.selectedFiles().at(0);
 
+    QFileInfo info(refImageFileName);
+    selectedDir = QDir(info.absoluteFilePath());
     setImage(refImageFileName);
     qDebug() <<  refImageFileName;
 
@@ -130,9 +153,9 @@ void MainWindow::handleButtonRefImage() {
 
 void MainWindow::handleButtonTargetImages() {
     QFileDialog dialog(this);
-    dialog.setDirectory(QDir::homePath());
+    dialog.setDirectory(selectedDir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
-    dialog.setNameFilter("All images (*.jpg *.jpeg *.png)");
+    dialog.setNameFilter("All images (*.jpg *.jpeg *.png *.tif)");
 
     if (!dialog.exec()) {
         QMessageBox box;
@@ -149,6 +172,7 @@ void MainWindow::handleButtonTargetImages() {
     }
 
     ui->buttonStack->setEnabled(true);
+    ui->progressBar->setMaximum(targetImageFileNames.length() * 2);
 }
 
 void MainWindow::setImage(QString filename) {

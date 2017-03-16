@@ -103,6 +103,27 @@
           </property>
          </widget>
         </item>
+        <item>
+        <widget class="QProgressBar" name="progressBar">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>190</y>
+           <width>221</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+         <property name="textVisible">
+          <bool>false</bool>
+         </property>
+        </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="page_4">
