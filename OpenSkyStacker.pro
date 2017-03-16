@@ -33,7 +33,7 @@ FORMS    += mainwindow.ui
 
 win32 {
     INCLUDEPATH += C:\OpenCV-Build\install\include
-    LIBS += -LC:\OpenCV-Build\install\x86\mingw\bin \
+    LIBS += -LC:\OpenCV-Build\install\x86\mingw\lib \
         -lopencv_core310.dll \
         -lopencv_highgui310.dll \
         -lopencv_imgcodecs310.dll \
