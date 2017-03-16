@@ -73,19 +73,13 @@ cv::Mat MainWindow::generateAlignedImage(Mat ref, Mat target) {
 
 void MainWindow::handleButtonStack() {
 
-    QFileDialog dialog(this);
-    dialog.setDirectory(selectedDir);
-    dialog.setFileMode(QFileDialog::AnyFile);
+    QString saveFilePath = QFileDialog::getSaveFileName(
+                this, "Select Output Image", selectedDir.absolutePath(), "TIFF Image (*.tif)");
 
-    if (!dialog.exec()) {
-        QMessageBox box;
-        box.setText("Error selecting image");
-        box.exec();
-
+    if (saveFilePath.isEmpty()) {
+        qDebug() << "No output file selected. Cancelling.";
         return;
     }
-
-    QString saveFilePath = dialog.selectedFiles().at(0);
 
     Mat refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
     refImage.convertTo(workingImage, CV_16UC3, 256);
