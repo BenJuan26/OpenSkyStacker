@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>721</width>
-    <height>480</height>
+    <height>491</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -81,7 +81,7 @@
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>163</height>
+         <height>175</height>
         </rect>
        </property>
        <attribute name="label">
@@ -163,7 +163,7 @@
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>163</height>
+         <height>175</height>
         </rect>
        </property>
        <attribute name="label">
@@ -175,7 +175,7 @@
           <x>10</x>
           <y>10</y>
           <width>211</width>
-          <height>91</height>
+          <height>95</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -236,17 +236,6 @@
    <property name="nativeMenuBar">
     <bool>true</bool>
    </property>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <property name="styleSheet">
-    <string notr="true">background-color:#333;</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="styleSheet">
