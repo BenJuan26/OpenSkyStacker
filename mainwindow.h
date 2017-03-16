@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QDir>
 #include <opencv2/core/core.hpp>
+#include <imagestacker.h>
+#include <QThread>
 
 namespace Ui {
 class MainWindow;
@@ -17,6 +19,13 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+    void stackImages(QString refImage, QStringList targetImages);
+
+public slots:
+    void finishedStacking(cv::Mat image);
+    void setProgressBar(int value);
+
 private slots:
     void handleButtonRefImage();
     void handleButtonTargetImages();
@@ -27,12 +36,14 @@ private:
     Ui::MainWindow *ui;
     QString refImageFileName;
     QStringList targetImageFileNames;
+    QString saveFilePath;
+    QThread *workerThread;
 
-    cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
-    cv::Mat averageImages32F(cv::Mat img1, cv::Mat img2);
+    ImageStacker *stacker;
 
     cv::Mat workingImage;
     cv::Mat refImage;
+    cv::Mat finalImage;
 
     QDir selectedDir;
 };
