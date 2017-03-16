@@ -100,7 +100,8 @@ void MainWindow::handleButtonStack() {
             }
         }
 
-        imwrite("/Users/Ben/Downloads/stacked.png", workingImage);
+        imwrite("stacked2.png", workingImage);
+        setImage("stacked2.png");
         qDebug() << "Done stacking";
     }
 }
@@ -120,6 +121,8 @@ void MainWindow::handleButtonRefImage() {
     }
 
     refImageFileName = dialog.selectedFiles().at(0);
+
+    setImage(refImageFileName);
     qDebug() <<  refImageFileName;
 
     ui->buttonSelectTargetImages->setEnabled(true);
@@ -146,6 +149,13 @@ void MainWindow::handleButtonTargetImages() {
     }
 
     ui->buttonStack->setEnabled(true);
+}
+
+void MainWindow::setImage(QString filename) {
+    QPixmap picture (filename);
+    ui->mainImage->setPixmap(picture);
+    ui->mainImage->setScaledContents(true);
+    ui->mainImage->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 }
 
 MainWindow::~MainWindow()

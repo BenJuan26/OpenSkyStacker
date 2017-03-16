@@ -20,6 +20,7 @@ private slots:
     void handleButtonRefImage();
     void handleButtonTargetImages();
     void handleButtonStack();
+    void setImage(QString filename);
 
 private:
     Ui::MainWindow *ui;
