@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>OpenSkyStacker</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -25,6 +25,12 @@
      <horstretch>4</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #333;</string>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="1" column="1">
@@ -57,6 +63,9 @@
         <height>16777215</height>
        </size>
       </property>
+      <property name="styleSheet">
+       <string notr="true">color: #BBB;</string>
+      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -69,7 +78,7 @@
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>141</height>
+         <height>165</height>
         </rect>
        </property>
        <attribute name="label">
@@ -78,6 +87,14 @@
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QPushButton" name="buttonSelectRefImage">
+          <property name="styleSheet">
+           <string notr="true">background-color: #222;
+    border-width: 2px;
+    border-radius: 4px;
+    border-color: #111;
+    font: bold 12px;
+    padding: 6px;</string>
+          </property>
           <property name="text">
            <string>Select Reference Image...</string>
           </property>
@@ -88,6 +105,14 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: #222;
+    border-width: 2px;
+    border-radius: 4px;
+    border-color: #111;
+    font: bold 12px;
+    padding: 6px;</string>
+          </property>
           <property name="text">
            <string>Select Target Images...</string>
           </property>
@@ -97,6 +122,14 @@
          <widget class="QPushButton" name="buttonStack">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: #222;
+    border-width: 2px;
+    border-radius: 4px;
+    border-color: #111;
+    font: bold 12px;
+    padding: 6px;</string>
           </property>
           <property name="text">
            <string>Align and Stack</string>
@@ -127,7 +160,7 @@
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>141</height>
+         <height>165</height>
         </rect>
        </property>
        <attribute name="label">
@@ -177,7 +210,11 @@
      </widget>
     </item>
     <item row="0" column="0" rowspan="2">
-     <widget class="QGraphicsView" name="imageHolder"/>
+     <widget class="QGraphicsView" name="imageHolder">
+      <property name="styleSheet">
+       <string notr="true">background-color: #222;</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -186,12 +223,18 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>643</width>
+     <width>720</width>
      <height>22</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #333;</string>
+   </property>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="styleSheet">
+    <string notr="true">background-color:#333;</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -199,7 +242,11 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="styleSheet">
+    <string notr="true">background-color:#333;</string>
+   </property>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
