@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include <QGraphicsPixMapItem>
 
 using namespace cv;
 
@@ -176,10 +177,10 @@ void MainWindow::handleButtonTargetImages() {
 }
 
 void MainWindow::setImage(QString filename) {
-    QPixmap picture (filename);
-    ui->mainImage->setPixmap(picture);
-    ui->mainImage->setScaledContents(true);
-    ui->mainImage->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    QGraphicsScene* scene = new QGraphicsScene(this);
+    QGraphicsPixmapItem *p = scene->addPixmap(QPixmap(filename));
+    ui->imageHolder->setScene(scene);
+    ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
 }
 
 MainWindow::~MainWindow()
