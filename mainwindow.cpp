@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "processingdialog.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -31,18 +32,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->buttonStack, SIGNAL (released()), this, SLOT (handleButtonStack()));
     connect(this, SIGNAL (stackImages(QString,QStringList)), stacker, SLOT(process(QString, QStringList)));
     connect(stacker, SIGNAL(finished(cv::Mat)), this, SLOT(finishedStacking(cv::Mat)));
-    connect(stacker, SIGNAL(updateProgressBar(int)), this, SLOT(setProgressBar(int)));
-}
-
-void MainWindow::setProgressBar(int value) {
-    ui->progressBar->setValue(value);
+    //connect(stacker, SIGNAL(updateProgressBar(int)), this, SLOT(setProgressBar(int)));
 }
 
 void MainWindow::finishedStacking(Mat image) {
     imwrite(saveFilePath.toUtf8().constData(), image);
     setImage(saveFilePath);
     qDebug() << "Done stacking";
-    ui->progressBar->setValue(0);
 }
 
 void MainWindow::handleButtonStack() {
@@ -57,6 +53,15 @@ void MainWindow::handleButtonStack() {
 
     // asynchronously trigger the processing
     emit stackImages(refImageFileName, targetImageFileNames);
+
+    ProcessingDialog *dialog = new ProcessingDialog(this);
+    connect(stacker, SIGNAL(updateProgressBar(QString,int)), dialog, SLOT(updateProgress(QString,int)));
+    connect(stacker, SIGNAL(finishedDialog(QString)), dialog, SLOT(complete(QString)));
+
+    if (!dialog->exec()) {
+        qDebug() << "Cancelling...";
+        stacker->cancel = true;
+    }
 }
 
 void MainWindow::handleButtonRefImage() {
@@ -104,7 +109,6 @@ void MainWindow::handleButtonTargetImages() {
     }
 
     ui->buttonStack->setEnabled(true);
-    ui->progressBar->setMaximum(targetImageFileNames.length() * 2);
 }
 
 void MainWindow::setImage(QString filename) {

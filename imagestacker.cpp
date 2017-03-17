@@ -9,7 +9,7 @@ using namespace cv;
 
 ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 {
-
+    cancel = false;
 }
 
 void ImageStacker::process(QString refImageFileName, QStringList targetImageFileNames) {
@@ -19,20 +19,34 @@ void ImageStacker::process(QString refImageFileName, QStringList targetImageFile
     Mat workingImage;
     refImage.convertTo(workingImage, CV_16UC3, 256);
 
-    for (int k = 0; k < targetImageFileNames.length(); k++) {
+    QString message;
+
+    emit updateProgressBar("Starting stacking process...", 0);
+
+    for (int k = 0; k < targetImageFileNames.length() && !cancel; k++) {
         Mat targetImage = imread(targetImageFileNames.at(k).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
         //targetImage.convertTo(targetImage, CV_32F);
 
         Mat targetAligned = generateAlignedImage(refImage, targetImage);
-        qDebug() << "Aligned image " << k+1 << " of " << targetImageFileNames.length();
-        emit updateProgressBar(k*2 + 1);
+        message = "Aligned image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
+        qDebug() << message;
+        emit updateProgressBar(message, (k*2 + 1)*100/(targetImageFileNames.length()*2));
+
+        if (cancel) break;
 
         workingImage = averageImages(workingImage, targetAligned);
-        qDebug() << "Stacked image " << k+1 << " of " << targetImageFileNames.length();
-        emit updateProgressBar(k*2 + 2);
+        message = "Stacked image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
+        qDebug() << message;
+        emit updateProgressBar(message, (k*2 + 2)*100/(targetImageFileNames.length()*2));
     }
 
-    emit finished(workingImage);
+    if (cancel) {
+        qDebug() << "Cancelled.";
+    }
+    else {
+        emit finishedDialog("Stacking completed");
+        emit finished(workingImage);
+    }
 }
 
 cv::Mat ImageStacker::averageImages(cv::Mat img1, cv::Mat img2) {

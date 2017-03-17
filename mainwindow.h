@@ -24,7 +24,6 @@ signals:
 
 public slots:
     void finishedStacking(cv::Mat image);
-    void setProgressBar(int value);
 
 private slots:
     void handleButtonRefImage();

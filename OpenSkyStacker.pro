@@ -26,12 +26,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    imagestacker.cpp
+    imagestacker.cpp \
+    processingdialog.cpp
 
 HEADERS  += mainwindow.h \
-    imagestacker.h
+    imagestacker.h \
+    processingdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    processingdialog.ui
 
 win32 {
     INCLUDEPATH += C:\OpenCV-Build\install\include

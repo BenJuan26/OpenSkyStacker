@@ -9,10 +9,12 @@ class ImageStacker : public QObject
     Q_OBJECT
 public:
     explicit ImageStacker(QObject *parent = 0);
+    bool cancel;
 
 signals:
     void finished(cv::Mat image);
-    void updateProgressBar(int value);
+    void finishedDialog(QString message);
+    void updateProgressBar(QString message, int percentComplete);
 public slots:
     void process(QString refImageFileName, QStringList targetImageFileNames);
 
