@@ -19,13 +19,13 @@ ProcessingDialog::ProcessingDialog(QWidget *parent) :
 
 void ProcessingDialog::updateProgress(QString message, int percentComplete) {
     ui->label->setText(message);
-    qDebug() << "Setting to " << percentComplete << " percent";
     ui->progressBar->setValue(percentComplete);
 }
 
 void ProcessingDialog::complete(QString message) {
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
     ui->label->setText(message);
+    ui->progressBar->setValue(100);
 }
 
 ProcessingDialog::~ProcessingDialog()

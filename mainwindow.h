@@ -29,12 +29,20 @@ private slots:
     void handleButtonRefImage();
     void handleButtonTargetImages();
     void handleButtonStack();
+    void handleButtonDarkFrames();
+    void handleButtonDarkFlatFrames();
+    void handleButtonFlatFrames();
     void setImage(QString filename);
 
 private:
     Ui::MainWindow *ui;
+
     QString refImageFileName;
     QStringList targetImageFileNames;
+    QStringList darkFrameFileNames;
+    QStringList darkFlatFrameFileNames;
+    QStringList flatFrameFileNames;
+
     QString saveFilePath;
     QThread *workerThread;
 

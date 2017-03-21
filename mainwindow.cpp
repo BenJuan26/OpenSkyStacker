@@ -68,12 +68,14 @@ void MainWindow::handleButtonRefImage() {
     QFileDialog dialog(this);
     dialog.setDirectory(QDir::homePath());
     dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setNameFilter("All images (*.jpg *.jpeg *.png *.tif)");
+    QStringList filter;
+    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
+    dialog.setNameFilters(filter);
 
     if (!dialog.exec()) {
-        QMessageBox box;
-        box.setText("Error selecting image");
-        box.exec();
+//        QMessageBox box;
+//        box.setText("Error selecting image");
+//        box.exec();
 
         return;
     }
@@ -92,12 +94,14 @@ void MainWindow::handleButtonTargetImages() {
     QFileDialog dialog(this);
     dialog.setDirectory(selectedDir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
-    dialog.setNameFilter("All images (*.jpg *.jpeg *.png *.tif)");
+    QStringList filter;
+    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
+    dialog.setNameFilters(filter);
 
     if (!dialog.exec()) {
-        QMessageBox box;
-        box.setText("Error selecting images");
-        box.exec();
+//        QMessageBox box;
+//        box.setText("Error selecting images");
+//        box.exec();
 
         return;
     }
@@ -109,6 +113,75 @@ void MainWindow::handleButtonTargetImages() {
     }
 
     ui->buttonStack->setEnabled(true);
+}
+
+void MainWindow::handleButtonDarkFrames() {
+    QFileDialog dialog(this);
+    dialog.setDirectory(selectedDir);
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+    QStringList filter;
+    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
+    dialog.setNameFilters(filter);
+
+    if (!dialog.exec()) {
+//        QMessageBox box;
+//        box.setText("Error selecting images");
+//        box.exec();
+
+        return;
+    }
+
+    darkFrameFileNames = dialog.selectedFiles();
+
+    for (int i = 0; i < darkFrameFileNames.length(); i++) {
+        qDebug() << darkFrameFileNames.at(i);
+    }
+}
+
+void MainWindow::handleButtonDarkFlatFrames() {
+    QFileDialog dialog(this);
+    dialog.setDirectory(selectedDir);
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+    QStringList filter;
+    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
+    dialog.setNameFilters(filter);
+
+    if (!dialog.exec()) {
+//        QMessageBox box;
+//        box.setText("Error selecting images");
+//        box.exec();
+
+        return;
+    }
+
+    darkFlatFrameFileNames = dialog.selectedFiles();
+
+    for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
+        qDebug() << darkFlatFrameFileNames.at(i);
+    }
+}
+
+void MainWindow::handleButtonFlatFrames() {
+    QFileDialog dialog(this);
+    dialog.setDirectory(selectedDir);
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+    QStringList filter;
+    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
+    dialog.setNameFilters(filter);
+
+    if (!dialog.exec()) {
+//        QMessageBox box;
+//        box.setText("Error selecting images");
+//        box.exec();
+
+        return;
+    }
+
+    flatFrameFileNames = dialog.selectedFiles();
+
+    for (int i = 0; i < flatFrameFileNames.length(); i++) {
+        qDebug() << flatFrameFileNames.at(i);
+    }
 }
 
 void MainWindow::setImage(QString filename) {

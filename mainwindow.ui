@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>721</width>
-    <height>491</height>
+    <height>497</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -81,7 +81,7 @@
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>175</height>
+         <height>208</height>
         </rect>
        </property>
        <attribute name="label">
@@ -122,6 +122,60 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="buttonSelectDarkFrames">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: #222;
+    border-width: 2px;
+    border-radius: 4px;
+    border-color: #111;
+    font: bold 12px;
+    padding: 6px;</string>
+          </property>
+          <property name="text">
+           <string>Select Dark Frames</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonSelectDarkFlatFrames">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: #222;
+    border-width: 2px;
+    border-radius: 4px;
+    border-color: #111;
+    font: bold 12px;
+    padding: 6px;</string>
+          </property>
+          <property name="text">
+           <string>Select Dark Flat Frames</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonSelectFlatFrames">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: #222;
+    border-width: 2px;
+    border-radius: 4px;
+    border-color: #111;
+    font: bold 12px;
+    padding: 6px;</string>
+          </property>
+          <property name="text">
+           <string>Select Flat Frames</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="buttonStack">
           <property name="enabled">
            <bool>false</bool>
@@ -150,7 +204,7 @@
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>175</height>
+         <height>208</height>
         </rect>
        </property>
        <attribute name="label">
@@ -214,7 +268,7 @@
      <x>0</x>
      <y>0</y>
      <width>721</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="styleSheet">
