@@ -14,13 +14,15 @@ public:
 signals:
     void finished(cv::Mat image);
     void finishedDialog(QString message);
-    void updateProgressBar(QString message, int percentComplete);
+    void updateProgress(QString message, int percentComplete);
 public slots:
     void process(QString refImageFileName, QStringList targetImageFileNames);
 
 private:
     cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
     cv::Mat averageImages16UC3(cv::Mat img1, cv::Mat img2);
+
+    int totalOperations;
 };
 
 #endif // IMAGESTACKER_H

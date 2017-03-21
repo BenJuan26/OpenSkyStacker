@@ -13,6 +13,7 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 }
 
 void ImageStacker::process(QString refImageFileName, QStringList targetImageFileNames) {
+    emit updateProgress("Starting stacking process...", 0);
 
     // TODO: BAD assumption that the source image is 8-bit
     Mat refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
@@ -21,23 +22,25 @@ void ImageStacker::process(QString refImageFileName, QStringList targetImageFile
 
     QString message;
 
-    emit updateProgressBar("Starting stacking process...", 0);
-
     for (int k = 0; k < targetImageFileNames.length() && !cancel; k++) {
         Mat targetImage = imread(targetImageFileNames.at(k).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
         //targetImage.convertTo(targetImage, CV_32F);
 
-        Mat targetAligned = generateAlignedImage(refImage, targetImage);
-        message = "Aligned image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
+        // -------------- ALIGNMENT ---------------
+        message = "Aligning image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
         qDebug() << message;
-        emit updateProgressBar(message, (k*2 + 1)*100/(targetImageFileNames.length()*2));
+        emit updateProgress(message, k*2*100/(targetImageFileNames.length()*2));
+        Mat targetAligned = generateAlignedImage(refImage, targetImage);
+
 
         if (cancel) break;
 
-        workingImage = averageImages16UC3(workingImage, targetAligned);
-        message = "Stacked image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
+
+        // -------------- STACKING ---------------
+        message = "Stacking image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
         qDebug() << message;
-        emit updateProgressBar(message, (k*2 + 2)*100/(targetImageFileNames.length()*2));
+        emit updateProgress(message, (k*2 + 1)*100/(targetImageFileNames.length()*2));
+        workingImage = averageImages16UC3(workingImage, targetAligned);
     }
 
     if (cancel) {
@@ -52,60 +55,76 @@ void ImageStacker::process(QString refImageFileName, QStringList targetImageFile
 cv::Mat ImageStacker::averageImages16UC3(cv::Mat img1, cv::Mat img2) {
     Mat result = Mat(img1.rows, img1.cols, CV_16UC3);
 
-    for(int i = 0; i < img1.cols; i++) {
-        for(int j = 0; j < img1.rows; j++) {
+    for(int x = 0; x < img1.cols; x++) {
+        for(int y = 0; y < img1.rows; y++) {
 
-            int b1, g1, r1;
+            unsigned short b1, g1, r1;
             switch (img1.depth()) {
-                case CV_8U: case CV_8S: default:
-                    b1 = img1.at<Vec<unsigned char,3>>(j,i).val[0] * 256;
-                    g1 = img1.at<Vec<unsigned char,3>>(j,i).val[1] * 256;
-                    r1 = img1.at<Vec<unsigned char,3>>(j,i).val[2] * 256;
+                case CV_8U: case CV_8S: default: {
+                    Vec<unsigned char, 3> pixel = img1.at<Vec<unsigned char,3>>(y,x);
+                    b1 = pixel.val[0] * 256;
+                    g1 = pixel.val[1] * 256;
+                    r1 = pixel.val[2] * 256;
                     break;
-                case CV_16U: case CV_16S:
-                    b1 = img1.at<Vec<unsigned short,3>>(j,i).val[0];
-                    g1 = img1.at<Vec<unsigned short,3>>(j,i).val[1];
-                    r1 = img1.at<Vec<unsigned short,3>>(j,i).val[2];
+                }
+                case CV_16U: case CV_16S: {
+                    Vec<unsigned short,3> pixel = img1.at<Vec<unsigned short,3>>(y,x);
+                    b1 = pixel.val[0];
+                    g1 = pixel.val[1];
+                    r1 = pixel.val[2];
                     break;
-                case CV_32F: case CV_32S:
-                    b1 = img1.at<Vec3f>(j,i).val[0] / 256;
-                    g1 = img1.at<Vec3f>(j,i).val[1] / 256;
-                    r1 = img1.at<Vec3f>(j,i).val[2] / 256;
+                }
+                case CV_32F: case CV_32S: {
+                    Vec3f pixel = img1.at<Vec3f>(y,x);
+                    b1 = pixel.val[0] / 256;
+                    g1 = pixel.val[1] / 256;
+                    r1 = pixel.val[2] / 256;
                     break;
-                case CV_64F:
-                    b1 = img1.at<Vec3d>(j,i).val[0] / 65536;
-                    g1 = img1.at<Vec3d>(j,i).val[1] / 65536;
-                    r1 = img1.at<Vec3d>(j,i).val[2] / 65536;
+                }
+                case CV_64F: {
+                    Vec3d pixel = img1.at<Vec3d>(y,x);
+                    b1 = pixel.val[0] / 65536;
+                    g1 = pixel.val[1] / 65536;
+                    r1 = pixel.val[2] / 65536;
                     break;
+                }
             }
 
-            int b2, g2, r2;
+            unsigned short b2, g2, r2;
             switch (img2.depth()) {
-                case CV_8U: case CV_8S: default:
-                    b2 = img2.at<Vec<unsigned char,3>>(j,i).val[0] * 256;
-                    g2 = img2.at<Vec<unsigned char,3>>(j,i).val[1] * 256;
-                    r2 = img2.at<Vec<unsigned char,3>>(j,i).val[2] * 256;
+                case CV_8U: case CV_8S: default: {
+                    Vec<unsigned char,3> pixel = img2.at<Vec<unsigned char,3>>(y,x);
+                    b2 = pixel.val[0] * 256;
+                    g2 = pixel.val[1] * 256;
+                    r2 = pixel.val[2] * 256;
                     break;
-                case CV_16U: case CV_16S:
-                    b2 = img2.at<Vec<unsigned short,3>>(j,i).val[0];
-                    g2 = img2.at<Vec<unsigned short,3>>(j,i).val[1];
-                    r2 = img2.at<Vec<unsigned short,3>>(j,i).val[2];
-                    break;
-                case CV_32F: case CV_32S:
-                    b2 = img2.at<Vec3f>(j,i).val[0] / 256;
-                    g2 = img2.at<Vec3f>(j,i).val[1] / 256;
-                    r2 = img2.at<Vec3f>(j,i).val[2] / 256;
-                    break;
-                case CV_64F:
-                    b2 = img2.at<Vec3d>(j,i).val[0] / 65536;
-                    g2 = img2.at<Vec3d>(j,i).val[1] / 65536;
-                    r2 = img2.at<Vec3d>(j,i).val[2] / 65536;
-                    break;
+                }
+                case CV_16U: case CV_16S: {
+                        Vec<unsigned short,3> pixel = img2.at<Vec<unsigned short,3>>(y,x);
+                        b2 = pixel.val[0];
+                        g2 = pixel.val[1];
+                        r2 = pixel.val[2];
+                        break;
+                }
+                case CV_32F: case CV_32S: {
+                        Vec3f pixel = img2.at<Vec3f>(y,x);
+                        b2 = pixel.val[0] / 256;
+                        g2 = pixel.val[1] / 256;
+                        r2 = pixel.val[2] / 256;
+                        break;
+                }
+                case CV_64F: {
+                        Vec3d pixel = img2.at<Vec3d>(y,x);
+                        b2 = pixel.val[0] / 65536;
+                        g2 = pixel.val[1] / 65536;
+                        r2 = pixel.val[2] / 65536;
+                        break;
+                }
             }
 
-            result.at<Vec<unsigned short,3>>(j,i).val[0] = (b1 + b2) / 2;
-            result.at<Vec<unsigned short,3>>(j,i).val[1] = (g1 + g2) / 2;
-            result.at<Vec<unsigned short,3>>(j,i).val[2] = (r1 + r2) / 2;
+            result.at<Vec<unsigned short,3>>(y,x).val[0] = (b1 + b2) / 2;
+            result.at<Vec<unsigned short,3>>(y,x).val[1] = (g1 + g2) / 2;
+            result.at<Vec<unsigned short,3>>(y,x).val[2] = (r1 + r2) / 2;
         }
     }
 

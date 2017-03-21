@@ -55,7 +55,7 @@ void MainWindow::handleButtonStack() {
     emit stackImages(refImageFileName, targetImageFileNames);
 
     ProcessingDialog *dialog = new ProcessingDialog(this);
-    connect(stacker, SIGNAL(updateProgressBar(QString,int)), dialog, SLOT(updateProgress(QString,int)));
+    connect(stacker, SIGNAL(updateProgress(QString,int)), dialog, SLOT(updateProgress(QString,int)));
     connect(stacker, SIGNAL(finishedDialog(QString)), dialog, SLOT(complete(QString)));
 
     if (!dialog->exec()) {
