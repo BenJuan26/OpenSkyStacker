@@ -12,12 +12,12 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
     cancel = false;
 }
 
-void ImageStacker::process(QString refImageFileName, QStringList targetImageFileNames) {
+void ImageStacker::process() {
     emit updateProgress("Starting stacking process...", 0);
 
     // TODO: BAD assumption that the source image is 8-bit
-    Mat refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-    Mat workingImage;
+    refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+
     refImage.convertTo(workingImage, CV_16UC3, 256);
 
     QString message;
@@ -179,4 +179,121 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
         warpPerspective (target, target_aligned, warp_matrix, ref.size(),INTER_LINEAR + WARP_INVERSE_MAP);
 
     return target_aligned;
+}
+
+QString ImageStacker::getRefImageFileName() const {
+    mutex.lock();
+    QString string = refImageFileName;
+    mutex.unlock();
+
+    return string;
+}
+void ImageStacker::setRefImageFileName(const QString &value) {
+    mutex.lock();
+    refImageFileName = value;
+    mutex.unlock();
+}
+
+QStringList ImageStacker::getTargetImageFileNames() const {
+    mutex.lock();
+    QStringList list = targetImageFileNames;
+    mutex.unlock();
+
+    return list;
+}
+void ImageStacker::setTargetImageFileNames(const QStringList &value) {
+    mutex.lock();
+    targetImageFileNames = value;
+    mutex.unlock();
+}
+
+QStringList ImageStacker::getDarkFrameFileNames() const {
+    mutex.lock();
+    QStringList list = darkFrameFileNames;
+    mutex.unlock();
+
+    return list;
+}
+void ImageStacker::setDarkFrameFileNames(const QStringList &value) {
+    mutex.lock();
+    QStringList list = darkFrameFileNames;
+    mutex.unlock();
+}
+
+QStringList ImageStacker::getDarkFlatFrameFileNames() const {
+    mutex.lock();
+    QStringList list = darkFlatFrameFileNames;
+    mutex.unlock();
+
+    return list;
+}
+void ImageStacker::setDarkFlatFrameFileNames(const QStringList &value) {
+    mutex.lock();
+    darkFlatFrameFileNames = value;
+    mutex.unlock();
+}
+
+QStringList ImageStacker::getFlatFrameFileNames() const {
+    mutex.lock();
+    QStringList list = flatFrameFileNames;
+    mutex.unlock();
+
+    return list;
+}
+void ImageStacker::setFlatFrameFileNames(const QStringList &value) {
+    mutex.lock();
+    flatFrameFileNames = value;
+    mutex.unlock();
+}
+
+QString ImageStacker::getSaveFilePath() const {
+    mutex.lock();
+    QString path = saveFilePath;
+    mutex.unlock();
+
+    return path;
+}
+void ImageStacker::setSaveFilePath(const QString &value) {
+    mutex.lock();
+    saveFilePath = value;
+    mutex.unlock();
+}
+
+cv::Mat ImageStacker::getWorkingImage() const {
+    mutex.lock();
+    cv::Mat image = workingImage.clone();
+    mutex.unlock();
+
+    return image;
+}
+void ImageStacker::setWorkingImage(const cv::Mat &value) {
+    mutex.lock();
+    workingImage = value.clone();
+    mutex.unlock();
+}
+
+cv::Mat ImageStacker::getRefImage() const {
+    mutex.lock();
+    cv::Mat image = refImage.clone();
+    mutex.unlock();
+
+    return image;
+}
+void ImageStacker::setRefImage(const cv::Mat &value) {
+    mutex.lock();
+    refImage = value.clone();
+    mutex.unlock();
+}
+
+cv::Mat ImageStacker::getFinalImage() const {
+    mutex.lock();
+    cv::Mat image = finalImage.clone();
+    mutex.unlock();
+
+    return image;
+}
+void ImageStacker::setFinalImage(const cv::Mat &value) {
+    mutex.lock();
+    finalImage = value.clone();
+    mutex.unlock();
 }

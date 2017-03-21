@@ -30,20 +30,20 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
     connect(ui->buttonSelectTargetImages, SIGNAL (released()), this, SLOT (handleButtonTargetImages()));
     connect(ui->buttonStack, SIGNAL (released()), this, SLOT (handleButtonStack()));
-    connect(this, SIGNAL (stackImages(QString,QStringList)), stacker, SLOT(process(QString, QStringList)));
+    connect(this, SIGNAL (stackImages()), stacker, SLOT(process()));
     connect(stacker, SIGNAL(finished(cv::Mat)), this, SLOT(finishedStacking(cv::Mat)));
-    //connect(stacker, SIGNAL(updateProgressBar(int)), this, SLOT(setProgressBar(int)));
 }
 
 void MainWindow::finishedStacking(Mat image) {
-    imwrite(saveFilePath.toUtf8().constData(), image);
-    setImage(saveFilePath);
+    QString path = stacker->getSaveFilePath();
+    imwrite(path.toUtf8().constData(), image);
+    setImage(path);
     qDebug() << "Done stacking";
 }
 
 void MainWindow::handleButtonStack() {
 
-    saveFilePath = QFileDialog::getSaveFileName(
+    QString saveFilePath = QFileDialog::getSaveFileName(
                 this, "Select Output Image", selectedDir.absolutePath(), "TIFF Image (*.tif)");
 
     if (saveFilePath.isEmpty()) {
@@ -51,8 +51,10 @@ void MainWindow::handleButtonStack() {
         return;
     }
 
+    stacker->setSaveFilePath(saveFilePath);
+
     // asynchronously trigger the processing
-    emit stackImages(refImageFileName, targetImageFileNames);
+    emit stackImages();
 
     ProcessingDialog *dialog = new ProcessingDialog(this);
     connect(stacker, SIGNAL(updateProgress(QString,int)), dialog, SLOT(updateProgress(QString,int)));
@@ -72,20 +74,15 @@ void MainWindow::handleButtonRefImage() {
     filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
     dialog.setNameFilters(filter);
 
-    if (!dialog.exec()) {
-//        QMessageBox box;
-//        box.setText("Error selecting image");
-//        box.exec();
+    if (!dialog.exec()) return;
 
-        return;
-    }
-
-    refImageFileName = dialog.selectedFiles().at(0);
+    QString refImageFileName = dialog.selectedFiles().at(0);
+    stacker->setRefImageFileName(refImageFileName);
 
     QFileInfo info(refImageFileName);
     selectedDir = QDir(info.absoluteFilePath());
     setImage(refImageFileName);
-    qDebug() <<  refImageFileName;
+    qDebug() << refImageFileName;
 
     ui->buttonSelectTargetImages->setEnabled(true);
 }
@@ -98,15 +95,10 @@ void MainWindow::handleButtonTargetImages() {
     filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
     dialog.setNameFilters(filter);
 
-    if (!dialog.exec()) {
-//        QMessageBox box;
-//        box.setText("Error selecting images");
-//        box.exec();
+    if (!dialog.exec()) return;
 
-        return;
-    }
-
-    targetImageFileNames = dialog.selectedFiles();
+    QStringList targetImageFileNames = dialog.selectedFiles();
+    stacker->setTargetImageFileNames(targetImageFileNames);
 
     for (int i = 0; i < targetImageFileNames.length(); i++) {
         qDebug() << targetImageFileNames.at(i);
@@ -123,15 +115,10 @@ void MainWindow::handleButtonDarkFrames() {
     filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
     dialog.setNameFilters(filter);
 
-    if (!dialog.exec()) {
-//        QMessageBox box;
-//        box.setText("Error selecting images");
-//        box.exec();
+    if (!dialog.exec()) return;
 
-        return;
-    }
-
-    darkFrameFileNames = dialog.selectedFiles();
+    QStringList darkFrameFileNames = dialog.selectedFiles();
+    stacker->setDarkFrameFileNames(darkFrameFileNames);
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
         qDebug() << darkFrameFileNames.at(i);
@@ -146,15 +133,10 @@ void MainWindow::handleButtonDarkFlatFrames() {
     filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
     dialog.setNameFilters(filter);
 
-    if (!dialog.exec()) {
-//        QMessageBox box;
-//        box.setText("Error selecting images");
-//        box.exec();
+    if (!dialog.exec()) return;
 
-        return;
-    }
-
-    darkFlatFrameFileNames = dialog.selectedFiles();
+    QStringList darkFlatFrameFileNames = dialog.selectedFiles();
+    stacker->setDarkFlatFrameFileNames(darkFlatFrameFileNames);
 
     for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
         qDebug() << darkFlatFrameFileNames.at(i);
@@ -169,15 +151,10 @@ void MainWindow::handleButtonFlatFrames() {
     filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
     dialog.setNameFilters(filter);
 
-    if (!dialog.exec()) {
-//        QMessageBox box;
-//        box.setText("Error selecting images");
-//        box.exec();
+    if (!dialog.exec()) return;
 
-        return;
-    }
-
-    flatFrameFileNames = dialog.selectedFiles();
+    QStringList flatFrameFileNames = dialog.selectedFiles();
+    stacker->setFlatFrameFileNames(flatFrameFileNames);
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
         qDebug() << flatFrameFileNames.at(i);

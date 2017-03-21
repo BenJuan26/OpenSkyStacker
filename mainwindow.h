@@ -20,7 +20,7 @@ public:
     ~MainWindow();
 
 signals:
-    void stackImages(QString refImage, QStringList targetImages);
+    void stackImages();
 
 public slots:
     void finishedStacking(cv::Mat image);
@@ -37,20 +37,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    QString refImageFileName;
-    QStringList targetImageFileNames;
-    QStringList darkFrameFileNames;
-    QStringList darkFlatFrameFileNames;
-    QStringList flatFrameFileNames;
-
-    QString saveFilePath;
     QThread *workerThread;
 
     ImageStacker *stacker;
-
-    cv::Mat workingImage;
-    cv::Mat refImage;
-    cv::Mat finalImage;
 
     QDir selectedDir;
 };
