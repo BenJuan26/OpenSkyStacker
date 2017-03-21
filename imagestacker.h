@@ -20,7 +20,7 @@ public slots:
 
 private:
     cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
-    cv::Mat averageImages16U(cv::Mat img1, cv::Mat img2);
+    cv::Mat averageImages16UC3(cv::Mat img1, cv::Mat img2);
 };
 
 #endif // IMAGESTACKER_H

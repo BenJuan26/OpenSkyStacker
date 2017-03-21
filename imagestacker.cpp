@@ -34,7 +34,7 @@ void ImageStacker::process(QString refImageFileName, QStringList targetImageFile
 
         if (cancel) break;
 
-        workingImage = averageImages16U(workingImage, targetAligned);
+        workingImage = averageImages16UC3(workingImage, targetAligned);
         message = "Stacked image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
         qDebug() << message;
         emit updateProgressBar(message, (k*2 + 2)*100/(targetImageFileNames.length()*2));
@@ -49,63 +49,63 @@ void ImageStacker::process(QString refImageFileName, QStringList targetImageFile
     }
 }
 
-cv::Mat ImageStacker::averageImages16U(cv::Mat img1, cv::Mat img2) {
+cv::Mat ImageStacker::averageImages16UC3(cv::Mat img1, cv::Mat img2) {
     Mat result = Mat(img1.rows, img1.cols, CV_16UC3);
 
     for(int i = 0; i < img1.cols; i++) {
-        for(int j = 0; j < img1.rows * 3; j++) {
+        for(int j = 0; j < img1.rows; j++) {
 
             int b1, g1, r1;
             switch (img1.depth()) {
                 case CV_8U: case CV_8S: default:
-                    b1 = img1.at<unsigned char>(img1.cols * j + i) * 256;
-                    g1 = img1.at<unsigned char>(img1.cols * j + i + 1) * 256;
-                    r1 = img1.at<unsigned char>(img1.cols * j + i + 2) * 256;
+                    b1 = img1.at<Vec<unsigned char,3>>(j,i).val[0] * 256;
+                    g1 = img1.at<Vec<unsigned char,3>>(j,i).val[1] * 256;
+                    r1 = img1.at<Vec<unsigned char,3>>(j,i).val[2] * 256;
                     break;
                 case CV_16U: case CV_16S:
-                    b1 = img1.at<unsigned short>(img1.cols * j + i);
-                    g1 = img1.at<unsigned short>(img1.cols * j + i + 1);
-                    r1 = img1.at<unsigned short>(img1.cols * j + i + 2);
+                    b1 = img1.at<Vec<unsigned short,3>>(j,i).val[0];
+                    g1 = img1.at<Vec<unsigned short,3>>(j,i).val[1];
+                    r1 = img1.at<Vec<unsigned short,3>>(j,i).val[2];
                     break;
                 case CV_32F: case CV_32S:
-                    b1 = img1.at<float>(img1.cols * j + i) / 256;
-                    g1 = img1.at<float>(img1.cols * j + i + 1) / 256;
-                    r1 = img1.at<float>(img1.cols * j + i + 2) / 256;
+                    b1 = img1.at<Vec3f>(j,i).val[0] / 256;
+                    g1 = img1.at<Vec3f>(j,i).val[1] / 256;
+                    r1 = img1.at<Vec3f>(j,i).val[2] / 256;
                     break;
                 case CV_64F:
-                    b1 = img1.at<double>(img1.cols * j + i) / 65536;
-                    g1 = img1.at<double>(img1.cols * j + i + 1) / 65536;
-                    r1 = img1.at<double>(img1.cols * j + i + 2) / 65536;
+                    b1 = img1.at<Vec3d>(j,i).val[0] / 65536;
+                    g1 = img1.at<Vec3d>(j,i).val[1] / 65536;
+                    r1 = img1.at<Vec3d>(j,i).val[2] / 65536;
                     break;
             }
 
             int b2, g2, r2;
             switch (img2.depth()) {
                 case CV_8U: case CV_8S: default:
-                    b2 = img2.at<unsigned char>(img2.cols * j + i) * 256;
-                    g2 = img2.at<unsigned char>(img2.cols * j + i + 1) * 256;
-                    r2 = img2.at<unsigned char>(img2.cols * j + i + 2) * 256;
+                    b2 = img2.at<Vec<unsigned char,3>>(j,i).val[0] * 256;
+                    g2 = img2.at<Vec<unsigned char,3>>(j,i).val[1] * 256;
+                    r2 = img2.at<Vec<unsigned char,3>>(j,i).val[2] * 256;
                     break;
                 case CV_16U: case CV_16S:
-                    b2 = img2.at<unsigned short>(img2.cols * j + i);
-                    g2 = img2.at<unsigned short>(img2.cols * j + i + 1);
-                    r2 = img2.at<unsigned short>(img2.cols * j + i + 2);
+                    b2 = img2.at<Vec<unsigned short,3>>(j,i).val[0];
+                    g2 = img2.at<Vec<unsigned short,3>>(j,i).val[1];
+                    r2 = img2.at<Vec<unsigned short,3>>(j,i).val[2];
                     break;
                 case CV_32F: case CV_32S:
-                    b2 = img2.at<float>(img2.cols * j + i) / 256;
-                    g2 = img2.at<float>(img2.cols * j + i + 1) / 256;
-                    r2 = img2.at<float>(img2.cols * j + i + 2) / 256;
+                    b2 = img2.at<Vec3f>(j,i).val[0] / 256;
+                    g2 = img2.at<Vec3f>(j,i).val[1] / 256;
+                    r2 = img2.at<Vec3f>(j,i).val[2] / 256;
                     break;
                 case CV_64F:
-                    b2 = img2.at<double>(img2.cols * j + i) / 65536;
-                    g2 = img2.at<double>(img2.cols * j + i + 1) / 65536;
-                    r2 = img2.at<double>(img2.cols * j + i + 2) / 65536;
+                    b2 = img2.at<Vec3d>(j,i).val[0] / 65536;
+                    g2 = img2.at<Vec3d>(j,i).val[1] / 65536;
+                    r2 = img2.at<Vec3d>(j,i).val[2] / 65536;
                     break;
             }
 
-            result.at<unsigned short>(img1.cols * j + i) = (b1 + b2) / 2;
-            result.at<unsigned short>(img1.cols * j + i + 1) = (g1 + g2) / 2;
-            result.at<unsigned short>(img1.cols * j + i + 2) = (r1 + r2) / 2;
+            result.at<Vec<unsigned short,3>>(j,i).val[0] = (b1 + b2) / 2;
+            result.at<Vec<unsigned short,3>>(j,i).val[1] = (g1 + g2) / 2;
+            result.at<Vec<unsigned short,3>>(j,i).val[2] = (r1 + r2) / 2;
         }
     }
 
