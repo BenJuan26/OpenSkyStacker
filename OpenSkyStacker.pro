@@ -58,3 +58,21 @@ macx {
         -lopencv_calib3d \
         -lopencv_video
 }
+unix {
+    INCLUDEPATH += $$(OPENCVDIR)/modules/core/include
+    INCLUDEPATH += $$(OPENCVDIR)/release
+    INCLUDEPATH += $$(OPENCVDIR)/modules/highgui/include
+    INCLUDEPATH += $$(OPENCVDIR)/modules/imgproc/include
+    INCLUDEPATH += $$(OPENCVDIR)/modules/video/include
+    INCLUDEPATH += $$(OPENCVDIR)/modules/imgcodecs/include
+    INCLUDEPATH += $$(OPENCVDIR)/modules/videoio/include
+    INCLUDEPATH += $$(QTDIR)/include/QtWidgets
+    LIBS += -L$$(OPENCVDIR)/release/lib \
+        -lopencv_core \
+        -lopencv_highgui \
+        -lopencv_imgcodecs \
+        -lopencv_imgproc \
+        -lopencv_features2d \
+        -lopencv_calib3d \
+        -lopencv_video
+}
