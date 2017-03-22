@@ -41,6 +41,15 @@ public:
     cv::Mat getFinalImage() const;
     void setFinalImage(const cv::Mat &value);
 
+    bool getUseDarks() const;
+    void setUseDarks(bool value);
+
+    bool getUseDarkFlats() const;
+    void setUseDarkFlats(bool value);
+
+    bool getUseFlats() const;
+    void setUseFlats(bool value);
+
 signals:
     void finished(cv::Mat image);
     void finishedDialog(QString message);
@@ -52,9 +61,16 @@ private:
     cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
     cv::Mat averageImages16UC3(cv::Mat img1, cv::Mat img2);
 
+    void stackDarks();
+
     mutable QMutex mutex;
 
+    int currentOperation;
     int totalOperations;
+
+    bool useDarks = false;
+    bool useDarkFlats = false;
+    bool useFlats = false;
 
     QString refImageFileName;
     QStringList targetImageFileNames;
@@ -67,6 +83,12 @@ private:
     cv::Mat workingImage;
     cv::Mat refImage;
     cv::Mat finalImage;
+
+    cv::Mat masterDark;
+    cv::Mat masterDarkFlat;
+    cv::Mat masterFlat;
+
+    cv::Mat to16UC3(cv::Mat image);
 
 };
 

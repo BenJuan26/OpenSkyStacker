@@ -16,42 +16,56 @@ void ImageStacker::process() {
     emit updateProgress("Starting stacking process...", 0);
 
     refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+    refImage = to16UC3(refImage);
 
-    switch (refImage.depth()) {
-    case CV_8U: case CV_8S: default:
-        refImage.convertTo(workingImage, CV_16UC3, 256);
-        break;
-    case CV_16U: case CV_16S:
-        workingImage = refImage.clone();
-        break;
-    case CV_32F: case CV_32S:
-        refImage.convertTo(workingImage, 1/256);
-        break;
-    case CV_64F:
-        refImage.convertTo(workingImage, 1/65536);
-        break;
+    workingImage = refImage.clone();
+
+    currentOperation = 0;
+
+    totalOperations = targetImageFileNames.length() * 2 + 1;
+
+    if (useDarks) {
+        totalOperations += darkFrameFileNames.length();
+    }
+    if (useDarkFlats) {
+        totalOperations += darkFlatFrameFileNames.length();
+    }
+    if (useFlats) {
+        totalOperations += flatFrameFileNames.length();
+    }
+
+    if (useDarks) {
+        stackDarks();
+        workingImage -= masterDark;
     }
 
     QString message;
 
     for (int k = 0; k < targetImageFileNames.length() && !cancel; k++) {
         Mat targetImage = imread(targetImageFileNames.at(k).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-        //targetImage.convertTo(targetImage, CV_32F);
+
+        // ------------- CONVERT TO 16-BIT -------------
+        targetImage = to16UC3(targetImage);
+
+        // ------------- CALIBRATION --------------
+        if (useDarks) targetImage -= masterDark;
 
         // -------------- ALIGNMENT ---------------
         message = "Aligning image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
         qDebug() << message;
-        emit updateProgress(message, k*2*100/(targetImageFileNames.length()*2));
+        currentOperation++;
+        emit updateProgress(message, 100*currentOperation/totalOperations);
+
         Mat targetAligned = generateAlignedImage(refImage, targetImage);
 
-
         if (cancel) break;
-
 
         // -------------- STACKING ---------------
         message = "Stacking image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
         qDebug() << message;
-        emit updateProgress(message, (k*2 + 1)*100/(targetImageFileNames.length()*2));
+        currentOperation++;
+        emit updateProgress(message, 100*currentOperation/totalOperations);
+
         workingImage = averageImages16UC3(workingImage, targetAligned);
     }
 
@@ -70,69 +84,15 @@ cv::Mat ImageStacker::averageImages16UC3(cv::Mat img1, cv::Mat img2) {
     for(int x = 0; x < img1.cols; x++) {
         for(int y = 0; y < img1.rows; y++) {
 
-            unsigned short b1, g1, r1;
-            switch (img1.depth()) {
-                case CV_8U: case CV_8S: default: {
-                    Vec<unsigned char, 3> pixel = img1.at<Vec<unsigned char,3>>(y,x);
-                    b1 = pixel.val[0] * 256;
-                    g1 = pixel.val[1] * 256;
-                    r1 = pixel.val[2] * 256;
-                    break;
-                }
-                case CV_16U: case CV_16S: {
-                    Vec<unsigned short,3> pixel = img1.at<Vec<unsigned short,3>>(y,x);
-                    b1 = pixel.val[0];
-                    g1 = pixel.val[1];
-                    r1 = pixel.val[2];
-                    break;
-                }
-                case CV_32F: case CV_32S: {
-                    Vec3f pixel = img1.at<Vec3f>(y,x);
-                    b1 = pixel.val[0] / 256;
-                    g1 = pixel.val[1] / 256;
-                    r1 = pixel.val[2] / 256;
-                    break;
-                }
-                case CV_64F: {
-                    Vec3d pixel = img1.at<Vec3d>(y,x);
-                    b1 = pixel.val[0] / 65536;
-                    g1 = pixel.val[1] / 65536;
-                    r1 = pixel.val[2] / 65536;
-                    break;
-                }
-            }
+            Vec<unsigned short, 3> pixel1 = img1.at<Vec<unsigned short,3>>(y,x);
+            unsigned short b1 = pixel1.val[0];
+            unsigned short g1 = pixel1.val[1];
+            unsigned short r1 = pixel1.val[2];
 
-            unsigned short b2, g2, r2;
-            switch (img2.depth()) {
-                case CV_8U: case CV_8S: default: {
-                    Vec<unsigned char,3> pixel = img2.at<Vec<unsigned char,3>>(y,x);
-                    b2 = pixel.val[0] * 256;
-                    g2 = pixel.val[1] * 256;
-                    r2 = pixel.val[2] * 256;
-                    break;
-                }
-                case CV_16U: case CV_16S: {
-                        Vec<unsigned short,3> pixel = img2.at<Vec<unsigned short,3>>(y,x);
-                        b2 = pixel.val[0];
-                        g2 = pixel.val[1];
-                        r2 = pixel.val[2];
-                        break;
-                }
-                case CV_32F: case CV_32S: {
-                        Vec3f pixel = img2.at<Vec3f>(y,x);
-                        b2 = pixel.val[0] / 256;
-                        g2 = pixel.val[1] / 256;
-                        r2 = pixel.val[2] / 256;
-                        break;
-                }
-                case CV_64F: {
-                        Vec3d pixel = img2.at<Vec3d>(y,x);
-                        b2 = pixel.val[0] / 65536;
-                        g2 = pixel.val[1] / 65536;
-                        r2 = pixel.val[2] / 65536;
-                        break;
-                }
-            }
+            Vec<unsigned short,3> pixel2 = img2.at<Vec<unsigned short,3>>(y,x);
+            unsigned short b2 = pixel2.val[0];
+            unsigned short g2 = pixel2.val[1];
+            unsigned short r2 = pixel2.val[2];
 
             result.at<Vec<unsigned short,3>>(y,x).val[0] = (b1 + b2) / 2;
             result.at<Vec<unsigned short,3>>(y,x).val[1] = (g1 + g2) / 2;
@@ -143,11 +103,114 @@ cv::Mat ImageStacker::averageImages16UC3(cv::Mat img1, cv::Mat img2) {
     return result;
 }
 
+
+
+void ImageStacker::stackDarks()
+{
+    Mat dark1 = imread(darkFrameFileNames.at(0).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+    dark1 = to16UC3(dark1);
+    Mat result = dark1.clone();
+
+    QString message;
+
+    for (int i = 0; i < darkFrameFileNames.length(); i++) {
+        Mat dark = imread(darkFrameFileNames.at(i).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+        dark = to16UC3(dark);
+
+        message = "Stacking dark frame " + QString::number(i+2) + " of " + QString::number(darkFrameFileNames.length()+1);
+        qDebug() << message;
+        currentOperation++;
+        emit updateProgress(message, 100*currentOperation/totalOperations);
+        result = averageImages16UC3(result, dark);
+    }
+
+    masterDark = result;
+}
+
+Mat ImageStacker::to16UC3(Mat image)
+{
+    Mat result = Mat(image.rows, image.cols, CV_16UC3);
+
+    switch (image.depth()) {
+    case CV_8U: default:
+        image.convertTo(result, CV_16U, 256);
+        break;
+    case CV_8S:
+        image.convertTo(result, CV_16U, 256, 32768);
+        break;
+    case CV_16S:
+        image.convertTo(result, CV_16U, 1, 32768);
+        break;
+    case CV_16U:
+        // do nothing
+        break;
+    case CV_32S:
+        image.convertTo(result, CV_16U, 1/256.0, 32768);
+        break;
+    case CV_32F: case CV_64F:
+        image.convertTo(result, CV_16U, 65536);
+        break;
+    }
+
+    return result;
+}
+
+bool ImageStacker::getUseFlats() const
+{
+    mutex.lock();
+    bool value = useFlats;
+    mutex.unlock();
+
+    return value;
+}
+
+void ImageStacker::setUseFlats(bool value)
+{
+    mutex.lock();
+    useFlats = value;
+    mutex.unlock();
+}
+
+bool ImageStacker::getUseDarkFlats() const
+{
+    mutex.lock();
+    bool value = useDarkFlats;
+    mutex.unlock();
+
+    return value;
+}
+
+void ImageStacker::setUseDarkFlats(bool value)
+{
+    mutex.lock();
+    useDarkFlats = value;
+    mutex.unlock();
+}
+
+bool ImageStacker::getUseDarks() const
+{
+    mutex.lock();
+    bool value = useDarks;
+    mutex.unlock();
+
+    return value;
+}
+
+void ImageStacker::setUseDarks(bool value)
+{
+    mutex.lock();
+    useDarks = value;
+    mutex.unlock();
+}
+
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     // Convert images to gray scale;
     Mat ref_gray, target_gray;
-    cvtColor(ref, ref_gray, CV_BGR2GRAY);
-    cvtColor(target, target_gray, CV_BGR2GRAY);
+    ref.convertTo(ref_gray, CV_8U, 1/256.0);
+    target.convertTo(target_gray, CV_8U, 1/256.0);
+
+    cvtColor(ref_gray, ref_gray, CV_BGR2GRAY);
+    cvtColor(target_gray, target_gray, CV_BGR2GRAY);
 
     // Define the motion model
     const int warp_mode = MOTION_EUCLIDEAN;

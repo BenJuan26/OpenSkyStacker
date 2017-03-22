@@ -126,6 +126,7 @@ void MainWindow::handleButtonDarkFrames() {
 
     QStringList darkFrameFileNames = dialog.selectedFiles();
     stacker->setDarkFrameFileNames(darkFrameFileNames);
+    stacker->setUseDarks(true);
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
         qDebug() << darkFrameFileNames.at(i);
