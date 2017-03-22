@@ -15,10 +15,22 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 void ImageStacker::process() {
     emit updateProgress("Starting stacking process...", 0);
 
-    // TODO: BAD assumption that the source image is 8-bit
     refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
 
-    refImage.convertTo(workingImage, CV_16UC3, 256);
+    switch (refImage.depth()) {
+    case CV_8U: case CV_8S: default:
+        refImage.convertTo(workingImage, CV_16UC3, 256);
+        break;
+    case CV_16U: case CV_16S:
+        workingImage = refImage.clone();
+        break;
+    case CV_32F: case CV_32S:
+        refImage.convertTo(workingImage, 1/256);
+        break;
+    case CV_64F:
+        refImage.convertTo(workingImage, 1/65536);
+        break;
+    }
 
     QString message;
 

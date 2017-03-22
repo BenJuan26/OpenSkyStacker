@@ -29,6 +29,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
     connect(ui->buttonSelectTargetImages, SIGNAL (released()), this, SLOT (handleButtonTargetImages()));
+    connect(ui->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
+    connect(ui->buttonSelectDarkFlatFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFlatFrames()));
+    connect(ui->buttonSelectFlatFrames, SIGNAL (released()), this, SLOT (handleButtonFlatFrames()));
+
     connect(ui->buttonStack, SIGNAL (released()), this, SLOT (handleButtonStack()));
     connect(this, SIGNAL (stackImages()), stacker, SLOT(process()));
     connect(stacker, SIGNAL(finished(cv::Mat)), this, SLOT(finishedStacking(cv::Mat)));
@@ -105,6 +109,9 @@ void MainWindow::handleButtonTargetImages() {
     }
 
     ui->buttonStack->setEnabled(true);
+    ui->buttonSelectDarkFrames->setEnabled(true);
+    ui->buttonSelectDarkFlatFrames->setEnabled(true);
+    ui->buttonSelectFlatFrames->setEnabled(true);
 }
 
 void MainWindow::handleButtonDarkFrames() {
