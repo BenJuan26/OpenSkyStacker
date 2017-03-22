@@ -32,9 +32,11 @@ private slots:
     void handleButtonDarkFrames();
     void handleButtonDarkFlatFrames();
     void handleButtonFlatFrames();
-    void setImage(QString filename);
 
 private:
+    void setFileImage(QString filename);
+    void setMemImage(QImage image);
+    QImage Mat2QImage(const cv::Mat &src);
     Ui::MainWindow *ui;
 
     QThread *workerThread;
