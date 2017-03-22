@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::finishedStacking(Mat image) {
     QString path = stacker->getSaveFilePath();
     imwrite(path.toUtf8().constData(), image);
-    setImage(path);
+    setMemImage(Mat2QImage(image));
     qDebug() << "Done stacking";
 }
 
@@ -81,7 +81,7 @@ void MainWindow::handleButtonRefImage() {
 
     QFileInfo info(refImageFileName);
     selectedDir = QDir(info.absoluteFilePath());
-    setImage(refImageFileName);
+    setFileImage(refImageFileName);
     qDebug() << refImageFileName;
 
     ui->buttonSelectTargetImages->setEnabled(true);
@@ -161,9 +161,32 @@ void MainWindow::handleButtonFlatFrames() {
     }
 }
 
-void MainWindow::setImage(QString filename) {
+QImage MainWindow::Mat2QImage(const cv::Mat &src) {
+        QImage dest(src.cols, src.rows, QImage::Format_RGB32);
+        int r, g, b;
+        for(int x = 0; x < src.cols; x++) {
+            for(int y = 0; y < src.rows; y++) {
+                Vec<unsigned short,3> pixel = src.at<Vec<unsigned short,3>>(y,x);
+                b = pixel.val[0]/256;
+                g = pixel.val[1]/256;
+                r = pixel.val[2]/256;
+                dest.setPixel(x, y, qRgb(r,g,b));
+            }
+       }
+       return dest;
+}
+
+
+void MainWindow::setFileImage(QString filename) {
     QGraphicsScene* scene = new QGraphicsScene(this);
     QGraphicsPixmapItem *p = scene->addPixmap(QPixmap(filename));
+    ui->imageHolder->setScene(scene);
+    ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
+}
+
+void MainWindow::setMemImage(QImage image) {
+    QGraphicsScene* scene = new QGraphicsScene(this);
+    QGraphicsPixmapItem *p = scene->addPixmap(QPixmap::fromImage(image));
     ui->imageHolder->setScene(scene);
     ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
 }
