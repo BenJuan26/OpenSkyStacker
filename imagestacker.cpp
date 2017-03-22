@@ -216,7 +216,7 @@ QStringList ImageStacker::getDarkFrameFileNames() const {
 }
 void ImageStacker::setDarkFrameFileNames(const QStringList &value) {
     mutex.lock();
-    QStringList list = darkFrameFileNames;
+    darkFrameFileNames = value;
     mutex.unlock();
 }
 
