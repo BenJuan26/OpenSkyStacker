@@ -38,6 +38,10 @@ void ImageStacker::process() {
         stackDarks();
         workingImage -= masterDark;
     }
+    if (useFlats) {
+        stackFlats();
+        cv::divide(workingImage, masterFlat, workingImage, 1, CV_16U);
+    }
 
     QString message;
 
@@ -49,6 +53,8 @@ void ImageStacker::process() {
 
         // ------------- CALIBRATION --------------
         if (useDarks) targetImage -= masterDark;
+        if (useFlats)
+            cv::divide(targetImage, masterFlat, targetImage, 1, CV_16U);
 
         // -------------- ALIGNMENT ---------------
         message = "Aligning image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
@@ -127,6 +133,34 @@ void ImageStacker::stackDarks()
     masterDark = result;
 }
 
+void ImageStacker::stackFlats()
+{
+    // most algorithms compute the median, but we will stick with mean for now
+    Mat flat1 = imread(flatFrameFileNames.at(0).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+    flat1 = to16UC3(flat1);
+    Mat result = flat1.clone();
+
+    QString message;
+
+    for (int i = 0; i < flatFrameFileNames.length(); i++) {
+        Mat flat = imread(flatFrameFileNames.at(i).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+        flat = to16UC3(flat);
+
+        message = "Stacking flat frame " + QString::number(i+2) + " of " + QString::number(flatFrameFileNames.length()+1);
+        qDebug() << message;
+        currentOperation++;
+        emit updateProgress(message, 100*currentOperation/totalOperations);
+        result = averageImages16UC3(result, flat);
+    }
+
+    // master flat will have float values between 0 and 2.0
+    result.convertTo(masterFlat, CV_32F, 1/32768.0);
+
+    Vec3f pixel = masterFlat.at<Vec3f>(0,0);
+    qDebug() << "(0,0): " << QString::number(pixel.val[0]) << ", " << QString::number(pixel.val[1])
+            << ", " << QString::number(pixel.val[2]);
+}
+
 Mat ImageStacker::to16UC3(Mat image)
 {
     Mat result = Mat(image.rows, image.cols, CV_16UC3);
@@ -153,54 +187,6 @@ Mat ImageStacker::to16UC3(Mat image)
     }
 
     return result;
-}
-
-bool ImageStacker::getUseFlats() const
-{
-    mutex.lock();
-    bool value = useFlats;
-    mutex.unlock();
-
-    return value;
-}
-
-void ImageStacker::setUseFlats(bool value)
-{
-    mutex.lock();
-    useFlats = value;
-    mutex.unlock();
-}
-
-bool ImageStacker::getUseDarkFlats() const
-{
-    mutex.lock();
-    bool value = useDarkFlats;
-    mutex.unlock();
-
-    return value;
-}
-
-void ImageStacker::setUseDarkFlats(bool value)
-{
-    mutex.lock();
-    useDarkFlats = value;
-    mutex.unlock();
-}
-
-bool ImageStacker::getUseDarks() const
-{
-    mutex.lock();
-    bool value = useDarks;
-    mutex.unlock();
-
-    return value;
-}
-
-void ImageStacker::setUseDarks(bool value)
-{
-    mutex.lock();
-    useDarks = value;
-    mutex.unlock();
 }
 
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
@@ -254,6 +240,58 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
         warpPerspective (target, target_aligned, warp_matrix, ref.size(),INTER_LINEAR + WARP_INVERSE_MAP);
 
     return target_aligned;
+}
+
+
+
+// GETTER / SETTER
+
+bool ImageStacker::getUseFlats() const
+{
+    mutex.lock();
+    bool value = useFlats;
+    mutex.unlock();
+
+    return value;
+}
+
+void ImageStacker::setUseFlats(bool value)
+{
+    mutex.lock();
+    useFlats = value;
+    mutex.unlock();
+}
+
+bool ImageStacker::getUseDarkFlats() const
+{
+    mutex.lock();
+    bool value = useDarkFlats;
+    mutex.unlock();
+
+    return value;
+}
+
+void ImageStacker::setUseDarkFlats(bool value)
+{
+    mutex.lock();
+    useDarkFlats = value;
+    mutex.unlock();
+}
+
+bool ImageStacker::getUseDarks() const
+{
+    mutex.lock();
+    bool value = useDarks;
+    mutex.unlock();
+
+    return value;
+}
+
+void ImageStacker::setUseDarks(bool value)
+{
+    mutex.lock();
+    useDarks = value;
+    mutex.unlock();
 }
 
 QString ImageStacker::getRefImageFileName() const {

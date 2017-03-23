@@ -163,6 +163,7 @@ void MainWindow::handleButtonFlatFrames() {
 
     QStringList flatFrameFileNames = dialog.selectedFiles();
     stacker->setFlatFrameFileNames(flatFrameFileNames);
+    stacker->setUseFlats(true);
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
         qDebug() << flatFrameFileNames.at(i);
