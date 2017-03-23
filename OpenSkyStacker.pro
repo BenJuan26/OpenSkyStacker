@@ -49,6 +49,7 @@ win32 {
 }
 macx {
     INCLUDEPATH += /usr/local/Cellar/opencv3/3.2.0/include
+    INCLUDEPATH += /usr/local/Cellar/libraw/0.17.2_1/include
     LIBS += -L/usr/local/lib \
         -lopencv_core \
         -lopencv_highgui \
@@ -56,7 +57,9 @@ macx {
         -lopencv_imgproc \
         -lopencv_features2d \
         -lopencv_calib3d \
-        -lopencv_video
+        -lopencv_video \
+        -lraw \
+        -lraw_r
 }
 unix {
     INCLUDEPATH += $$(OPENCVDIR)/modules/core/include

@@ -90,6 +90,7 @@ private:
     cv::Mat masterFlat;
 
     cv::Mat to16UC3(cv::Mat image);
+    cv::Mat rawTo16UC3(QString filename);
 
 };
 

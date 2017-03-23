@@ -4,6 +4,7 @@
 #include <opencv2/video/video.hpp>
 #include <QDebug>
 #include <QTime>
+#include <libraw/libraw.h>
 
 using namespace cv;
 
@@ -187,6 +188,31 @@ Mat ImageStacker::to16UC3(Mat image)
     }
 
     return result;
+}
+
+Mat ImageStacker::rawTo16UC3(QString filename)
+{
+    LibRaw processor;
+
+    processor.imgdata.params.use_auto_wb = 0;
+    processor.imgdata.params.use_camera_wb = 1;
+
+    processor.open_file(filename.toStdString());
+    processor.unpack();
+
+    // TODO: ------ REVIEW MEMORY MANAGEMENT ------
+    // I believe cv::Mat does not release the data automatically when it doesn't own the data
+    //  (i.e. as in the constructor we're using here
+    Mat image = Mat(Size(processor.imgdata.sizes.raw_width, processor.imgdata.sizes.raw_height),
+                    CV_16UC1, processor.imgdata.rawdata.raw_image);
+
+    double min, max;
+    cv::minMaxLoc(image, &min, &max);
+
+    // scale to 16-bit
+    image *= 65535 / max;
+
+    return image;
 }
 
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
