@@ -12,6 +12,11 @@ public:
     explicit ImageStacker(QObject *parent = 0);
     bool cancel;
 
+    std::vector<QString> RAW_EXTENSIONS = {"3fr", "ari", "arw", "bay", "crw", "cr2",
+            "cap", "data", "dcs", "dcr", "dng", "drf", "eip", "erf", "fff", "gpr",
+            "iiq", "k25", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw", "obm",
+            "orf", "pef", "ptx", "pxn", "r3d", "raf", "raw", "rwl", "rw2", "rwz",
+            "sr2", "srf", "srw", "x3f"};
 
     // get/set
     QString getRefImageFileName() const;
@@ -91,6 +96,8 @@ private:
 
     cv::Mat to16UC3(cv::Mat image);
     cv::Mat rawTo16UC3(QString filename);
+
+    cv::Mat readImage16UC3(QString filename);
 
 };
 

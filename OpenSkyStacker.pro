@@ -38,6 +38,7 @@ FORMS    += mainwindow.ui \
 
 win32 {
     INCLUDEPATH += C:\OpenCV-Build\install\include
+    INCLUDEPATH += C:\LibRaw-0.18.2
     LIBS += -LC:\OpenCV-Build\install\x86\mingw\lib \
         -lopencv_core310.dll \
         -lopencv_highgui310.dll \
@@ -46,6 +47,8 @@ win32 {
         -lopencv_features2d310.dll \
         -lopencv_calib3d310.dll \
         -lopencv_video310.dll
+    LIBS += C:\LibRaw-0.18.2\lib\libraw.a
+    LIBS += -lWS2_32
 }
 macx {
     INCLUDEPATH += /usr/local/Cellar/opencv3/3.2.0/include

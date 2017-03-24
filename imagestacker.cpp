@@ -4,6 +4,11 @@
 #include <opencv2/video/video.hpp>
 #include <QDebug>
 #include <QTime>
+#include <QFileInfo>
+
+#ifdef WIN32
+#define LIBRAW_NODLL
+#endif
 #include <libraw/libraw.h>
 
 using namespace cv;
@@ -197,7 +202,7 @@ Mat ImageStacker::rawTo16UC3(QString filename)
     processor.imgdata.params.use_auto_wb = 0;
     processor.imgdata.params.use_camera_wb = 1;
 
-    processor.open_file(filename.toStdString());
+    processor.open_file(filename.toUtf8().constData());
     processor.unpack();
 
     // TODO: ------ REVIEW MEMORY MANAGEMENT ------
@@ -213,6 +218,18 @@ Mat ImageStacker::rawTo16UC3(QString filename)
     image *= 65535 / max;
 
     return image;
+}
+
+Mat ImageStacker::readImage16UC3(QString filename)
+{
+    QFileInfo info(filename);
+    QString ext = info.completeSuffix();
+
+
+    Mat refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+    refImage = to16UC3(refImage);
+
+    return refImage;
 }
 
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
