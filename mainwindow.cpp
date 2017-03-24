@@ -27,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
     stacker->moveToThread(workerThread);
     workerThread->start();
 
+    imageFileFilter << "All files (*)" << "Image files (*.jpg *.jpeg *.png *.tif)";
+    imageFileFilter << "Raw image files (*.NEF *.CR2 *.DNG *.RAW)";
+
     connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
     connect(ui->buttonSelectTargetImages, SIGNAL (released()), this, SLOT (handleButtonTargetImages()));
     connect(ui->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
@@ -74,9 +77,7 @@ void MainWindow::handleButtonRefImage() {
     QFileDialog dialog(this);
     dialog.setDirectory(QDir::homePath());
     dialog.setFileMode(QFileDialog::ExistingFile);
-    QStringList filter;
-    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
-    dialog.setNameFilters(filter);
+    dialog.setNameFilters(imageFileFilter);
 
     if (!dialog.exec()) return;
 
@@ -95,9 +96,7 @@ void MainWindow::handleButtonTargetImages() {
     QFileDialog dialog(this);
     dialog.setDirectory(selectedDir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
-    QStringList filter;
-    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
-    dialog.setNameFilters(filter);
+    dialog.setNameFilters(imageFileFilter);
 
     if (!dialog.exec()) return;
 
@@ -118,9 +117,7 @@ void MainWindow::handleButtonDarkFrames() {
     QFileDialog dialog(this);
     dialog.setDirectory(selectedDir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
-    QStringList filter;
-    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
-    dialog.setNameFilters(filter);
+    dialog.setNameFilters(imageFileFilter);
 
     if (!dialog.exec()) return;
 
@@ -137,9 +134,7 @@ void MainWindow::handleButtonDarkFlatFrames() {
     QFileDialog dialog(this);
     dialog.setDirectory(selectedDir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
-    QStringList filter;
-    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
-    dialog.setNameFilters(filter);
+    dialog.setNameFilters(imageFileFilter);
 
     if (!dialog.exec()) return;
 
@@ -155,9 +150,7 @@ void MainWindow::handleButtonFlatFrames() {
     QFileDialog dialog(this);
     dialog.setDirectory(selectedDir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
-    QStringList filter;
-    filter << "Image files (*.jpg *.jpeg *.png *.tif)" << "All files (*)";
-    dialog.setNameFilters(filter);
+    dialog.setNameFilters(imageFileFilter);
 
     if (!dialog.exec()) return;
 

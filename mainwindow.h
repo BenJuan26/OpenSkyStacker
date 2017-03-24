@@ -44,6 +44,7 @@ private:
     ImageStacker *stacker;
 
     QDir selectedDir;
+    QStringList imageFileFilter;
 };
 
 #endif // MAINWINDOW_H

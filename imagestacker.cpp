@@ -21,8 +21,7 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 void ImageStacker::process() {
     emit updateProgress("Starting stacking process...", 0);
 
-    refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-    refImage = to16UC3(refImage);
+    refImage = readImage16UC3(refImageFileName);
 
     workingImage = refImage.clone();
 
@@ -52,10 +51,7 @@ void ImageStacker::process() {
     QString message;
 
     for (int k = 0; k < targetImageFileNames.length() && !cancel; k++) {
-        Mat targetImage = imread(targetImageFileNames.at(k).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-
-        // ------------- CONVERT TO 16-BIT -------------
-        targetImage = to16UC3(targetImage);
+        Mat targetImage = readImage16UC3(targetImageFileNames.at(k));
 
         // ------------- CALIBRATION --------------
         if (useDarks) targetImage -= masterDark;
@@ -119,15 +115,13 @@ cv::Mat ImageStacker::averageImages16UC3(cv::Mat img1, cv::Mat img2) {
 
 void ImageStacker::stackDarks()
 {
-    Mat dark1 = imread(darkFrameFileNames.at(0).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-    dark1 = to16UC3(dark1);
+    Mat dark1 = readImage16UC3(darkFrameFileNames.at(0));
     Mat result = dark1.clone();
 
     QString message;
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
-        Mat dark = imread(darkFrameFileNames.at(i).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-        dark = to16UC3(dark);
+        Mat dark = readImage16UC3(darkFrameFileNames.at(i));
 
         message = "Stacking dark frame " + QString::number(i+2) + " of " + QString::number(darkFrameFileNames.length()+1);
         qDebug() << message;
@@ -142,15 +136,13 @@ void ImageStacker::stackDarks()
 void ImageStacker::stackFlats()
 {
     // most algorithms compute the median, but we will stick with mean for now
-    Mat flat1 = imread(flatFrameFileNames.at(0).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-    flat1 = to16UC3(flat1);
+    Mat flat1 = readImage16UC3(flatFrameFileNames.at(0));
     Mat result = flat1.clone();
 
     QString message;
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
-        Mat flat = imread(flatFrameFileNames.at(i).toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-        flat = to16UC3(flat);
+        Mat flat = readImage16UC3(flatFrameFileNames.at(i));
 
         message = "Stacking flat frame " + QString::number(i+2) + " of " + QString::number(flatFrameFileNames.length()+1);
         qDebug() << message;
@@ -167,7 +159,7 @@ void ImageStacker::stackFlats()
             << ", " << QString::number(pixel.val[2]);
 }
 
-Mat ImageStacker::to16UC3(Mat image)
+Mat ImageStacker::convertAndScaleTo16UC3(Mat image)
 {
     Mat result = Mat(image.rows, image.cols, CV_16UC3);
 
@@ -211,6 +203,8 @@ Mat ImageStacker::rawTo16UC3(QString filename)
     Mat image = Mat(Size(processor.imgdata.sizes.raw_width, processor.imgdata.sizes.raw_height),
                     CV_16UC1, processor.imgdata.rawdata.raw_image);
 
+    cvtColor(image, image, CV_BayerBG2BGR);
+
     double min, max;
     cv::minMaxLoc(image, &min, &max);
 
@@ -222,14 +216,21 @@ Mat ImageStacker::rawTo16UC3(QString filename)
 
 Mat ImageStacker::readImage16UC3(QString filename)
 {
+    Mat result;
+
     QFileInfo info(filename);
     QString ext = info.completeSuffix();
 
+    if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+        emit updateProgress("Reading raw file", 100*currentOperation/totalOperations);
+        result = rawTo16UC3(filename);
+    }
+    else {
+        result = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+        result = convertAndScaleTo16UC3(result);
+    }
 
-    Mat refImage = imread(refImageFileName.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-    refImage = to16UC3(refImage);
-
-    return refImage;
+    return result;
 }
 
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {

@@ -94,7 +94,7 @@ private:
     cv::Mat masterDarkFlat;
     cv::Mat masterFlat;
 
-    cv::Mat to16UC3(cv::Mat image);
+    cv::Mat convertAndScaleTo16UC3(cv::Mat image);
     cv::Mat rawTo16UC3(QString filename);
 
     cv::Mat readImage16UC3(QString filename);
