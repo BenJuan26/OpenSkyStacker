@@ -12,11 +12,11 @@ public:
     explicit ImageStacker(QObject *parent = 0);
     bool cancel;
 
-    std::vector<QString> RAW_EXTENSIONS = {"3fr", "ari", "arw", "bay", "crw", "cr2",
-            "cap", "data", "dcs", "dcr", "dng", "drf", "eip", "erf", "fff", "gpr",
-            "iiq", "k25", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw", "obm",
-            "orf", "pef", "ptx", "pxn", "r3d", "raf", "raw", "rwl", "rw2", "rwz",
-            "sr2", "srf", "srw", "x3f"};
+    static const std::vector<QString> RAW_EXTENSIONS;
+    enum BITS_PER_CHANNEL{BITS_16, BITS_32};
+
+
+    cv::Mat readImage(QString filename);
 
     // get/set
     QString getRefImageFileName() const;
@@ -55,6 +55,9 @@ public:
     bool getUseFlats() const;
     void setUseFlats(bool value);
 
+    BITS_PER_CHANNEL getBitsPerChannel() const;
+    void setBitsPerChannel(const BITS_PER_CHANNEL &value);
+
 signals:
     void finished(cv::Mat image);
     void finishedDialog(QString message);
@@ -64,7 +67,9 @@ public slots:
 
 private:
     cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
-    cv::Mat averageImages16UC3(cv::Mat img1, cv::Mat img2);
+    cv::Mat averageImages(cv::Mat img1, cv::Mat img2);
+
+    BITS_PER_CHANNEL bitsPerChannel;
 
     void stackDarks();
     void stackDarkFlats();
@@ -95,11 +100,8 @@ private:
     cv::Mat masterDarkFlat;
     cv::Mat masterFlat;
 
-    cv::Mat convertAndScaleTo16UC3(cv::Mat image);
-    cv::Mat rawTo16UC3(QString filename);
-
-    cv::Mat readImage16UC3(QString filename);
-
+    cv::Mat convertAndScaleImage(cv::Mat image);
+    cv::Mat rawToMat(QString filename);
 };
 
 #endif // IMAGESTACKER_H

@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
     stacker = new ImageStacker();
+    stacker->setBitsPerChannel(ImageStacker::BITS_32);
     workerThread = new QThread();
 
     stacker->moveToThread(workerThread);
@@ -167,22 +168,40 @@ void MainWindow::handleButtonFlatFrames() {
 QImage MainWindow::Mat2QImage(const cv::Mat &src) {
         QImage dest(src.cols, src.rows, QImage::Format_RGB32);
         int r, g, b;
-        for(int x = 0; x < src.cols; x++) {
-            for(int y = 0; y < src.rows; y++) {
-                Vec<unsigned short,3> pixel = src.at<Vec<unsigned short,3>>(y,x);
-                b = pixel.val[0]/256;
-                g = pixel.val[1]/256;
-                r = pixel.val[2]/256;
-                dest.setPixel(x, y, qRgb(r,g,b));
+
+        if (stacker->getBitsPerChannel() == ImageStacker::BITS_16) {
+            for(int x = 0; x < src.cols; x++) {
+                for(int y = 0; y < src.rows; y++) {
+
+                    Vec<unsigned short,3> pixel = src.at<Vec<unsigned short,3>>(y,x);
+                    b = pixel.val[0]/256;
+                    g = pixel.val[1]/256;
+                    r = pixel.val[2]/256;
+                    dest.setPixel(x, y, qRgb(r,g,b));
+                }
             }
-       }
-       return dest;
+        }
+        else if (stacker->getBitsPerChannel() == ImageStacker::BITS_32) {
+            for(int x = 0; x < src.cols; x++) {
+                for(int y = 0; y < src.rows; y++) {
+
+                    Vec3f pixel = src.at<Vec3f>(y,x);
+                    b = pixel.val[0]*255;
+                    g = pixel.val[1]*255;
+                    r = pixel.val[2]*255;
+                    dest.setPixel(x, y, qRgb(r,g,b));
+                }
+            }
+        }
+        return dest;
 }
 
 
 void MainWindow::setFileImage(QString filename) {
+
     QGraphicsScene* scene = new QGraphicsScene(this);
-    QGraphicsPixmapItem *p = scene->addPixmap(QPixmap(filename));
+    cv::Mat image = stacker->readImage(filename);
+    QGraphicsPixmapItem *p = scene->addPixmap(QPixmap::fromImage(Mat2QImage(image)));
     ui->imageHolder->setScene(scene);
     ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
 }
