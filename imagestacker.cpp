@@ -43,6 +43,9 @@ void ImageStacker::process() {
         stackDarks();
         workingImage -= masterDark;
     }
+    if (useDarkFlats) {
+        stackDarkFlats();
+    }
     if (useFlats) {
         stackFlats();
         cv::divide(workingImage, masterFlat, workingImage, 1, CV_16U);
@@ -62,7 +65,7 @@ void ImageStacker::process() {
         message = "Aligning image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
         qDebug() << message;
         currentOperation++;
-        emit updateProgress(message, 100*currentOperation/totalOperations);
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
         Mat targetAligned = generateAlignedImage(refImage, targetImage);
 
@@ -72,7 +75,7 @@ void ImageStacker::process() {
         message = "Stacking image " + QString::number(k+1) + " of " + QString::number(targetImageFileNames.length());
         qDebug() << message;
         currentOperation++;
-        emit updateProgress(message, 100*currentOperation/totalOperations);
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
         workingImage = averageImages16UC3(workingImage, targetAligned);
     }
@@ -126,11 +129,31 @@ void ImageStacker::stackDarks()
         message = "Stacking dark frame " + QString::number(i+2) + " of " + QString::number(darkFrameFileNames.length()+1);
         qDebug() << message;
         currentOperation++;
-        emit updateProgress(message, 100*currentOperation/totalOperations);
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
         result = averageImages16UC3(result, dark);
     }
 
     masterDark = result;
+}
+
+void ImageStacker::stackDarkFlats()
+{
+    Mat darkFlat1 = readImage16UC3(darkFlatFrameFileNames.at(0));
+    Mat result = darkFlat1.clone();
+
+    QString message;
+
+    for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
+        Mat dark = readImage16UC3(darkFlatFrameFileNames.at(i));
+
+        message = "Stacking dark flat frame " + QString::number(i+2) + " of " + QString::number(darkFlatFrameFileNames.length()+1);
+        qDebug() << message;
+        currentOperation++;
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+        result = averageImages16UC3(result, dark);
+    }
+
+    masterDarkFlat = result;
 }
 
 void ImageStacker::stackFlats()
@@ -138,6 +161,8 @@ void ImageStacker::stackFlats()
     // most algorithms compute the median, but we will stick with mean for now
     Mat flat1 = readImage16UC3(flatFrameFileNames.at(0));
     Mat result = flat1.clone();
+
+    if (useDarkFlats) result -= masterDarkFlat;
 
     QString message;
 
@@ -147,16 +172,16 @@ void ImageStacker::stackFlats()
         message = "Stacking flat frame " + QString::number(i+2) + " of " + QString::number(flatFrameFileNames.length()+1);
         qDebug() << message;
         currentOperation++;
-        emit updateProgress(message, 100*currentOperation/totalOperations);
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+        if (useDarkFlats) flat -= masterDarkFlat;
         result = averageImages16UC3(result, flat);
     }
 
-    // master flat will have float values between 0 and 2.0
-    result.convertTo(masterFlat, CV_32F, 1/32768.0);
+    Scalar meanScalar = cv::mean(result);
+    float avg = (meanScalar.val[0] + meanScalar.val[1] + meanScalar.val[2])/3;
 
-    Vec3f pixel = masterFlat.at<Vec3f>(0,0);
-    qDebug() << "(0,0): " << QString::number(pixel.val[0]) << ", " << QString::number(pixel.val[1])
-            << ", " << QString::number(pixel.val[2]);
+    qDebug() << "Average: " << avg;
+    result.convertTo(masterFlat, CV_32F, 1/avg);
 }
 
 Mat ImageStacker::convertAndScaleTo16UC3(Mat image)
@@ -191,25 +216,24 @@ Mat ImageStacker::rawTo16UC3(QString filename)
 {
     LibRaw processor;
 
+    // params for raw processing
     processor.imgdata.params.use_auto_wb = 0;
     processor.imgdata.params.use_camera_wb = 1;
+    processor.imgdata.params.no_auto_bright = 1;
+    processor.imgdata.params.output_bps = 16;
+    processor.imgdata.params.no_auto_scale = 1;
 
     processor.open_file(filename.toUtf8().constData());
     processor.unpack();
 
+    // process raw into readable BGR bitmap
+    processor.dcraw_process();
+
     // TODO: ------ REVIEW MEMORY MANAGEMENT ------
     // I believe cv::Mat does not release the data automatically when it doesn't own the data
     //  (i.e. as in the constructor we're using here
-    Mat image = Mat(Size(processor.imgdata.sizes.raw_width, processor.imgdata.sizes.raw_height),
-                    CV_16UC1, processor.imgdata.rawdata.raw_image);
-
-    cvtColor(image, image, CV_BayerBG2BGR);
-
-    double min, max;
-    cv::minMaxLoc(image, &min, &max);
-
-    // scale to 16-bit
-    image *= 65535 / max;
+    Mat image = Mat(Size(processor.imgdata.sizes.width, processor.imgdata.sizes.height),
+                    CV_16UC3, processor.dcraw_make_mem_image());
 
     return image;
 }
@@ -222,7 +246,7 @@ Mat ImageStacker::readImage16UC3(QString filename)
     QString ext = info.completeSuffix();
 
     if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
-        emit updateProgress("Reading raw file", 100*currentOperation/totalOperations);
+        if (totalOperations != 0) emit updateProgress("Reading raw file", 100*currentOperation/totalOperations);
         result = rawTo16UC3(filename);
     }
     else {

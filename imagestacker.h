@@ -67,6 +67,7 @@ private:
     cv::Mat averageImages16UC3(cv::Mat img1, cv::Mat img2);
 
     void stackDarks();
+    void stackDarkFlats();
     void stackFlats();
 
     mutable QMutex mutex;
