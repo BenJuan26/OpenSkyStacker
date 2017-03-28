@@ -80,5 +80,6 @@ unix {
         -lopencv_imgproc \
         -lopencv_features2d \
         -lopencv_calib3d \
-        -lopencv_video
+        -lopencv_video \
+        -lraw
 }
