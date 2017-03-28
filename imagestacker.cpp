@@ -54,17 +54,20 @@ void ImageStacker::process() {
     emit updateProgress("Reading light frame 1 of " + QString::number(targetImageFileNames.length() + 1), 0);
 
     refImage = readImage(refImageFileName);
-    workingImage = refImage.clone();
-
     if (useDarks) {
-        workingImage -= masterDark;
+        refImage -= masterDark;
     }
     if (useFlats) {
         if (bitsPerChannel == BITS_16)
-            cv::divide(workingImage, masterFlat, workingImage, 1, CV_16U);
+            cv::divide(refImage, masterFlat, refImage, 1, CV_16U);
         else if (bitsPerChannel == BITS_32)
-            cv::divide(workingImage, masterFlat, workingImage, 1, CV_32F);
+            cv::divide(refImage, masterFlat, refImage, 1, CV_32F);
     }
+
+    // 32-bit float no matter what for the working image
+    refImage.convertTo(workingImage, CV_32F);
+
+    cv::add(workingImage, refImage, workingImage, cv::noArray(), CV_32F);
 
     QString message;
 
@@ -104,7 +107,14 @@ void ImageStacker::process() {
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
-        workingImage = averageImages(workingImage, targetAligned);
+        cv::add(workingImage, targetAligned, workingImage, noArray(), CV_32F);
+    }
+
+    workingImage /= targetImageFileNames.length() + 1;
+
+    // only need to change the bit depth, no scaling
+    if (bitsPerChannel == BITS_16) {
+        workingImage.convertTo(workingImage, CV_16U);
     }
 
     if (cancel) {
