@@ -67,8 +67,6 @@ void ImageStacker::process() {
     // 32-bit float no matter what for the working image
     refImage.convertTo(workingImage, CV_32F);
 
-    cv::add(workingImage, refImage, workingImage, cv::noArray(), CV_32F);
-
     QString message;
 
     for (int k = 0; k < targetImageFileNames.length() && !cancel; k++) {
