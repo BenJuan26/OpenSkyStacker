@@ -268,7 +268,7 @@ Mat ImageStacker::convertAndScaleImage(Mat image)
             image.convertTo(result, CV_16U, 1, 32768);
             break;
         case CV_16U:
-            // do nothing
+            result = image.clone();
             break;
         case CV_32S:
             image.convertTo(result, CV_16U, 1/256.0, 32768);
@@ -297,7 +297,7 @@ Mat ImageStacker::convertAndScaleImage(Mat image)
             image.convertTo(result, CV_32F, 1.0/(2^31 - 1), 1.0);
             break;
         case CV_32F:
-            // do nothing
+            result = image.clone();
             break;
         case CV_64F:
             image.convertTo(result, CV_32F);
@@ -355,7 +355,7 @@ Mat ImageStacker::readImage(QString filename)
         result = rawToMat(filename);
     }
     else {
-        result = imread(filename.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+        result = imread(filename.toUtf8().constData(), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
         result = convertAndScaleImage(result);
     }
 
@@ -365,9 +365,8 @@ Mat ImageStacker::readImage(QString filename)
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     // Convert images to gray scale;
     Mat ref_gray, target_gray;
-    float scale;
+    float scale = 256;
     if (bitsPerChannel == BITS_16) scale = 1/256.0;
-    else if (bitsPerChannel == BITS_32) scale = 256;
     ref.convertTo(ref_gray, CV_8U, scale);
     target.convertTo(target_gray, CV_8U, scale);
 

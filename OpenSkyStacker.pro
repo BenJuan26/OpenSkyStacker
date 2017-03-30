@@ -27,11 +27,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     imagestacker.cpp \
-    processingdialog.cpp
+    processingdialog.cpp \
+    star.cpp \
+    stardetector.cpp \
+    pixel.cpp \
+    adjoiningpixel.cpp
 
 HEADERS  += mainwindow.h \
     imagestacker.h \
-    processingdialog.h
+    processingdialog.h \
+    star.h \
+    stardetector.h \
+    pixel.h \
+    adjoiningpixel.h
 
 FORMS    += mainwindow.ui \
     processingdialog.ui
