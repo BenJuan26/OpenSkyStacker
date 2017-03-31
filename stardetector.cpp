@@ -35,14 +35,14 @@ void StarDetector::process(cv::Mat image)
     std::vector<Star> allStars;
     for (ulong i = 0; i < apList.size(); i++) {
         AdjoiningPixel ap = apList.at(i);
-
+/*
         Star star = ap.createStar();
         allStars.push_back(star);
-
+*/
 
 //        Pixel pixel = ap.getPeak();
 //        qDebug() << "Star peak at" << pixel.getX() << "," << pixel.getY() << ", area" << ap.getPixels().size();
-/*
+
         std::vector<AdjoiningPixel> deblendedApList = ap.deblend(threshold);
 
         for (ulong j = 0; j < deblendedApList.size(); j++) {
@@ -50,15 +50,9 @@ void StarDetector::process(cv::Mat image)
             Star star = dap.createStar();
             allStars.push_back(star);
         }
-*/
+
     }
 
-    qDebug() << "Top 20 stars:";
-    std::sort(allStars.begin(), allStars.end());
-    for (ulong i = allStars.size() - 1; i >= 0 && i > allStars.size() - 21; i--) {
-        Star star = allStars.at(i);
-        qDebug() << star.getX() << "," << star.getY() << ":" << star.getValue();
-    }
 }
 
 // TODO: ASSUMING GRAYSCALE 32 BIT FOR NOW
@@ -66,11 +60,6 @@ cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
     cv::Mat result = image.clone();
 
     cv::resize(result, result, cv::Size(result.cols/8, result.rows/8));
-
-//    cv::Mat resizeColor(result.rows, result.cols, CV_32FC3);
-//    cv::cvtColor(result, resizeColor, CV_GRAY2BGR);
-//    imwrite("/Users/Ben/Pictures/OpenSkyStacker/resized.tif", resizeColor);
-
     cv::medianBlur(result, result, 5);
     cv::resize(result, result, cv::Size(image.cols, image.rows));
 
@@ -119,26 +108,40 @@ cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
     return result;
 }
 
+void StarDetector::drawDetectedStars(const std::string& path, uint width, uint height, uint limit, std::vector<Star> stars)
+{
+    cv::Mat output = cv::Mat::zeros(height, width, CV_8UC3);
+    const int maxRadius = 30;
+
+    std::sort(stars.begin(), stars.end(), std::greater<Star>());
+    float maxValue = stars.at(0).getValue();
+    for (ulong i = 0; i < stars.size() && i < limit; i++) {
+        Star star = stars.at(i);
+        float ratio = star.getValue() / maxValue;
+        int radius = maxRadius * ratio;
+
+        cv::circle(output, cv::Point(star.getX(),star.getY()),radius,cv::Scalar(255,255,255),-1);
+    }
+
+    cv::imwrite(path, output);
+}
+
 std::vector<AdjoiningPixel> StarDetector::getAdjoiningPixels(cv::Mat image, float threshold, float minPeak)
 {
     std::vector<AdjoiningPixel> list;
 
     for (int y = 0; y < image.rows; y++) {
         for (int x = 0; x < image.cols; x++) {
-            //qDebug() << "Getting adjoining pixels at" << x << "," << y;
             if (image.at<float>(y,x) > threshold) {
                 AdjoiningPixel ap = detectAdjoiningPixel(image, x, y, threshold);
-                //qDebug() << "Got adjoining pixel at" << x << "," << y;
+
                 if (ap.getPeakValue() > minPeak){
                     list.push_back(ap);
-                    qDebug() << "List size:" << list.size();
                 }
 
             }
         }
     }
-
-    qDebug() << "Final list size:" << list.size();
 
     return list;
 }
