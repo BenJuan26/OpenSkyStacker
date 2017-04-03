@@ -57,10 +57,13 @@ win32 {
         -lopencv_features2d310.dll \
         -lopencv_calib3d310.dll \
         -lopencv_video310.dll
+    LIBS += C:\Users\Ben\Documents\Developer\focas\hfti.o
+    LIBS += C:\Users\Ben\Documents\Developer\focas\h12.o
+    LIBS += C:\Users\Ben\Documents\Developer\focas\diff.o
     LIBS += C:\LibRaw-0.18.2\lib\libraw.a
     LIBS += -lWS2_32
 }
-macx {
+else:macx {
     INCLUDEPATH += /usr/local/Cellar/opencv3/3.2.0/include
     INCLUDEPATH += /usr/local/Cellar/libraw/0.17.2_1/include
     LIBS += -L/usr/local/lib \
@@ -74,7 +77,7 @@ macx {
         -lraw \
         -lraw_r
 }
-unix {
+else:unix {
     INCLUDEPATH += $$(OPENCVDIR)/modules/core/include
     INCLUDEPATH += $$(OPENCVDIR)/release
     INCLUDEPATH += $$(OPENCVDIR)/modules/highgui/include

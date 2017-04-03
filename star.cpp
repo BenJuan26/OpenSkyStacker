@@ -5,6 +5,13 @@ Star::Star()
 
 }
 
+Star::Star(int x_, int y_, float value_)
+{
+    x = x_;
+    y = y_;
+    value = value_;
+}
+
 Star::~Star()
 {
 

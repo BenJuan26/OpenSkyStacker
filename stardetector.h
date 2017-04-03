@@ -24,6 +24,8 @@ public:
 
     void drawDetectedStars(const std::string& path, uint width, uint height, uint limit, std::vector<Star> stars);
 
+    void test();
+
 private:
     std::vector<AdjoiningPixel> getAdjoiningPixels(cv::Mat image, float threshold, float minPeak);
     AdjoiningPixel detectAdjoiningPixel(cv::Mat image, int x, int y, float threshold);

@@ -1,6 +1,16 @@
 #include "stardetector.h"
 
-#define THRESHOLD_COEFF 2.0
+
+
+#define TOL		0.002   /* Default matching tolerance */
+#define	NOBJS		20	/* Default number of objects */
+#define MIN_MATCH	6	/* Min # of matched objects for transform */
+#define MAX_MATCH	120	/* Max # of matches to use (~MAX_OBJS) */
+#define MIN_OBJS	10	/* Min # of objects to use */
+#define MAX_OBJS	100	/* Max # of objects to use */
+#define	CLIP		3	/* Sigma clipping factor */
+#define PM		57.2958 /* Radian to degree conversion */
+#define THRESHOLD_COEFF 20.0
 
 
 StarDetector::StarDetector()
@@ -12,6 +22,9 @@ StarDetector::~StarDetector()
 {
 
 }
+
+void hfti_(float (*)[MAX_MATCH], int*, int*, int*, float (*)[MAX_MATCH], int*, int*, float*, int*, float*, float*, float*, int*);
+//void hfti(float a[][MAX_MATCH], int *mda, int *j, int *n, float b[][MAX_MATCH], int *mdb, int *nb, float *tau, int *krank, float rnorm[], float h[], float g[], int ip[]);
 
 void StarDetector::process(cv::Mat image)
 {
@@ -31,6 +44,7 @@ void StarDetector::process(cv::Mat image)
     float minPeak = stdDev[0] * THRESHOLD_COEFF * 2.0;
 
     std::vector<AdjoiningPixel> apList = getAdjoiningPixels(stars, threshold, minPeak);
+    qDebug() << "Total adjoining pixels:" << apList.size();
 
     std::vector<Star> allStars;
     for (ulong i = 0; i < apList.size(); i++) {
@@ -52,6 +66,8 @@ void StarDetector::process(cv::Mat image)
         }
 
     }
+
+    drawDetectedStars("F:/Astro/Samples/stars2.png", image.cols, image.rows, 20, allStars);
 
 }
 
@@ -110,6 +126,8 @@ cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
 
 void StarDetector::drawDetectedStars(const std::string& path, uint width, uint height, uint limit, std::vector<Star> stars)
 {
+    if (limit < 0) limit = stars.size();
+
     cv::Mat output = cv::Mat::zeros(height, width, CV_8UC3);
     const int maxRadius = 30;
 
@@ -117,6 +135,7 @@ void StarDetector::drawDetectedStars(const std::string& path, uint width, uint h
     float maxValue = stars.at(0).getValue();
     for (ulong i = 0; i < stars.size() && i < limit; i++) {
         Star star = stars.at(i);
+        qDebug() << star.getX() << "," << star.getY() << ":" << star.getValue();
         float ratio = star.getValue() / maxValue;
         int radius = maxRadius * ratio;
 
@@ -124,6 +143,133 @@ void StarDetector::drawDetectedStars(const std::string& path, uint width, uint h
     }
 
     cv::imwrite(path, output);
+}
+
+void StarDetector::test()
+{
+    short matches[3][MAX_MATCH];
+    int	m = 12;
+    std::vector<Star> List1;
+    std::vector<Star> List2;
+    float	xfrm[2][3];
+
+    List1.push_back(Star(38, 30, 39));
+    List1.push_back(Star(603, 1541, 22));
+    List1.push_back(Star(3123, 1788, 22));
+    List1.push_back(Star(3564, 1202, 18));
+    List1.push_back(Star(577, 1084, 16));
+    List1.push_back(Star(2042, 1597, 12));
+    List1.push_back(Star(259, 608, 12));
+    List1.push_back(Star(2873, 1597, 12));
+    List1.push_back(Star(2956, 2809, 11));
+    List1.push_back(Star(3781, 291, 11));
+    List1.push_back(Star(2610, 1947, 11));
+    List1.push_back(Star(3953, 331, 10));
+
+    List2.push_back(Star(276, 93, 38));
+    List2.push_back(Star(845, 1598, 22));
+    List2.push_back(Star(3364, 1835, 26));
+    List2.push_back(Star(3805, 1245, 20));
+    List2.push_back(Star(817, 1142, 16));
+    List2.push_back(Star(2282, 1648, 14));
+    List2.push_back(Star(498, 669, 12));
+    List2.push_back(Star(3113, 1617, 13));
+    List2.push_back(Star(3203, 2857, 12));
+    List2.push_back(Star(4018, 333, 12));
+    List2.push_back(Star(2852, 1995, 12));
+    List2.push_back(Star(4191, 372, 11));
+
+    int	i, j, i1, i2;
+    int	mda = MAX_MATCH, mdb = MAX_MATCH, n = 3, nb = 2;
+    int	krank, ip[3];
+    float	tau = 0.1, rnorm[2], h[3], g[3];
+    float	a[3][MAX_MATCH], b[2][MAX_MATCH];
+    float	x, y, r2, sum, rms;
+
+    /* Require a minimum number of points. */
+    if (m < MIN_MATCH) {
+        printf ("Match not found: use more objects or larger tolerance\n");
+        exit (0);
+    }
+
+    /* Compute the initial transformation with the 12 best matches. */
+    j = (m < 12) ? m : 12;
+    for (i=0; i<j; i++) {
+        matches[0][i] = i;
+        matches[1][i] = i;
+        a[0][i] = List1[matches[0][i]].getX();
+        a[1][i] = List1[matches[0][i]].getY();
+        a[2][i] = 1.;
+        b[0][i] = List2[matches[1][i]].getX();
+        b[1][i] = List2[matches[1][i]].getY();
+    }
+
+    hfti_(a, &mda, &j, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g, ip);
+    for (i=0; i<2; i++)
+        for (j=0; j<3; j++)
+        xfrm[i][j] = b[i][j];
+
+    /* Start with all matches compute RMS and reject outliers.	      */
+    /* The outliers are found from the 60% point in the sorted residuals. */
+    for (;;) {
+        sum = 0.;
+        for (i=0; i<m; i++) {
+        i1 = matches[0][i];
+        i2 = matches[1][i];
+        r2 = List1[i1].getX();
+        y = List1[i1].getY();
+        x = xfrm[0][0] * r2 + xfrm[0][1] * y + xfrm[0][2];
+        y = xfrm[1][0] * r2 + xfrm[1][1] * y + xfrm[1][2];
+        x -= List2[i2].getX();
+        y -= List2[i2].getY();
+        r2 = x * x + y * y;
+        for (j=i; j>0 && r2<a[1][j-1]; j--)
+            a[1][j] = a[1][j-1];
+        a[0][i] = r2;
+        a[1][j] = r2;
+        sum += r2;
+        }
+
+        /* Set clipping limit and quit when no points are clipped. */
+        i = 0.6 * m;
+        r2 = CLIP * a[1][i];
+        if (r2 >= a[1][m-1]) {
+        rms = sqrt(sum / m);
+        break;
+        }
+
+        /* Clip outliers and redo the fit. */
+        j = 0;
+        for (i=0; i<m; i++) {
+        if (a[0][i] < r2) {
+            i1 = matches[0][i];
+            i2 = matches[1][i];
+            matches[0][j] = i1;
+            matches[1][j] = i2;
+            a[0][j] = List1[i1].getX();
+            a[1][j] = List1[i1].getY();
+            a[2][j] = 1.;
+            b[0][j] = List2[i2].getX();
+            b[1][j] = List2[i2].getY();
+            j++;
+        }
+        }
+        m = j;
+
+//	    if (m < MIN_MATCH) {
+//		printf (
+//		    "Match not found: use more objects or larger tolerance\n");
+//		exit (0);
+//	    }
+
+        hfti_(a, &mda, &m, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g,ip);
+
+        for (i=0; i<2; i++)
+        for (j=0; j<3; j++)
+            xfrm[i][j] = b[i][j];
+    }
+
+    printf ("Number of matches = %d, RMS of fit = %8.2f\n", m, rms);
 }
 
 std::vector<AdjoiningPixel> StarDetector::getAdjoiningPixels(cv::Mat image, float threshold, float minPeak)
