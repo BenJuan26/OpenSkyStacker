@@ -1,16 +1,16 @@
 #include "stardetector.h"
+#include "hfti.h"
 
-
+#define THRESHOLD_COEFF 20.0
 
 #define TOL		0.002   /* Default matching tolerance */
-#define	NOBJS		20	/* Default number of objects */
+#define	NOBJS		40	/* Default number of objects */
 #define MIN_MATCH	6	/* Min # of matched objects for transform */
 #define MAX_MATCH	120	/* Max # of matches to use (~MAX_OBJS) */
 #define MIN_OBJS	10	/* Min # of objects to use */
 #define MAX_OBJS	100	/* Max # of objects to use */
 #define	CLIP		3	/* Sigma clipping factor */
 #define PM		57.2958 /* Radian to degree conversion */
-#define THRESHOLD_COEFF 20.0
 
 
 StarDetector::StarDetector()
@@ -23,10 +23,7 @@ StarDetector::~StarDetector()
 
 }
 
-void hfti_(float (*)[MAX_MATCH], int*, int*, int*, float (*)[MAX_MATCH], int*, int*, float*, int*, float*, float*, float*, int*);
-//void hfti(float a[][MAX_MATCH], int *mda, int *j, int *n, float b[][MAX_MATCH], int *mdb, int *nb, float *tau, int *krank, float rnorm[], float h[], float g[], int ip[]);
-
-void StarDetector::process(cv::Mat image)
+std::vector<Star> StarDetector::getStars(cv::Mat image)
 {
     cv::Mat imageGray(image.rows, image.cols, CV_32FC1);
     cvtColor(image, imageGray, CV_BGR2GRAY);
@@ -49,13 +46,6 @@ void StarDetector::process(cv::Mat image)
     std::vector<Star> allStars;
     for (ulong i = 0; i < apList.size(); i++) {
         AdjoiningPixel ap = apList.at(i);
-/*
-        Star star = ap.createStar();
-        allStars.push_back(star);
-*/
-
-//        Pixel pixel = ap.getPeak();
-//        qDebug() << "Star peak at" << pixel.getX() << "," << pixel.getY() << ", area" << ap.getPixels().size();
 
         std::vector<AdjoiningPixel> deblendedApList = ap.deblend(threshold);
 
@@ -64,11 +54,10 @@ void StarDetector::process(cv::Mat image)
             Star star = dap.createStar();
             allStars.push_back(star);
         }
-
     }
 
-    drawDetectedStars("F:/Astro/Samples/stars2.png", image.cols, image.rows, 20, allStars);
-
+    //drawDetectedStars("F:/Astro/Samples/stars2.png", image.cols, image.rows, 20, allStars);
+    return allStars;
 }
 
 // TODO: ASSUMING GRAYSCALE 32 BIT FOR NOW
@@ -268,6 +257,9 @@ void StarDetector::test()
         for (j=0; j<3; j++)
             xfrm[i][j] = b[i][j];
     }
+
+    qDebug() << xfrm[0][0] << xfrm[0][1] << xfrm[0][2];
+    qDebug() << xfrm[1][0] << xfrm[1][1] << xfrm[1][2];
 
     printf ("Number of matches = %d, RMS of fit = %8.2f\n", m, rms);
 }

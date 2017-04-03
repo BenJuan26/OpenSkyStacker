@@ -1,122 +1,281 @@
 #include "focas.h"
 
-void h12(int mode, int lpivot, int l1, int m, cv::Mat u, int iue, float up, cv::Mat c, int ice, int icv, int ncv)
+#define TOL		0.002   /* Default matching tolerance */
+#define	NOBJS		40	/* Default number of objects */
+#define MIN_MATCH	6	/* Min # of matched objects for transform */
+#define MAX_MATCH	120	/* Max # of matches to use (~MAX_OBJS) */
+#define MIN_OBJS	10	/* Min # of objects to use */
+#define MAX_OBJS	100	/* Max # of objects to use */
+#define	CLIP		3	/* Sigma clipping factor */
+#define PM		57.2958 /* Radian to degree conversion */
+
+std::vector<Triangle> generateTriangleList(std::vector<Star> List)
 {
-    float sm, b;
+    int nobjs = NOBJS;
+    if (List.size() < NOBJS) nobjs = List.size();
+    qDebug() << "Using" << nobjs << "objects";
 
-    if (lpivot <= 0 || lpivot >= l1 || l1 >= m ) return;
-    float cl = fabs(u.at<float>(1,lpivot));
+    //ntriang = (nobjs - 2) * (nobjs - 1) * nobjs / 6;
+    std::vector<Triangle> List_triang; //(ntriang);
 
-    if (mode == 1) {
-        for (int j = l1; j <= m; j++) {
-            if (u.at<float>(1,j)) cl = u.at<float>(1,j);
+    int	i, j, k, p=0;
+    float	di, dj, dk, a, b, c, h1, h2;
+
+    std::vector<float> sides(nobjs * (nobjs - 1)/2 + 1);
+
+    /* Minimize the number of triangle sides to compute */
+    for (i = 0; i < nobjs; i++) {
+        for (j = i + 1; j < nobjs; j++) {
+            h1 = (List[i].getX() - List[j].getX());
+            h2 = (List[i].getX() - List[j].getY());
+            k = sidesPos(i, j, nobjs);
+            sides[k] = sqrt(h1*h1 + h2*h2);
         }
-
-        if (cl <= 0) return;
-
-        float clinv = 1./cl;
-
-        sm = pow(u.at<float>(1,lpivot) * clinv, 2);
-
-        for (int j = l1; j <= m; j++) {
-            sm += pow(u.at<float>(1,j) * clinv, 2);
-        }
-
-        float sm1 = sm;
-        cl = cl * sqrt(sm1);
-
-        if (u.at<float>(1,lpivot) > 0) cl = -cl;
-        up = u.at<float>(1,lpivot) - cl;
-        u.at<float>(1,lpivot) = cl;
     }
 
-    if (mode == 2 && cl <= 0) return;
-    if (ncv <= 0) return;
+    /* Order the triangle sides and compute the triangle space coords */
+    for (i = 0; i < (nobjs-2); i++) {
+        for (j = i+1; j < (nobjs-1); j++) {
+            for (k = j+1; k < nobjs; k++) {
+                di = sides [sidesPos(i, j, nobjs)] ;
+                dj = sides [sidesPos(j, k, nobjs)] ;
+                dk = sides [sidesPos(k, i, nobjs)] ;
 
-    b = up * u.at<float>(1,lpivot);
-    if (b >= 0) return;
+                if (dk > dj) {
+                    if (dk > di) {
+                        if (dj > di) {	/* kji */
+                            a = dk; b = dj; c = di;
+                            List_triang.push_back(Triangle(k,i,j));
+                        } else {		/* kij */
+                            a = dk; b = di; c = dj;
+                            List_triang.push_back(Triangle(i,k,j));
+                        }
+                    } else {		/* ikj */
+                        a = di; b = dk; c = dj;
+                        List_triang.push_back(Triangle(i,j,k));
+                    }
+                } else if (dj > di) {
+                    if (di > dk) {		/* jik */
+                        a = dj; b = di; c = dk;
+                        List_triang.push_back(Triangle(j,k,i));
+                    } else {		/* jki */
+                        a = dj; b = dk; c = di;
+                        List_triang.push_back(Triangle(k,j,i));
+                    }
+                } else {			/* ijk */
+                    a = di; b = dj; c = dk;
+                    List_triang.push_back(Triangle(j,i,k));
+                }
 
-    b = 1./b;
-    float i2 = 1 - icv + ice*(lpivot - 1);
-    float incr = ice * (l1 - lpivot);
-
-    for (int j = 1; j <= ncv; j++) {
-        i2 += icv;
-        float i3 = i2 + incr;
-        float i4 = i3;
-
-        sm=c.at<float>(i2) * up;
-        for (int i = l1; i <= m; i++) {
-            sm += c.at<float>(i3) * u.at<float>(1,i);
-            i3 += ice;
+                /* Include only triangles with b/a < 0.9 */
+                if ( b/a < 0.9 ) {
+                    List_triang[p].x = b/a;
+                    List_triang[p].y = c/a;
+                    p++;
+                }
+                else {
+                    List_triang.pop_back();
+                }
+            }
         }
-        if (sm == 0) return;
-        sm *= b;
-        c.at<float>(i2) = c.at<float>(i2) + sm*up;
-        for (int i=l1; i <= m; i++) {
-            c.at<float>(i4) = c.at<float>(i4) + sm * u.at<float>(1,i);
-            i4=i4+ice;
+    }
+
+    return List_triang;
+}
+
+int sidesPos(int i, int j, int n)
+{
+    if (i < j)
+        return(i*(2*n-i-3)/2 + j);
+    else
+        return(j*(2*n-j-3)/2 + i);
+}
+
+void findMatches(int nobjs, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB,
+                 std::vector<Star> List1, std::vector<Star> List2)
+{
+    short	matches[3][MAX_MATCH];
+    int	i, j, k=0, l, n, first, last;
+    float tolerance2 = TOL * TOL;
+
+    int Table_match[nobjs * nobjs];
+
+    /* Sort List_triangB by x coordinate. */
+    sortTriangles(&List_triangB, 0, List_triangB.size() - 1);
+
+    /* Find objects within tolerance distance in triangle space. */
+    for (i = 0; i < List_triangA.size(); i++) {
+        binSearchTriangles(List_triangA[i].x, &List_triangB, &first, &last);
+        checkTolerance(nobjs, List_triangA[i], &List_triangB, first, last, Table_match);
+    }
+
+    /* Find the nobjs points with the most matches. */
+    k = 0;
+    for (i = 0; i < nobjs; i++) {
+        for (j = 0; j < nobjs; j++) {
+            n = Table_match[i*nobjs+j];
+            if (n > 0) {
+                if (k < nobjs) {
+                    for (l=k; l>0 && n>matches[2][l-1]; l--) {
+                        matches[0][l] = matches[0][l-1];
+                        matches[1][l] = matches[1][l-1];
+                        matches[2][l] = matches[2][l-1];
+                    }
+                    matches[0][l] = i;
+                    matches[1][l] = j;
+                    matches[2][l] = n;
+                    k++;
+                } else if (n >= matches[2][nobjs-1]) {
+                    for (l=k; l>0 && n>matches[2][l-1]; l--) {
+                        matches[0][l] = matches[0][l-1];
+                        matches[1][l] = matches[1][l-1];
+                        matches[2][l] = matches[2][l-1];
+                    }
+                    matches[0][l] = i;
+                    matches[1][l] = j;
+                    matches[2][l] = n;
+                    l = k < MAX_MATCH ? k + 1: k;
+                    n = matches[2][nobjs-1];
+                    for (k=nobjs; k<l && n==matches[2][k]; k++);
+                }
+            }
         }
+    }
+
+    qDebug() << "Done";
+}
+
+void sortTriangles(std::vector<Triangle> *List_Triang_, int l, int r)
+{
+    // make index operator easier
+    std::vector<Triangle> &List_Triang = *List_Triang_;
+
+    Triangle v;
+    Triangle t;
+    int	i, j;
+
+    if( r > l ) {
+        v.x = List_Triang[r].x;
+        i = l-1;
+        j = r;
+
+        for(;;) {
+        while(List_Triang[++i].x < v.x );
+        while((j > 1) && (List_Triang[--j].x > v.x));
+        if(i >= j)
+            break;
+
+        t.x = List_Triang[i].x;
+        List_Triang[i].x = List_Triang[j].x;
+        List_Triang[j].x = t.x;
+
+        t.y = List_Triang[i].y;
+        List_Triang[i].y = List_Triang[j].y;
+        List_Triang[j].y = t.y;
+
+        t.s1 = List_Triang[i].s1;
+        List_Triang[i].s1 = List_Triang[j].s1;
+        List_Triang[j].s1 = t.s1;
+
+        t.s2 = List_Triang[i].s2;
+        List_Triang[i].s2 = List_Triang[j].s2;
+        List_Triang[j].s2 = t.s2;
+
+        t.s3 = List_Triang[i].s3;
+        List_Triang[i].s3 = List_Triang[j].s3;
+        List_Triang[j].s3 = t.s3;
+        }
+
+        t.x = List_Triang[i].x;
+        List_Triang[i].x = List_Triang[r].x;
+        List_Triang[r].x = t.x;
+
+        t.y = List_Triang[i].y;
+        List_Triang[i].y = List_Triang[r].y;
+        List_Triang[r].y = t.y;
+
+        t.s1= List_Triang[i].s1;
+        List_Triang[i].s1 = List_Triang[r].s1;
+        List_Triang[r].s1 = t.s1;
+
+        t.s2 = List_Triang[i].s2;
+        List_Triang[i].s2 = List_Triang[r].s2;
+        List_Triang[r].s2 = t.s2;
+
+        t.s3 = List_Triang[i].s3;
+        List_Triang[i].s3 = List_Triang[r].s3;
+        List_Triang[r].s3 = t.s3;
+
+        sortTriangles(&List_Triang, l, i-1);
+        sortTriangles(&List_Triang, i+1, r);
     }
 }
 
-void hfti(cv::Mat a, int mda, int m, int n, cv::Mat b, int mdb, int nb, float tau, int krank, float rnorm[], float h[], float g[], int ip[])
+void binSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last)
 {
-    float sm, hmax;
-    float factor = 0.001;
-    int lmax;
+    std::vector<Triangle> &List_triang = *List_triang_;
+    int ntriang = List_triang.size();
+    int	min = 0, max = ntriang - 1, middle ;
+    int	found = 0, i;
+    float tolerance = TOL;
 
-    int k = 0;
-    int ldiag = std::min(m,n);
+    while ((!found) && (max - min > 1)) {
+        middle  = (min + max ) / 2;
+        if (fabs(List_triang[middle].x - key) < tolerance)
+        found = 1;
+        else if ( key < ( List_triang[middle ].x - tolerance))
+        max = middle ;
+        else if ( key > (List_triang[middle ].x + tolerance))
+        min = middle;
+    }
 
-    if (ldiag <= 0) {
-        krank = k;
+    /* Not found */
+    if (!found) {
+        *first = 2;
+        *last  = 1;
         return;
     }
 
-    for (int j = 1; j < ldiag; j++) {
-        if (j != 1) {
-            lmax = j;
-            for (int l=j; l <= n; l++) {
-                  h[l] = pow(h[l] - a.at<float>(j-1,l), 2);
-                  if (h[l] > h[lmax]) lmax = l;
-            }
-        }
-
-        if (j == 1 || j != 1 && factor*h[lmax] <= 0) {
-            // compute squared column lengths and find lmax
-            lmax = j;
-            for (int l=j; l <= n; l++) {
-                h[l] = 0.0;
-
-                for (int i=j; i <= m; i++) {
-                    h[l] = pow(h[l] + a.at<float>(i,l), 2);
-                }
-
-                if (h[l] > h[lmax]) lmax = l;
-            }
-
-            hmax = h[lmax];
-        }
-        ip[j] = lmax;
-
-        if (ip[j] != j) {
-            for (int i = 1; i <= m; i++) {
-                float tmp = a.at<float>(i,j);
-                a.at<float>(i,j) = a.at<float>(i,lmax);
-                a.at<float>(i,lmax) = tmp;
-            }
-            h[lmax] = h[j];
-
-        }
-
-        // compute the j-th transformation and apply it to a and b
-        //h12(1, j, j+1, m, a.at<float>(1,j), 1, h[j], a.at<float>(1,j+1), 1, mda, n-j);
-        //h12(2, j, j+1, m, a.at<float>(1,j), 1, h[j], b, 1, mdb, nb);
+    for (i = middle; i > 0; i--) {
+        if (fabs (List_triang[i].x - key) > tolerance)
+        break;
     }
+    *first = i;
+
+    for (i = middle; i < ntriang-1; i++) {
+        if (fabs (List_triang[i].x - key) > tolerance)
+        break;
+    }
+    *last = i;
+
 }
 
-cv::Mat mktransform(cv::Mat target, cv::Mat reference, float tolerance, int numObj)
+void checkTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_, int first, int last, int Table_match[])
 {
+    std::vector<Triangle> &List_triangB = *List_triangB_;
+    float tolerance = TOL;
+    float tolerance2 = TOL * TOL;
+    float	temp1, temp2, distance;
+    int	i, h1, h2;
 
+    for (i = first ; i <= last; i++) {
+        temp2 = (List_triangA.y - List_triangB[i].y);
+        if (temp2 < tolerance) {
+            temp1 = (List_triangA.x - List_triangB[i].x);
+            distance = temp1 * temp1 + temp2 * temp2;
+            if (distance < tolerance2) {
+                h1 = List_triangA.s1;
+                h2 = List_triangB[i].s1;
+                Table_match[h1*nobjs+h2]++;
+
+                h1 = List_triangA.s2;
+                h2 = List_triangB[i].s2;
+                Table_match[h1*nobjs+h2]++;
+
+                h1 = List_triangA.s3;
+                h2 = List_triangB[i].s3;
+                Table_match[h1*nobjs+h2]++;
+            }
+        }
+    }
 }

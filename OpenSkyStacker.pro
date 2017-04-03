@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     stardetector.cpp \
     pixel.cpp \
     adjoiningpixel.cpp \
-    focas.cpp
+    focas.cpp \
+    triangle.cpp
 
 HEADERS  += mainwindow.h \
     imagestacker.h \
@@ -41,7 +42,9 @@ HEADERS  += mainwindow.h \
     stardetector.h \
     pixel.h \
     adjoiningpixel.h \
-    focas.h
+    focas.h \
+    hfti.h \
+    triangle.h
 
 FORMS    += mainwindow.ui \
     processingdialog.ui
@@ -76,6 +79,10 @@ else:macx {
         -lopencv_video \
         -lraw \
         -lraw_r
+        -lgfortran
+    LIBS += /Users/Ben/Downloads/focas/hfti.o
+    LIBS += /Users/Ben/Downloads/focas/h12.o
+    LIBS += /Users/Ben/Downloads/focas/diff.o
 }
 else:unix {
     INCLUDEPATH += $$(OPENCVDIR)/modules/core/include

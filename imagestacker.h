@@ -4,6 +4,8 @@
 #include <QObject>
 #include <opencv2/core.hpp>
 #include <QMutex>
+#include "stardetector.h"
+#include "focas.h"
 
 class ImageStacker : public QObject
 {
@@ -17,6 +19,7 @@ public:
 
 
     cv::Mat readImage(QString filename);
+    cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
 
     // get/set
     QString getRefImageFileName() const;
@@ -66,7 +69,7 @@ public slots:
     void process();
 
 private:
-    cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
+
     cv::Mat averageImages(cv::Mat img1, cv::Mat img2);
 
     BITS_PER_CHANNEL bitsPerChannel;
@@ -102,6 +105,7 @@ private:
 
     cv::Mat convertAndScaleImage(cv::Mat image);
     cv::Mat rawToMat(QString filename);
+    cv::Mat generateAlignedImageOld(cv::Mat ref, cv::Mat target);
 };
 
 #endif // IMAGESTACKER_H

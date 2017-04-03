@@ -363,6 +363,41 @@ Mat ImageStacker::readImage(QString filename)
 }
 
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
+    StarDetector sd;
+    std::vector<Star> List1 = sd.getStars(ref);
+    std::vector<Star> List2 = sd.getStars(target);
+
+    qDebug() << "List1:";
+    for (int i = 0; i < List1.size(); i++) {
+        Star s = List1[i];
+        qDebug(" Star %d: %d, %d\n", i, s.getX(), s.getX());
+    }
+
+    qDebug() << "List2:";
+    for (int i = 0; i < List2.size(); i++) {
+        Star s = List2[i];
+        qDebug(" Star %d: %d, %d\n", i, s.getX(), s.getX());
+    }
+
+    std::vector<Triangle> List_triangA = generateTriangleList(List1);
+    std::vector<Triangle> List_triangB = generateTriangleList(List2);
+
+    qDebug() << "Triangles1:";
+    for (int i = 0; i < List_triangA.size(); i++) {
+        Triangle t = List_triangA[i];
+        qDebug("Triangle %d:\n %d,%d,%d\n %.4f, %.4f\n", i, t.s1, t.s2, t.s3, t.x, t.y);
+    }
+
+    qDebug() << "Triangles2:";
+    for (int i = 0; i < List_triangB.size(); i++) {
+        Triangle t = List_triangB[i];
+        qDebug("Triangle %d:\n %d,%d,%d\n %.4f, %.4f\n", i, t.s1, t.s2, t.s3, t.x, t.y);
+    }
+
+    return cv::Mat::zeros(10, 10, CV_32F);
+}
+
+cv::Mat ImageStacker::generateAlignedImageOld(Mat ref, Mat target) {
     // Convert images to gray scale;
     Mat ref_gray, target_gray;
     float scale = 256;

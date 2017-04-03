@@ -17,7 +17,7 @@ public:
     StarDetector();
     ~StarDetector();
 
-    void process(cv::Mat image);
+    std::vector<Star> getStars(cv::Mat image);
 
     float getExtendedPixelValue(cv::Mat image, int x, int y);
     cv::Mat generateSkyBackground(cv::Mat image);
