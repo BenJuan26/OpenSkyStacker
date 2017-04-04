@@ -77,7 +77,6 @@ void MainWindow::handleButtonStack() {
 }
 
 void MainWindow::handleButtonRefImage() {
-    /*
     QFileDialog dialog(this);
     dialog.setDirectory(QDir::homePath());
     dialog.setFileMode(QFileDialog::ExistingFile);
@@ -94,41 +93,6 @@ void MainWindow::handleButtonRefImage() {
     qDebug() << refImageFileName;
 
     ui->buttonSelectTargetImages->setEnabled(true);
-    */
-
-
-
-
-    /*
-    Mat image = stacker->readImage("/Users/Ben/Pictures/OpenSkyStacker/M42/Lights/DSC_4494.NEF");
-    //Mat image = stacker->readImage("/Users/Ben/Pictures/OpenSkyStacker/Bodes/Lights/Img1761.nef");
-
-    StarDetector sd;
-
-    sd.process(image);
-    */
-/*
-    StarDetector sd;
-    sd.test();
-    */
-/*
-    Mat image = stacker->readImage("/Users/Ben/Pictures/OpenSkyStacker/Bodes/Lights/Img1781.nef");
-    Mat xfrm = Mat::eye(2, 3, CV_32F);
-    xfrm.at<float>(0,0) = 0.999793;
-    xfrm.at<float>(0,1) = 0.00236625;
-    xfrm.at<float>(0,2) = 237.761;
-    xfrm.at<float>(1,0) = -0.00518012;
-    xfrm.at<float>(1,1) = 0.999639;
-    xfrm.at<float>(1,2) = 62.1213;
-
-    warpAffine(image, image, xfrm, image.size(), INTER_LINEAR + WARP_INVERSE_MAP);
-    imwrite("/Users/Ben/Pictures/OpenSkyStacker/transform.tif", image);
-    */
-
-    Mat ref = stacker->readImage("F:\\Astro\\Samples\\Bodes\\Lights\\Img1761.nef");
-    Mat target = stacker->readImage("F:\\Astro\\Samples\\Bodes\\Lights\\Img1781.nef");
-
-    stacker->generateAlignedImage(ref, target);
 }
 
 void MainWindow::handleButtonTargetImages() {

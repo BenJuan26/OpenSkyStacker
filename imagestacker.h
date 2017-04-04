@@ -19,7 +19,6 @@ public:
 
 
     cv::Mat readImage(QString filename);
-    cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
 
     // get/set
     QString getRefImageFileName() const;
@@ -69,7 +68,7 @@ public slots:
     void process();
 
 private:
-
+    cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
     cv::Mat averageImages(cv::Mat img1, cv::Mat img2);
 
     BITS_PER_CHANNEL bitsPerChannel;

@@ -371,8 +371,6 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     std::vector<Triangle> List_triangB = generateTriangleList(List2);
 
     int nobjs = 40;
-//    if (List1.size() < nobjs) nobjs = List1.size();
-//    if (List2.size() < nobjs) nobjs = List2.size();
 
     int k;
     std::vector<std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB, List1, List2);
