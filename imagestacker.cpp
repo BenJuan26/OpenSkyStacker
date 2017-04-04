@@ -367,32 +367,24 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     std::vector<Star> List1 = sd.getStars(ref);
     std::vector<Star> List2 = sd.getStars(target);
 
-    qDebug() << "List1:";
-    for (int i = 0; i < List1.size(); i++) {
-        Star s = List1[i];
-        qDebug(" Star %d: %d, %d\n", i, s.getX(), s.getX());
-    }
-
-    qDebug() << "List2:";
-    for (int i = 0; i < List2.size(); i++) {
-        Star s = List2[i];
-        qDebug(" Star %d: %d, %d\n", i, s.getX(), s.getX());
-    }
-
     std::vector<Triangle> List_triangA = generateTriangleList(List1);
     std::vector<Triangle> List_triangB = generateTriangleList(List2);
 
-    qDebug() << "Triangles1:";
-    for (int i = 0; i < List_triangA.size(); i++) {
-        Triangle t = List_triangA[i];
-        qDebug("Triangle %d:\n %d,%d,%d\n %.4f, %.4f\n", i, t.s1, t.s2, t.s3, t.x, t.y);
-    }
+    int nobjs = 40;
+//    if (List1.size() < nobjs) nobjs = List1.size();
+//    if (List2.size() < nobjs) nobjs = List2.size();
 
-    qDebug() << "Triangles2:";
-    for (int i = 0; i < List_triangB.size(); i++) {
-        Triangle t = List_triangB[i];
-        qDebug("Triangle %d:\n %d,%d,%d\n %.4f, %.4f\n", i, t.s1, t.s2, t.s3, t.x, t.y);
-    }
+    int k;
+    std::vector<std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB, List1, List2);
+    std::vector<std::vector<float> > transformVec = findTransform(matches, k, List1, List2);
+
+    cv::Mat matTransform(2,3,CV_32F);
+    for(int i = 0; i < 2; i++)
+        for (int j = 0; j < 3; j++)
+            matTransform.at<float>(i,j) = transformVec[i][j];
+
+    warpAffine(target, target, matTransform, target.size(), INTER_LINEAR + WARP_INVERSE_MAP);
+    imwrite("F:\\Astro\\Samples\\Img1781.tif", target);
 
     return cv::Mat::zeros(10, 10, CV_32F);
 }

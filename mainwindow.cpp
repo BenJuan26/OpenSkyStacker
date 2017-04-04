@@ -125,8 +125,8 @@ void MainWindow::handleButtonRefImage() {
     imwrite("/Users/Ben/Pictures/OpenSkyStacker/transform.tif", image);
     */
 
-    Mat ref = stacker->readImage("/Users/Ben/Pictures/OpenSkyStacker/Bodes/Lights/Img1761.nef");
-    Mat target = stacker->readImage("/Users/Ben/Pictures/OpenSkyStacker/Bodes/Lights/Img1781.nef");
+    Mat ref = stacker->readImage("F:\\Astro\\Samples\\Bodes\\Lights\\Img1761.nef");
+    Mat target = stacker->readImage("F:\\Astro\\Samples\\Bodes\\Lights\\Img1781.nef");
 
     stacker->generateAlignedImage(ref, target);
 }

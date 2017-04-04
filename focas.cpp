@@ -1,14 +1,5 @@
 #include "focas.h"
 
-#define TOL		0.002   /* Default matching tolerance */
-#define	NOBJS		40	/* Default number of objects */
-#define MIN_MATCH	6	/* Min # of matched objects for transform */
-#define MAX_MATCH	120	/* Max # of matches to use (~MAX_OBJS) */
-#define MIN_OBJS	10	/* Min # of objects to use */
-#define MAX_OBJS	100	/* Max # of objects to use */
-#define	CLIP		3	/* Sigma clipping factor */
-#define PM		57.2958 /* Radian to degree conversion */
-
 std::vector<Triangle> generateTriangleList(std::vector<Star> List)
 {
     int nobjs = NOBJS;
@@ -91,14 +82,18 @@ int sidesPos(int i, int j, int n)
         return(j*(2*n-j-3)/2 + i);
 }
 
-void findMatches(int nobjs, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB,
-                 std::vector<Star> List1, std::vector<Star> List2)
+std::vector<std::vector<int> > findMatches(int nobjs, int *k_, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB, std::vector<Star> List1, std::vector<Star> List2)
 {
-    short	matches[3][MAX_MATCH];
-    int	i, j, k=0, l, n, first, last;
-    float tolerance2 = TOL * TOL;
+    std::vector<std::vector<int> > matches(3, std::vector<int>(MAX_MATCH, 0));
+    int	i, j, l, n, first, last;
+    int &k = *k_;
+    k = 0;
 
     int Table_match[nobjs * nobjs];
+
+    for (int i = 0; i < nobjs * nobjs; i++) {
+        Table_match[i] = 0;
+    }
 
     /* Sort List_triangB by x coordinate. */
     sortTriangles(&List_triangB, 0, List_triangB.size() - 1);
@@ -142,7 +137,7 @@ void findMatches(int nobjs, std::vector<Triangle> List_triangA, std::vector<Tria
         }
     }
 
-    qDebug() << "Done";
+    return matches;
 }
 
 void sortTriangles(std::vector<Triangle> *List_Triang_, int l, int r)
@@ -278,4 +273,107 @@ void checkTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *Lis
             }
         }
     }
+}
+
+std::vector<std::vector<float> > findTransform(std::vector<std::vector<int> > matches, int m, std::vector<Star> List1, std::vector<Star> List2)
+{
+    //float	xfrm[2][3];
+    std::vector<std::vector<float> > xfrm(2, std::vector<float>(3,0));
+
+    int	i, j, i1, i2;
+    int	mda = MAX_MATCH, mdb = MAX_MATCH, n = 3, nb = 2;
+    int	krank, ip[3];
+    float	tau = 0.1, rnorm[2], h[3], g[3];
+    float	a[3][MAX_MATCH], b[2][MAX_MATCH];
+    float	x, y, r2, sum, rms;
+
+    /* Require a minimum number of points. */
+    if (m < MIN_MATCH) {
+        printf ("Match not found: use more objects or larger tolerance\n");
+        exit (0);
+    }
+
+    /* Compute the initial transformation with the 12 best matches. */
+    j = (m < 12) ? m : 12;
+    for (i=0; i<j; i++) {
+        matches[0][i] = i;
+        matches[1][i] = i;
+        a[0][i] = List1[matches[0][i]].getX();
+        a[1][i] = List1[matches[0][i]].getY();
+        a[2][i] = 1.;
+        b[0][i] = List2[matches[1][i]].getX();
+        b[1][i] = List2[matches[1][i]].getY();
+    }
+
+    hfti_(a, &mda, &j, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g, ip);
+    for (i=0; i<2; i++)
+        for (j=0; j<3; j++)
+        xfrm[i][j] = b[i][j];
+
+    /* Start with all matches compute RMS and reject outliers.	      */
+    /* The outliers are found from the 60% point in the sorted residuals. */
+    for (;;) {
+        sum = 0.;
+        for (i=0; i<m; i++) {
+        i1 = matches[0][i];
+        i2 = matches[1][i];
+        r2 = List1[i1].getX();
+        y = List1[i1].getY();
+        x = xfrm[0][0] * r2 + xfrm[0][1] * y + xfrm[0][2];
+        y = xfrm[1][0] * r2 + xfrm[1][1] * y + xfrm[1][2];
+        x -= List2[i2].getX();
+        y -= List2[i2].getY();
+        r2 = x * x + y * y;
+        for (j=i; j>0 && r2<a[1][j-1]; j--)
+            a[1][j] = a[1][j-1];
+        a[0][i] = r2;
+        a[1][j] = r2;
+        sum += r2;
+        }
+
+        /* Set clipping limit and quit when no points are clipped. */
+        i = 0.6 * m;
+        r2 = CLIP * a[1][i];
+        if (r2 >= a[1][m-1]) {
+        rms = sqrt(sum / m);
+        break;
+        }
+
+        /* Clip outliers and redo the fit. */
+        j = 0;
+        for (i=0; i<m; i++) {
+        if (a[0][i] < r2) {
+            i1 = matches[0][i];
+            i2 = matches[1][i];
+            matches[0][j] = i1;
+            matches[1][j] = i2;
+            a[0][j] = List1[i1].getX();
+            a[1][j] = List1[i1].getY();
+            a[2][j] = 1.;
+            b[0][j] = List2[i2].getX();
+            b[1][j] = List2[i2].getY();
+            j++;
+        }
+        }
+        m = j;
+
+//	    if (m < MIN_MATCH) {
+//		printf (
+//		    "Match not found: use more objects or larger tolerance\n");
+//		exit (0);
+//	    }
+
+        hfti_(a, &mda, &m, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g,ip);
+
+        for (i=0; i<2; i++)
+        for (j=0; j<3; j++)
+            xfrm[i][j] = b[i][j];
+    }
+
+    qDebug() << xfrm[0][0] << xfrm[0][1] << xfrm[0][2];
+    qDebug() << xfrm[1][0] << xfrm[1][1] << xfrm[1][2];
+
+    printf ("Number of matches = %d, RMS of fit = %8.2f\n", m, rms);
+
+    return xfrm;
 }
