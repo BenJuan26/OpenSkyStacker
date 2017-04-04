@@ -384,7 +384,7 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     warpAffine(target, target, matTransform, target.size(), INTER_LINEAR + WARP_INVERSE_MAP);
     imwrite("F:\\Astro\\Samples\\Img1781.tif", target);
 
-    return cv::Mat::zeros(10, 10, CV_32F);
+    return target;
 }
 
 cv::Mat ImageStacker::generateAlignedImageOld(Mat ref, Mat target) {

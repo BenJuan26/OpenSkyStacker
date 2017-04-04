@@ -102,4 +102,7 @@ else:unix {
         -lopencv_calib3d \
         -lopencv_video \
         -lraw
+    LIBS += /home/ben/Developer/focas/hfti.o
+    LIBS += /home/ben/Developer/focas/h12.o
+    LIBS += /home/ben/Developer/focas/diff.o
 }
