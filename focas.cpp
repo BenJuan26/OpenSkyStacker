@@ -296,8 +296,6 @@ std::vector<std::vector<float> > findTransform(std::vector<std::vector<int> > ma
     /* Compute the initial transformation with the 12 best matches. */
     j = (m < 12) ? m : 12;
     for (i=0; i<j; i++) {
-        matches[0][i] = i;
-        matches[1][i] = i;
         a[0][i] = List1[matches[0][i]].getX();
         a[1][i] = List1[matches[0][i]].getY();
         a[2][i] = 1.;

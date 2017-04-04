@@ -372,7 +372,7 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
 
     int nobjs = 40;
 
-    int k;
+    int k = 0;
     std::vector<std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB, List1, List2);
     std::vector<std::vector<float> > transformVec = findTransform(matches, k, List1, List2);
 
@@ -382,7 +382,6 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
             matTransform.at<float>(i,j) = transformVec[i][j];
 
     warpAffine(target, target, matTransform, target.size(), INTER_LINEAR + WARP_INVERSE_MAP);
-    imwrite("F:\\Astro\\Samples\\Img1781.tif", target);
 
     return target;
 }

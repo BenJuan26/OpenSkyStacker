@@ -1,5 +1,6 @@
 #include "stardetector.h"
 #include "hfti.h"
+#include <QTime>
 
 #define THRESHOLD_COEFF 20.0
 
@@ -55,8 +56,8 @@ std::vector<Star> StarDetector::getStars(cv::Mat image)
             allStars.push_back(star);
         }
     }
-
-    //drawDetectedStars("F:/Astro/Samples/stars2.png", image.cols, image.rows, 20, allStars);
+    //QString name = "/home/ben/Desktop/stars" + QString::number(QTime::currentTime().msec()) + ".tif";
+    //drawDetectedStars(name.toUtf8().constData(), image.cols, image.rows, -1, allStars);
     return allStars;
 }
 
@@ -124,7 +125,6 @@ void StarDetector::drawDetectedStars(const std::string& path, uint width, uint h
     float maxValue = stars.at(0).getValue();
     for (ulong i = 0; i < stars.size() && i < limit; i++) {
         Star star = stars.at(i);
-        qDebug() << star.getX() << "," << star.getY() << ":" << star.getValue();
         float ratio = star.getValue() / maxValue;
         int radius = maxRadius * ratio;
 
