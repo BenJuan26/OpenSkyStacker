@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     stardetector.cpp \
     pixel.cpp \
     adjoiningpixel.cpp \
-    focas.cpp
+    focas.cpp \
+    stackergraphicsview.cpp
 
 HEADERS  += mainwindow.h \
     imagestacker.h \
@@ -41,7 +42,8 @@ HEADERS  += mainwindow.h \
     stardetector.h \
     pixel.h \
     adjoiningpixel.h \
-    focas.h
+    focas.h \
+    stackergraphicsview.h
 
 FORMS    += mainwindow.ui \
     processingdialog.ui

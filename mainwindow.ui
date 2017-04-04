@@ -102,7 +102,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>209</height>
+         <height>208</height>
         </rect>
        </property>
        <attribute name="label">
@@ -227,7 +227,7 @@ QPushButton:disabled {
      </widget>
     </item>
     <item row="0" column="0" rowspan="2">
-     <widget class="QGraphicsView" name="imageHolder">
+     <widget class="StackerGraphicsView" name="imageHolder">
       <property name="styleSheet">
        <string notr="true">background-color: #222;</string>
       </property>
@@ -259,6 +259,13 @@ border-top: 2px solid #555;</string>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>StackerGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>stackergraphicsview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
