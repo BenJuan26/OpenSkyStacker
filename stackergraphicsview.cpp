@@ -7,33 +7,45 @@ StackerGraphicsView::StackerGraphicsView(QWidget *parent):QGraphicsView(parent)
 
 void StackerGraphicsView::wheelEvent(QWheelEvent *event)
 {
-    int numDegrees = event->delta() / 8;
-    int numSteps = numDegrees / 15; // see QWheelEvent documentation
-    _numScheduledScalings += numSteps;
-    if (_numScheduledScalings * numSteps < 0) // if user moved the wheel in another direction, we reset previously scheduled scalings
-        _numScheduledScalings = numSteps;
+    QPoint movement = event->pixelDelta();
+    int threshold = 8;
+    int movementPace = movement.y();
+    if (_numScheduledScalings > 0 && movementPace < 0) {
+        _numScheduledScalings = 0;
+    } else if  (_numScheduledScalings < 0 && movementPace > 0) {
+        _numScheduledScalings = 0;
+    } else {
+        _numScheduledScalings += movementPace;
+    }
 
-     QTimeLine *anim = new QTimeLine(350, this);
-     anim->setUpdateInterval(20);
+    if (_numScheduledScalings > threshold) {
+        _numScheduledScalings = threshold;
+    } else if (_numScheduledScalings < -threshold) {
+        _numScheduledScalings = -threshold;
+    }
 
-     connect(anim, SIGNAL (valueChanged(qreal)), SLOT (scalingTime(qreal)));
-     connect(anim, SIGNAL (finished()), SLOT (animFinished()));
-     anim->start();
+    QTimeLine *anim = new QTimeLine(350, this);
+    anim->setUpdateInterval(100);
+
+    connect(anim, SIGNAL (valueChanged(qreal)), SLOT (scalingTime(qreal)));
+    connect(anim, SIGNAL (finished()), SLOT (animFinished()));
+    anim->start();
 }
 
 void StackerGraphicsView::scalingTime(qreal x)
 {
- qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
- scale(factor, factor);
+    qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
+    scale(factor, factor);
 }
 
 void StackerGraphicsView::animFinished()
 {
- if (_numScheduledScalings > 0)
- _numScheduledScalings--;
- else
- _numScheduledScalings++;
- sender()->~QObject();
+    if (_numScheduledScalings > 0) {
+        _numScheduledScalings--;
+    } else if (_numScheduledScalings < 0) {
+        _numScheduledScalings++;
+    }
+    sender()->~QObject();
 }
 
 void StackerGraphicsView::mousePressEvent(QMouseEvent * event) {

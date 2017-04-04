@@ -8,6 +8,7 @@
 #include <QWheelEvent>
 #include <QTimeLine>
 #include <QScrollBar>
+#include <QTouchEvent>
 
 class StackerGraphicsView : public QGraphicsView
 {
