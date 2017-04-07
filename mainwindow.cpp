@@ -44,7 +44,6 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 void MainWindow::finishedStacking(Mat image) {
-    qDebug() << "finished:" << image.at<float>(0) << image.at<float>(1) << image.at<float>(2);
     QString path = stacker->getSaveFilePath();
     imwrite(path.toUtf8().constData(), image);
     setMemImage(Mat2QImage(image));

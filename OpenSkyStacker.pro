@@ -50,20 +50,21 @@ FORMS    += mainwindow.ui \
     processingdialog.ui
 
 win32 {
-    INCLUDEPATH += C:\OpenCV-Build\install\include
-    INCLUDEPATH += C:\LibRaw-0.18.2
-    LIBS += -LC:\OpenCV-Build\install\x86\mingw\lib \
-        -lopencv_core310.dll \
-        -lopencv_highgui310.dll \
-        -lopencv_imgcodecs310.dll \
-        -lopencv_imgproc310.dll \
-        -lopencv_features2d310.dll \
-        -lopencv_calib3d310.dll \
-        -lopencv_video310.dll
-    LIBS += C:\Users\Ben\Documents\Developer\focas\hfti.o
-    LIBS += C:\Users\Ben\Documents\Developer\focas\h12.o
-    LIBS += C:\Users\Ben\Documents\Developer\focas\diff.o
-    LIBS += C:\LibRaw-0.18.2\lib\libraw.a
+    INCLUDEPATH += $$(OPENCV_DIR)\build\include
+    INCLUDEPATH += $$(LIBRAW_DIR)
+    LIBS += -L$$(OPENCV_DIR)\build\lib\Release
+    LIBS += -lopencv_core$$(OPENCV_VER)
+    LIBS += -lopencv_highgui$$(OPENCV_VER)
+    LIBS += -lopencv_imgcodecs$$(OPENCV_VER)
+    LIBS += -lopencv_imgproc$$(OPENCV_VER)
+    LIBS += -lopencv_features2d$$(OPENCV_VER)
+    LIBS += -lopencv_calib3d$$(OPENCV_VER)
+    LIBS += -lopencv_video$$(OPENCV_VER)
+    LIBS += $$(FOCAS_DIR)\hfti.o
+    LIBS += $$(FOCAS_DIR)\h12.o
+    LIBS += $$(FOCAS_DIR)\diff.o
+    LIBS += -L$$(LIBRAW_DIR)\buildfiles\Debug
+    LIBS += -lraw
     LIBS += -lWS2_32
 }
 else:macx {

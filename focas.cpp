@@ -89,7 +89,7 @@ std::vector<std::vector<int> > findMatches(int nobjs, int *k_, std::vector<Trian
     int &k = *k_;
     k = 0;
 
-    int Table_match[nobjs * nobjs];
+    int *Table_match = new int[nobjs * nobjs];
 
     for (int i = 0; i < nobjs * nobjs; i++) {
         Table_match[i] = 0;
@@ -136,6 +136,8 @@ std::vector<std::vector<int> > findMatches(int nobjs, int *k_, std::vector<Trian
             }
         }
     }
+
+    delete Table_match;
 
     return matches;
 }
