@@ -18,7 +18,7 @@ std::vector<Triangle> generateTriangleList(std::vector<Star> List)
     for (i = 0; i < nobjs; i++) {
         for (j = i + 1; j < nobjs; j++) {
             h1 = (List[i].getX() - List[j].getX());
-            h2 = (List[i].getX() - List[j].getY());
+            h2 = (List[i].getY() - List[j].getY());
             k = sidesPos(i, j, nobjs);
             sides[k] = sqrt(h1*h1 + h2*h2);
         }
