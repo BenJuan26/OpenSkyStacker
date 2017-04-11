@@ -17,12 +17,14 @@ public:
     StarDetector();
     ~StarDetector();
 
-    void process(cv::Mat image);
+    std::vector<Star> getStars(cv::Mat image);
 
     float getExtendedPixelValue(cv::Mat image, int x, int y);
     cv::Mat generateSkyBackground(cv::Mat image);
 
     void drawDetectedStars(const std::string& path, uint width, uint height, uint limit, std::vector<Star> stars);
+
+    void test();
 
 private:
     std::vector<AdjoiningPixel> getAdjoiningPixels(cv::Mat image, float threshold, float minPeak);

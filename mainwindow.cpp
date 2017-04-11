@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "processingdialog.h"
+#include "stardetector.h"
 
 #include <QFileDialog>
 #include <QMessageBox>

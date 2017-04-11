@@ -6,6 +6,7 @@ class Star
 {
 public:
     Star();
+    Star(int x_, int y_, float value_);
 
     ~Star();
 

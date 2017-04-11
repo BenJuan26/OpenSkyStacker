@@ -363,6 +363,30 @@ Mat ImageStacker::readImage(QString filename)
 }
 
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
+    StarDetector sd;
+    std::vector<Star> List1 = sd.getStars(ref);
+    std::vector<Star> List2 = sd.getStars(target);
+
+    std::vector<Triangle> List_triangA = generateTriangleList(List1);
+    std::vector<Triangle> List_triangB = generateTriangleList(List2);
+
+    int nobjs = 40;
+
+    int k = 0;
+    std::vector<std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB, List1, List2);
+    std::vector<std::vector<float> > transformVec = findTransform(matches, k, List1, List2);
+
+    cv::Mat matTransform(2,3,CV_32F);
+    for(int i = 0; i < 2; i++)
+        for (int j = 0; j < 3; j++)
+            matTransform.at<float>(i,j) = transformVec[i][j];
+
+    warpAffine(target, target, matTransform, target.size(), INTER_LINEAR + WARP_INVERSE_MAP);
+
+    return target;
+}
+
+cv::Mat ImageStacker::generateAlignedImageOld(Mat ref, Mat target) {
     // Convert images to gray scale;
     Mat ref_gray, target_gray;
     float scale = 256;
