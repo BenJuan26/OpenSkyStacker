@@ -24,6 +24,7 @@ signals:
 
 public slots:
     void finishedStacking(cv::Mat image);
+    void updateProgress(QString message, int percentComplete);
 
 private slots:
     void handleButtonRefImage();

@@ -9,6 +9,8 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+win32: QT += winextras
+
 TARGET = OpenSkyStacker
 TEMPLATE = app
 
@@ -51,20 +53,20 @@ FORMS    += mainwindow.ui \
     processingdialog.ui
 
 win32 {
-    INCLUDEPATH += $$(OPENCV_DIR)\build\include
-    INCLUDEPATH += $$(LIBRAW_DIR)
-    LIBS += -L$$(OPENCV_DIR)\build\lib\Release
-    LIBS += -lopencv_core$$(OPENCV_VER)
-    LIBS += -lopencv_highgui$$(OPENCV_VER)
-    LIBS += -lopencv_imgcodecs$$(OPENCV_VER)
-    LIBS += -lopencv_imgproc$$(OPENCV_VER)
-    LIBS += -lopencv_features2d$$(OPENCV_VER)
-    LIBS += -lopencv_calib3d$$(OPENCV_VER)
-    LIBS += -lopencv_video$$(OPENCV_VER)
-    LIBS += $$(FOCAS_DIR)\hfti.o
-    LIBS += $$(FOCAS_DIR)\h12.o
-    LIBS += $$(FOCAS_DIR)\diff.o
-    LIBS += -L$$(LIBRAW_DIR)\buildfiles\Debug
+    INCLUDEPATH += $$PWD/3rdparty/opencv/include
+    INCLUDEPATH += $$PWD/3rdparty/libraw/win64/include
+    LIBS += -L$$PWD/3rdparty/opencv/win64/lib
+    LIBS += -lopencv_core320
+    LIBS += -lopencv_highgui320
+    LIBS += -lopencv_imgcodecs320
+    LIBS += -lopencv_imgproc320
+    LIBS += -lopencv_features2d320
+    LIBS += -lopencv_calib3d320
+    LIBS += -lopencv_video320
+    LIBS += $$PWD/3rdparty/focas/win64/hfti.o
+    LIBS += $$PWD/3rdparty/focas/win64/h12.o
+    LIBS += $$PWD/3rdparty/focas/win64/diff.o
+    LIBS += -L$$PWD/3rdparty/libraw/win64/lib
     LIBS += -lraw
     LIBS += -lWS2_32
 }
@@ -81,7 +83,7 @@ else:macx {
         -lopencv_video
 
     # LibRaw
-    INCLUDEPATH += $$PWD/3rdparty/libraw/include
+    INCLUDEPATH += $$PWD/3rdparty/libraw/macx/include
     LIBS += -L$$PWD/3rdparty/libraw/macx/lib \
         -lraw \
         -lraw_r
