@@ -36,23 +36,17 @@
     <string notr="true">background-color: #333;</string>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="1">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Maximum</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>170</height>
-       </size>
-      </property>
-     </spacer>
+    <item row="3" column="0">
+     <widget class="QTableView" name="tableView"/>
     </item>
-    <item row="0" column="1">
+    <item row="2" column="0">
+     <widget class="StackerGraphicsView" name="imageHolder">
+      <property name="styleSheet">
+       <string notr="true">background-color: #222;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
      <widget class="QToolBox" name="toolBox_2">
       <property name="enabled">
        <bool>true</bool>
@@ -101,8 +95,8 @@ QPushButton:disabled {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>235</width>
-         <height>208</height>
+         <width>221</width>
+         <height>192</height>
         </rect>
        </property>
        <attribute name="label">
@@ -177,7 +171,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>208</height>
+         <height>159</height>
         </rect>
        </property>
        <attribute name="label">
@@ -226,12 +220,21 @@ QPushButton:disabled {
       </widget>
      </widget>
     </item>
-    <item row="0" column="0" rowspan="2">
-     <widget class="StackerGraphicsView" name="imageHolder">
-      <property name="styleSheet">
-       <string notr="true">background-color: #222;</string>
+    <item row="3" column="1">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
-     </widget>
+      <property name="sizeType">
+       <enum>QSizePolicy::Maximum</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>170</height>
+       </size>
+      </property>
+     </spacer>
     </item>
    </layout>
   </widget>
@@ -263,7 +266,7 @@ border-top: 2px solid #555;</string>
   <customwidget>
    <class>StackerGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>stackergraphicsview.h</header>
+   <header>ui/stackergraphicsview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
