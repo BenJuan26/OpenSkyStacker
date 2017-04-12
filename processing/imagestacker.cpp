@@ -25,6 +25,22 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
     bitsPerChannel = BITS_16;
 }
 
+ImageRecord ImageStacker::getImageRecord(QString filename)
+{
+    LibRaw processor;
+
+    processor.open_file(filename.toUtf8().constData());
+
+    libraw_imgother_t other = processor.imgdata.other;
+
+    ImageRecord record;
+    record.setFilename(filename);
+    record.setIso(other.iso_speed);
+    record.setShutter(other.shutter);
+
+    return record;
+}
+
 void ImageStacker::process() {
     emit updateProgress("Starting stacking process...", 0);
 

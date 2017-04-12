@@ -15,7 +15,7 @@ public:
     void setY(int value);
 
     float getValue() const;
-    void setValue(float value);
+    void setValue(float otherValue);
 
     bool operator>(const Pixel& other) const;
     bool operator<(const Pixel& other) const;

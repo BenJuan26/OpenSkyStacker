@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "processingdialog.h"
 #include "processing/stardetector.h"
+#include "model/imagerecord.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -117,6 +118,12 @@ void MainWindow::handleButtonRefImage() {
 
     QString refImageFileName = dialog.selectedFiles().at(0);
     stacker->setRefImageFileName(refImageFileName);
+
+    ImageRecord record = stacker->getImageRecord(refImageFileName);
+    record.setType(ImageRecord::LIGHT);
+    record.setReference(true);
+    qDebug() << "ISO:" << record.getIso();
+    qDebug() << "Shutter:" << record.getShutter();
 
     QFileInfo info(refImageFileName);
     selectedDir = QDir(info.absoluteFilePath());

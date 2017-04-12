@@ -6,6 +6,7 @@
 #include <QMutex>
 #include "stardetector.h"
 #include "focas.h"
+#include "model/imagerecord.h"
 
 class ImageStacker : public QObject
 {
@@ -17,6 +18,7 @@ public:
     static const std::vector<QString> RAW_EXTENSIONS;
     enum BITS_PER_CHANNEL{BITS_16, BITS_32};
 
+    ImageRecord getImageRecord(QString filename);
 
     cv::Mat readImage(QString filename);
 

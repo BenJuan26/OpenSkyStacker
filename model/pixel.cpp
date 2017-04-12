@@ -37,9 +37,9 @@ float Pixel::getValue() const
     return value;
 }
 
-void Pixel::setValue(float value)
+void Pixel::setValue(float otherValue)
 {
-    value = value;
+    value = otherValue;
 }
 
 bool Pixel::operator>(const Pixel &other) const
