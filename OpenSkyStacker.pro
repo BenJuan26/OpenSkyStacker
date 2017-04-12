@@ -94,15 +94,10 @@ else:macx {
     LIBS += $$PWD/3rdparty/focas/macx/diff.o
 }
 else:unix {
-    INCLUDEPATH += $$(OPENCVDIR)/modules/core/include
-    INCLUDEPATH += $$(OPENCVDIR)/release
-    INCLUDEPATH += $$(OPENCVDIR)/modules/highgui/include
-    INCLUDEPATH += $$(OPENCVDIR)/modules/imgproc/include
-    INCLUDEPATH += $$(OPENCVDIR)/modules/video/include
-    INCLUDEPATH += $$(OPENCVDIR)/modules/imgcodecs/include
-    INCLUDEPATH += $$(OPENCVDIR)/modules/videoio/include
+    INCLUDEPATH += $$PWD/3rdparty/opencv/include
     INCLUDEPATH += $$(QTDIR)/include/QtWidgets
-    LIBS += -L$$(OPENCVDIR)/release/lib \
+    LIBS += -L$$PWD/3rdparty/opencv/unix/lib \
+        -L$$PWD/3rdparty/libraw/unix/lib \
         -lopencv_core \
         -lopencv_highgui \
         -lopencv_imgcodecs \
@@ -111,7 +106,7 @@ else:unix {
         -lopencv_calib3d \
         -lopencv_video \
         -lraw
-    LIBS += /home/ben/Developer/focas/hfti.o
-    LIBS += /home/ben/Developer/focas/h12.o
-    LIBS += /home/ben/Developer/focas/diff.o
+    LIBS += $$PWD/3rdparty/focas/unix/hfti.o
+    LIBS += $$PWD/3rdparty/focas/unix/h12.o
+    LIBS += $$PWD/3rdparty/focas/unix/diff.o
 }
