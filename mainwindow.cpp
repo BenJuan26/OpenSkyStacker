@@ -10,8 +10,10 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/video/video.hpp>
+#ifdef WIN32
 #include <QtWinExtras/QWinTaskbarButton>
 #include <QtWinExtras/QWinTaskbarProgress>
+#endif
 
 using namespace cv;
 
@@ -44,18 +46,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->buttonStack, SIGNAL (released()), this, SLOT (handleButtonStack()));
     connect(this, SIGNAL (stackImages()), stacker, SLOT(process()));
     connect(stacker, SIGNAL(finished(cv::Mat)), this, SLOT(finishedStacking(cv::Mat)));
+    connect(stacker, SIGNAL(finishedDialog(QString)), this, SLOT(clearProgress(QString)));
 }
 
 void MainWindow::finishedStacking(Mat image) {
     QString path = stacker->getSaveFilePath();
     imwrite(path.toUtf8().constData(), image);
     setMemImage(Mat2QImage(image));
-
-    QWinTaskbarButton *button = new QWinTaskbarButton(this);
-    button->setWindow(this->windowHandle());
-
-    QWinTaskbarProgress *progress = button->progress();
-    progress->setVisible(false);
 
     qDebug() << "Done stacking";
 }
@@ -70,6 +67,17 @@ void MainWindow::updateProgress(QString message, int percentComplete)
     progress->setVisible(true);
     progress->setValue(percentComplete);
 #endif // WIN32
+}
+
+void MainWindow::clearProgress(QString message)
+{
+    QWinTaskbarButton *button = new QWinTaskbarButton(this);
+    button->setWindow(this->windowHandle());
+
+    QWinTaskbarProgress *progress = button->progress();
+    progress->setVisible(false);
+
+    qDebug(message.toUtf8().constData());
 }
 
 void MainWindow::handleButtonStack() {
