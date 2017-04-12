@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "ui/mainwindow.h"
 #include <QApplication>
 
 // cv::Mat can't be passed through a signal without this declaration

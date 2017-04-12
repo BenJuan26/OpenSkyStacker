@@ -9,6 +9,8 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+win32: QT += winextras
+
 TARGET = OpenSkyStacker
 TEMPLATE = app
 
@@ -24,47 +26,47 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    imagestacker.cpp \
-    processingdialog.cpp \
-    star.cpp \
-    stardetector.cpp \
-    pixel.cpp \
-    adjoiningpixel.cpp \
-    focas.cpp \
-    stackergraphicsview.cpp \
-    triangle.cpp
+        ui/mainwindow.cpp \
+    processing/imagestacker.cpp \
+    ui/processingdialog.cpp \
+    model/star.cpp \
+    processing/stardetector.cpp \
+    model/pixel.cpp \
+    model/adjoiningpixel.cpp \
+    processing/focas.cpp \
+    ui/stackergraphicsview.cpp \
+    model/triangle.cpp
 
-HEADERS  += mainwindow.h \
-    imagestacker.h \
-    processingdialog.h \
-    star.h \
-    stardetector.h \
-    pixel.h \
-    adjoiningpixel.h \
-    focas.h \
-    stackergraphicsview.h \
-    hfti.h \
-    triangle.h
+HEADERS  += ui/mainwindow.h \
+    processing/imagestacker.h \
+    ui/processingdialog.h \
+    model/star.h \
+    processing/stardetector.h \
+    model/pixel.h \
+    model/adjoiningpixel.h \
+    processing/focas.h \
+    ui/stackergraphicsview.h \
+    processing/hfti.h \
+    model/triangle.h
 
-FORMS    += mainwindow.ui \
-    processingdialog.ui
+FORMS    += ui/mainwindow.ui \
+    ui/processingdialog.ui
 
 win32 {
-    INCLUDEPATH += $$(OPENCV_DIR)\build\include
-    INCLUDEPATH += $$(LIBRAW_DIR)
-    LIBS += -L$$(OPENCV_DIR)\build\lib\Release
-    LIBS += -lopencv_core$$(OPENCV_VER)
-    LIBS += -lopencv_highgui$$(OPENCV_VER)
-    LIBS += -lopencv_imgcodecs$$(OPENCV_VER)
-    LIBS += -lopencv_imgproc$$(OPENCV_VER)
-    LIBS += -lopencv_features2d$$(OPENCV_VER)
-    LIBS += -lopencv_calib3d$$(OPENCV_VER)
-    LIBS += -lopencv_video$$(OPENCV_VER)
-    LIBS += $$(FOCAS_DIR)\hfti.o
-    LIBS += $$(FOCAS_DIR)\h12.o
-    LIBS += $$(FOCAS_DIR)\diff.o
-    LIBS += -L$$(LIBRAW_DIR)\buildfiles\Debug
+    INCLUDEPATH += $$PWD/3rdparty/opencv/include
+    INCLUDEPATH += $$PWD/3rdparty/libraw/win64/include
+    LIBS += -L$$PWD/3rdparty/opencv/win64/lib
+    LIBS += -lopencv_core320
+    LIBS += -lopencv_highgui320
+    LIBS += -lopencv_imgcodecs320
+    LIBS += -lopencv_imgproc320
+    LIBS += -lopencv_features2d320
+    LIBS += -lopencv_calib3d320
+    LIBS += -lopencv_video320
+    LIBS += $$PWD/3rdparty/focas/win64/hfti.o
+    LIBS += $$PWD/3rdparty/focas/win64/h12.o
+    LIBS += $$PWD/3rdparty/focas/win64/diff.o
+    LIBS += -L$$PWD/3rdparty/libraw/win64/lib
     LIBS += -lraw
     LIBS += -lWS2_32
 }
@@ -81,7 +83,7 @@ else:macx {
         -lopencv_video
 
     # LibRaw
-    INCLUDEPATH += $$PWD/3rdparty/libraw/include
+    INCLUDEPATH += $$PWD/3rdparty/libraw/macx/include
     LIBS += -L$$PWD/3rdparty/libraw/macx/lib \
         -lraw \
         -lraw_r
@@ -92,15 +94,10 @@ else:macx {
     LIBS += $$PWD/3rdparty/focas/macx/diff.o
 }
 else:unix {
-    INCLUDEPATH += $$(OPENCVDIR)/modules/core/include
-    INCLUDEPATH += $$(OPENCVDIR)/release
-    INCLUDEPATH += $$(OPENCVDIR)/modules/highgui/include
-    INCLUDEPATH += $$(OPENCVDIR)/modules/imgproc/include
-    INCLUDEPATH += $$(OPENCVDIR)/modules/video/include
-    INCLUDEPATH += $$(OPENCVDIR)/modules/imgcodecs/include
-    INCLUDEPATH += $$(OPENCVDIR)/modules/videoio/include
+    INCLUDEPATH += $$PWD/3rdparty/opencv/include
     INCLUDEPATH += $$(QTDIR)/include/QtWidgets
-    LIBS += -L$$(OPENCVDIR)/release/lib \
+    LIBS += -L$$PWD/3rdparty/opencv/unix/lib \
+        -L$$PWD/3rdparty/libraw/unix/lib \
         -lopencv_core \
         -lopencv_highgui \
         -lopencv_imgcodecs \
@@ -109,7 +106,7 @@ else:unix {
         -lopencv_calib3d \
         -lopencv_video \
         -lraw
-    LIBS += /home/ben/Developer/focas/hfti.o
-    LIBS += /home/ben/Developer/focas/h12.o
-    LIBS += /home/ben/Developer/focas/diff.o
+    LIBS += $$PWD/3rdparty/focas/unix/hfti.o
+    LIBS += $$PWD/3rdparty/focas/unix/h12.o
+    LIBS += $$PWD/3rdparty/focas/unix/diff.o
 }
