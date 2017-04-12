@@ -71,6 +71,7 @@ void MainWindow::updateProgress(QString message, int percentComplete)
 
 void MainWindow::clearProgress(QString message)
 {
+#ifdef WIN32
     QWinTaskbarButton *button = new QWinTaskbarButton(this);
     button->setWindow(this->windowHandle());
 
@@ -78,6 +79,7 @@ void MainWindow::clearProgress(QString message)
     progress->setVisible(false);
 
     qDebug(message.toUtf8().constData());
+#endif // WIN32
 }
 
 void MainWindow::handleButtonStack() {
