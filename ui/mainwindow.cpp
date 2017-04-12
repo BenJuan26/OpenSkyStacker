@@ -37,6 +37,9 @@ MainWindow::MainWindow(QWidget *parent) :
     imageFileFilter << "All files (*)" << "Image files (*.jpg *.jpeg *.png *.tif)";
     imageFileFilter << "Raw image files (*.NEF *.CR2 *.DNG *.RAW)";
 
+    QTableView *table = ui->imageListView;
+    table->setModel(&tableModel);
+
     connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
     connect(ui->buttonSelectTargetImages, SIGNAL (released()), this, SLOT (handleButtonTargetImages()));
     connect(ui->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
@@ -78,9 +81,8 @@ void MainWindow::clearProgress(QString message)
 
     QWinTaskbarProgress *progress = button->progress();
     progress->setVisible(false);
-
-    qDebug(message.toUtf8().constData());
 #endif // WIN32
+    qDebug(message.toUtf8().constData());
 }
 
 void MainWindow::handleButtonStack() {
@@ -122,8 +124,8 @@ void MainWindow::handleButtonRefImage() {
     ImageRecord record = stacker->getImageRecord(refImageFileName);
     record.setType(ImageRecord::LIGHT);
     record.setReference(true);
-    qDebug() << "ISO:" << record.getIso();
-    qDebug() << "Shutter:" << record.getShutter();
+
+    tableModel.append(record);
 
     QFileInfo info(refImageFileName);
     selectedDir = QDir(info.absoluteFilePath());
@@ -145,7 +147,9 @@ void MainWindow::handleButtonTargetImages() {
     stacker->setTargetImageFileNames(targetImageFileNames);
 
     for (int i = 0; i < targetImageFileNames.length(); i++) {
-        qDebug() << targetImageFileNames.at(i);
+        ImageRecord record = stacker->getImageRecord(targetImageFileNames.at(i));
+        record.setType(ImageRecord::LIGHT);
+        tableModel.append(record);
     }
 
     ui->buttonStack->setEnabled(true);
@@ -167,7 +171,9 @@ void MainWindow::handleButtonDarkFrames() {
     stacker->setUseDarks(true);
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
-        qDebug() << darkFrameFileNames.at(i);
+        ImageRecord record = stacker->getImageRecord(darkFrameFileNames.at(i));
+        record.setType(ImageRecord::DARK);
+        tableModel.append(record);
     }
 }
 
@@ -184,7 +190,9 @@ void MainWindow::handleButtonDarkFlatFrames() {
     stacker->setUseDarkFlats(true);
 
     for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
-        qDebug() << darkFlatFrameFileNames.at(i);
+        ImageRecord record = stacker->getImageRecord(darkFlatFrameFileNames.at(i));
+        record.setType(ImageRecord::DARK_FLAT);
+        tableModel.append(record);
     }
 }
 
@@ -201,7 +209,9 @@ void MainWindow::handleButtonFlatFrames() {
     stacker->setUseFlats(true);
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
-        qDebug() << flatFrameFileNames.at(i);
+        ImageRecord record = stacker->getImageRecord(flatFrameFileNames.at(i));
+        record.setType(ImageRecord::FLAT);
+        tableModel.append(record);
     }
 }
 

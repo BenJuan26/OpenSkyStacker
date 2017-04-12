@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     processing/focas.cpp \
     ui/stackergraphicsview.cpp \
     model/triangle.cpp \
-    model/imagerecord.cpp
+    model/imagerecord.cpp \
+    model/imagetablemodel.cpp
 
 HEADERS  += ui/mainwindow.h \
     processing/imagestacker.h \
@@ -49,7 +50,8 @@ HEADERS  += ui/mainwindow.h \
     ui/stackergraphicsview.h \
     processing/hfti.h \
     model/triangle.h \
-    model/imagerecord.h
+    model/imagerecord.h \
+    model/imagetablemodel.h
 
 FORMS    += ui/mainwindow.ui \
     ui/processingdialog.ui

@@ -6,6 +6,7 @@
 #include <opencv2/core/core.hpp>
 #include <processing/imagestacker.h>
 #include <QThread>
+#include "model/imagetablemodel.h"
 
 namespace Ui {
 class MainWindow;
@@ -47,6 +48,7 @@ private:
 
     QDir selectedDir;
     QStringList imageFileFilter;
+    ImageTableModel tableModel;
 };
 
 #endif // MAINWINDOW_H

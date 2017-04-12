@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>721</width>
-    <height>508</height>
+    <height>575</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -37,7 +37,7 @@
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="3" column="0">
-     <widget class="QTableView" name="tableView"/>
+     <widget class="QTableView" name="imageListView"/>
     </item>
     <item row="2" column="0">
      <widget class="StackerGraphicsView" name="imageHolder">
@@ -95,8 +95,8 @@ QPushButton:disabled {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>221</width>
-         <height>192</height>
+         <width>235</width>
+         <height>238</height>
         </rect>
        </property>
        <attribute name="label">
@@ -171,7 +171,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>159</height>
+         <height>181</height>
         </rect>
        </property>
        <attribute name="label">

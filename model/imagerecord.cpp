@@ -2,7 +2,7 @@
 
 ImageRecord::ImageRecord()
 {
-
+    reference = false;
 }
 
 QString ImageRecord::getFilename() const
