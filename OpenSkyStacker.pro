@@ -26,31 +26,31 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    imagestacker.cpp \
-    processingdialog.cpp \
-    star.cpp \
-    stardetector.cpp \
-    pixel.cpp \
-    adjoiningpixel.cpp \
-    focas.cpp \
-    stackergraphicsview.cpp \
-    triangle.cpp
+        ui/mainwindow.cpp \
+    processing/imagestacker.cpp \
+    ui/processingdialog.cpp \
+    model/star.cpp \
+    processing/stardetector.cpp \
+    model/pixel.cpp \
+    model/adjoiningpixel.cpp \
+    processing/focas.cpp \
+    ui/stackergraphicsview.cpp \
+    model/triangle.cpp
 
-HEADERS  += mainwindow.h \
-    imagestacker.h \
-    processingdialog.h \
-    star.h \
-    stardetector.h \
-    pixel.h \
-    adjoiningpixel.h \
-    focas.h \
-    stackergraphicsview.h \
-    hfti.h \
-    triangle.h
+HEADERS  += ui/mainwindow.h \
+    processing/imagestacker.h \
+    ui/processingdialog.h \
+    model/star.h \
+    processing/stardetector.h \
+    model/pixel.h \
+    model/adjoiningpixel.h \
+    processing/focas.h \
+    ui/stackergraphicsview.h \
+    processing/hfti.h \
+    model/triangle.h
 
-FORMS    += mainwindow.ui \
-    processingdialog.ui
+FORMS    += ui/mainwindow.ui \
+    ui/processingdialog.ui
 
 win32 {
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
