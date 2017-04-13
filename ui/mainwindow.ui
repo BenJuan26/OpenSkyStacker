@@ -38,6 +38,11 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="3" column="0">
      <widget class="QTableView" name="imageListView">
+      <property name="styleSheet">
+       <string notr="true">QTableView::item {
+	background-color:white;
+}</string>
+      </property>
       <property name="selectionMode">
        <enum>QAbstractItemView::MultiSelection</enum>
       </property>
