@@ -1,4 +1,5 @@
 #include "imagetablemodel.h"
+#include <QFileInfo>
 
 ImageTableModel::ImageTableModel(QObject *parent) : QAbstractTableModel{parent}
 {
@@ -17,13 +18,19 @@ int ImageTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 {
+    if (role != Qt::DisplayRole && role != Qt::EditRole) return {};
+
     ImageRecord image = list[index.row()];
 
     switch (index.column()) {
-    case 0: return image.getFilename();
+    case 0: {
+        // Strip off the path
+        QFileInfo info(image.getFilename());
+        return info.fileName();
+    }
     case 1:
         switch(image.getType()) {
-        case ImageRecord::LIGHT: return "Light";
+        case ImageRecord::LIGHT: default: return "Light";
         case ImageRecord::DARK: return "Dark";
         case ImageRecord::DARK_FLAT: return "Dark Flat";
         case ImageRecord::FLAT: return "Flat";
@@ -32,6 +39,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
         break;
     case 2: return image.getShutter();
     case 3: return image.getIso();
+    default: return {};
     }
 }
 

@@ -37,7 +37,20 @@
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="3" column="0">
-     <widget class="QTableView" name="imageListView"/>
+     <widget class="QTableView" name="imageListView">
+      <property name="selectionMode">
+       <enum>QAbstractItemView::MultiSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="wordWrap">
+       <bool>false</bool>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="2" column="0">
      <widget class="StackerGraphicsView" name="imageHolder">
@@ -96,7 +109,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>238</height>
+         <height>201</height>
         </rect>
        </property>
        <attribute name="label">
@@ -171,7 +184,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>181</height>
+         <height>201</height>
         </rect>
        </property>
        <attribute name="label">
@@ -244,7 +257,7 @@ QPushButton:disabled {
      <x>0</x>
      <y>0</y>
      <width>721</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="styleSheet">
