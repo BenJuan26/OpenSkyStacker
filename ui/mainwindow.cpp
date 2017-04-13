@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     table->setModel(&tableModel);
     table->setColumnWidth(0,160);
     table->setColumnWidth(1,80);
-    table->setColumnWidth(2,80);
+    table->setColumnWidth(2,100);
     table->setColumnWidth(3,80);
 
     connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));

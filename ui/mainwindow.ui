@@ -38,11 +38,6 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="3" column="0">
      <widget class="QTableView" name="imageListView">
-      <property name="styleSheet">
-       <string notr="true">QTableView::item {
-	background-color:white;
-}</string>
-      </property>
       <property name="selectionMode">
        <enum>QAbstractItemView::MultiSelection</enum>
       </property>
@@ -114,7 +109,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>201</height>
+         <height>238</height>
         </rect>
        </property>
        <attribute name="label">
@@ -189,7 +184,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>201</height>
+         <height>181</height>
         </rect>
        </property>
        <attribute name="label">
@@ -262,7 +257,7 @@ QPushButton:disabled {
      <x>0</x>
      <y>0</y>
      <width>721</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="styleSheet">

@@ -1,5 +1,7 @@
 #include "imagetablemodel.h"
 #include <QFileInfo>
+#include <QColor>
+#include <QBrush>
 
 ImageTableModel::ImageTableModel(QObject *parent) : QAbstractTableModel{parent}
 {
@@ -18,6 +20,9 @@ int ImageTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 {
+    if (role == Qt::BackgroundRole) {
+        return QVariant(QBrush (QColor(Qt::white)));
+    }
     if (role != Qt::DisplayRole && role != Qt::EditRole) return {};
 
     ImageRecord image = list[index.row()];
