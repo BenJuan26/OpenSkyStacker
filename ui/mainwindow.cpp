@@ -45,12 +45,15 @@ MainWindow::MainWindow(QWidget *parent) :
     table->setColumnWidth(3,60);
     table->setColumnWidth(4,140);
 
+    table->setContextMenuPolicy(Qt::CustomContextMenu);
+
     connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
     connect(ui->buttonSelectTargetImages, SIGNAL (released()), this, SLOT (handleButtonTargetImages()));
     connect(ui->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
     connect(ui->buttonSelectDarkFlatFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFlatFrames()));
     connect(ui->buttonSelectFlatFrames, SIGNAL (released()), this, SLOT (handleButtonFlatFrames()));
     connect(stacker, SIGNAL(updateProgress(QString,int)), this, SLOT(updateProgress(QString,int)));
+    connect(table,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(showTableContextMenu(QPoint)));
 
     connect(ui->buttonStack, SIGNAL (released()), this, SLOT (handleButtonStack()));
     connect(this, SIGNAL (stackImages()), stacker, SLOT(process()));
@@ -88,6 +91,22 @@ void MainWindow::clearProgress(QString message)
     progress->setVisible(false);
 #endif // WIN32
     qDebug(message.toUtf8().constData());
+}
+
+void MainWindow::showTableContextMenu(QPoint pos)
+{
+    QMenu *menu = new QMenu(this);
+    QTableView *table = ui->imageListView;
+
+    QAction *setAsReferenceAction = new QAction("Set As Reference", this);
+    connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,SLOT(setFrameAsReference()));
+    menu->addAction(setAsReferenceAction);
+    menu->popup(table->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::setFrameAsReference()
+{
+    qDebug() << "Set frame as reference";
 }
 
 void MainWindow::handleButtonStack() {

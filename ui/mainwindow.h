@@ -27,6 +27,8 @@ public slots:
     void finishedStacking(cv::Mat image);
     void updateProgress(QString message, int percentComplete);
     void clearProgress(QString message);
+    void showTableContextMenu(QPoint pos);
+    void setFrameAsReference();
 
 private slots:
     void handleButtonRefImage();
