@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QTime>
 #include <QFileInfo>
+#include <ctime>
 
 #ifdef WIN32
 #define LIBRAW_NODLL
@@ -37,6 +38,7 @@ ImageRecord ImageStacker::getImageRecord(QString filename)
     record.setFilename(filename);
     record.setIso(other.iso_speed);
     record.setShutter(other.shutter);
+    record.setTimestamp(other.timestamp);
 
     return record;
 }

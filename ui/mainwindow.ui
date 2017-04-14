@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>721</width>
-    <height>575</height>
+    <width>900</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -109,7 +109,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>238</height>
+         <height>314</height>
         </rect>
        </property>
        <attribute name="label">
@@ -184,7 +184,7 @@ QPushButton:disabled {
          <x>0</x>
          <y>0</y>
          <width>235</width>
-         <height>181</height>
+         <height>264</height>
         </rect>
        </property>
        <attribute name="label">
@@ -256,8 +256,8 @@ QPushButton:disabled {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>721</width>
-     <height>22</height>
+     <width>900</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="styleSheet">

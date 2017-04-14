@@ -54,3 +54,13 @@ void ImageRecord::setReference(bool value)
 {
     reference = value;
 }
+
+time_t ImageRecord::getTimestamp() const
+{
+    return timestamp;
+}
+
+void ImageRecord::setTimestamp(const time_t &value)
+{
+    timestamp = value;
+}

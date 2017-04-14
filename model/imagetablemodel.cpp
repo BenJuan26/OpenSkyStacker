@@ -15,7 +15,7 @@ int ImageTableModel::rowCount(const QModelIndex &parent) const
 
 int ImageTableModel::columnCount(const QModelIndex &parent) const
 {
-    return 4;
+    return 5;
 }
 
 QVariant ImageTableModel::data(const QModelIndex &index, int role) const
@@ -30,8 +30,9 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
     switch (index.column()) {
     case 0: {
         // Strip off the path
-        QFileInfo info(image.getFilename());
-        return info.fileName();
+//        QFileInfo info(image.getFilename());
+//        return info.fileName();
+        return image.getFilename();
     }
     case 1:
         switch(image.getType()) {
@@ -42,8 +43,13 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
         case ImageRecord::BIAS: return "Bias";
         }
         break;
-    case 2: return image.getShutter();
+    case 2: return QString::number(image.getShutter()) + " s";
     case 3: return image.getIso();
+    case 4: {
+        std::time_t time = image.getTimestamp();
+        std::tm *timeinfo = std::localtime(&time);
+        return std::asctime(timeinfo);
+    }
     default: return {};
     }
 }
@@ -55,8 +61,9 @@ QVariant ImageTableModel::headerData(int section, Qt::Orientation orientation, i
     switch(section) {
     case 0: return "Filename";
     case 1: return "Type";
-    case 2: return "Shutter Speed";
+    case 2: return "Exposure";
     case 3: return "ISO";
+    case 4: return "Timestamp";
     default: return {};
     }
 }

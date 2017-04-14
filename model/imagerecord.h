@@ -2,6 +2,7 @@
 #define IMAGERECORD_H
 
 #include <QString>
+#include <ctime>
 
 class ImageRecord
 {
@@ -26,11 +27,15 @@ public:
     bool isReference() const;
     void setReference(bool value);
 
+    time_t getTimestamp() const;
+    void setTimestamp(const time_t &value);
+
 private:
     QString filename;
     FRAME_TYPE type;
     float shutter;
     float iso;
+    time_t timestamp;
     bool reference;
 };
 
