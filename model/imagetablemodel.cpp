@@ -2,6 +2,7 @@
 #include <QFileInfo>
 #include <QColor>
 #include <QBrush>
+#include <QFont>
 
 ImageTableModel::ImageTableModel(QObject *parent) : QAbstractTableModel{parent}
 {
@@ -9,6 +10,11 @@ ImageTableModel::ImageTableModel(QObject *parent) : QAbstractTableModel{parent}
 }
 
 int ImageTableModel::rowCount(const QModelIndex &parent) const
+{
+    return list.count();
+}
+
+int ImageTableModel::rowCount()
 {
     return list.count();
 }
@@ -23,19 +29,24 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
     if (role == Qt::BackgroundRole) {
         return QVariant(QBrush (QColor(Qt::white)));
     }
+    if (role == Qt::FontRole && list[index.row()]->isReference()) {
+        QFont font;
+        font.setBold(true);
+        return font;
+    }
     if (role != Qt::DisplayRole && role != Qt::EditRole) return {};
 
-    ImageRecord image = list[index.row()];
+    ImageRecord *image = list[index.row()];
 
     switch (index.column()) {
     case 0: {
         // Strip off the path
 //        QFileInfo info(image.getFilename());
 //        return info.fileName();
-        return image.getFilename();
+        return image->getFilename();
     }
     case 1:
-        switch(image.getType()) {
+        switch(image->getType()) {
         case ImageRecord::LIGHT: default: return "Light";
         case ImageRecord::DARK: return "Dark";
         case ImageRecord::DARK_FLAT: return "Dark Flat";
@@ -43,10 +54,10 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
         case ImageRecord::BIAS: return "Bias";
         }
         break;
-    case 2: return QString::number(image.getShutter()) + " s";
-    case 3: return image.getIso();
+    case 2: return QString::number(image->getShutter()) + " s";
+    case 3: return image->getIso();
     case 4: {
-        std::time_t time = image.getTimestamp();
+        std::time_t time = image->getTimestamp();
         std::tm *timeinfo = std::localtime(&time);
         return std::asctime(timeinfo);
     }
@@ -68,9 +79,14 @@ QVariant ImageTableModel::headerData(int section, Qt::Orientation orientation, i
     }
 }
 
-void ImageTableModel::append(const ImageRecord &record)
+void ImageTableModel::append(ImageRecord *record)
 {
     beginInsertRows({}, list.count(), list.count());
     list.append(record);
     endInsertRows();
+}
+
+ImageRecord *ImageTableModel::at(int i)
+{
+    return list.at(i);
 }

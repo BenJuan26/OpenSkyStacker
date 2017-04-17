@@ -31,8 +31,8 @@ public slots:
     void setFrameAsReference();
 
 private slots:
-    void handleButtonRefImage();
-    void handleButtonTargetImages();
+    //void handleButtonRefImage();
+    void handleButtonLightFrames();
     void handleButtonStack();
     void handleButtonDarkFrames();
     void handleButtonDarkFlatFrames();
@@ -41,6 +41,7 @@ private slots:
 private:
     void setFileImage(QString filename);
     void setMemImage(QImage image);
+    void clearReferenceFrame();
     QImage Mat2QImage(const cv::Mat &src);
     Ui::MainWindow *ui;
 

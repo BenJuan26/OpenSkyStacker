@@ -11,6 +11,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/video/video.hpp>
+#include <QDesktopWidget>
 #ifdef WIN32
 #include <QtWinExtras/QWinTaskbarButton>
 #include <QtWinExtras/QWinTaskbarProgress>
@@ -23,6 +24,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // centre window
+    QRect desktopRect = QApplication::desktop()->availableGeometry(this);
+    QPoint center = desktopRect.center();
+    this->move(center.x() - this->width()*0.5, center.y() - this->height()*0.5);
 
     // cv::Mat can't be passed through a signal without this declaration
     qRegisterMetaType<cv::Mat>("cv::Mat");
@@ -47,8 +53,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     table->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
-    connect(ui->buttonSelectTargetImages, SIGNAL (released()), this, SLOT (handleButtonTargetImages()));
+    //connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
+    connect(ui->buttonSelectLightFrames, SIGNAL (released()), this, SLOT (handleButtonLightFrames()));
     connect(ui->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
     connect(ui->buttonSelectDarkFlatFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFlatFrames()));
     connect(ui->buttonSelectFlatFrames, SIGNAL (released()), this, SLOT (handleButtonFlatFrames()));
@@ -71,6 +77,8 @@ void MainWindow::finishedStacking(Mat image) {
 
 void MainWindow::updateProgress(QString message, int percentComplete)
 {
+    Q_UNUSED(message);
+    Q_UNUSED(percentComplete);
 #ifdef WIN32
     QWinTaskbarButton *button = new QWinTaskbarButton(this);
     button->setWindow(this->windowHandle());
@@ -83,6 +91,7 @@ void MainWindow::updateProgress(QString message, int percentComplete)
 
 void MainWindow::clearProgress(QString message)
 {
+    Q_UNUSED(message);
 #ifdef WIN32
     QWinTaskbarButton *button = new QWinTaskbarButton(this);
     button->setWindow(this->windowHandle());
@@ -90,7 +99,6 @@ void MainWindow::clearProgress(QString message)
     QWinTaskbarProgress *progress = button->progress();
     progress->setVisible(false);
 #endif // WIN32
-    qDebug(message.toUtf8().constData());
 }
 
 void MainWindow::showTableContextMenu(QPoint pos)
@@ -106,7 +114,23 @@ void MainWindow::showTableContextMenu(QPoint pos)
 
 void MainWindow::setFrameAsReference()
 {
-    qDebug() << "Set frame as reference";
+    QTableView *table = ui->imageListView;
+    QItemSelectionModel *select = table->selectionModel();
+    ImageTableModel *model = (ImageTableModel*)table->model();
+    QModelIndexList rows = select->selectedRows();
+
+    if (rows.count() > 1) {
+        QMessageBox msg;
+        msg.setText("Cannot set more than one frame as the reference frame.");
+        msg.exec();
+        return;
+    }
+
+    clearReferenceFrame();
+    int i = rows.at(0).row();
+    qDebug() << "Set reference frame, row" << i;
+    ImageRecord *record = model->at(i);
+    record->setReference(true);
 }
 
 void MainWindow::handleButtonStack() {
@@ -121,6 +145,66 @@ void MainWindow::handleButtonStack() {
 
     stacker->setSaveFilePath(saveFilePath);
 
+    QTableView *table = ui->imageListView;
+    ImageTableModel *model = (ImageTableModel*)table->model();
+
+    bool referenceSet = false;
+    for (int i = 0; i < model->rowCount(); i++) {
+        ImageRecord *record = model->at(i);
+        if (record->isReference()) referenceSet = true;
+    }
+
+    if (!referenceSet) {
+        for (int i = 0; i < model->rowCount(); i++) {
+            ImageRecord *record = model->at(i);
+
+            if (record->getType() == ImageRecord::LIGHT) {
+                record->setReference(true);
+                break;
+            }
+        }
+    }
+
+    QStringList lights;
+    QStringList darks;
+    QStringList darkFlats;
+    QStringList flats;
+
+    for (int i = 0; i < model->rowCount(); i++) {
+        ImageRecord *record = model->at(i);
+        QString filename = record->getFilename();
+
+        switch (record->getType()) {
+        case ImageRecord::LIGHT:
+            if (record->isReference()) {
+                stacker->setRefImageFileName(filename);
+                break;
+            }
+
+            lights.append(filename);
+            break;
+        case ImageRecord::DARK:
+            darks.append(filename);
+            stacker->setUseDarks(true);
+            break;
+        case ImageRecord::DARK_FLAT:
+            darkFlats.append(filename);
+            stacker->setUseDarkFlats(true);
+            break;
+        case ImageRecord::FLAT:
+            flats.append(filename);
+            stacker->setUseFlats(true);
+            break;
+        default:
+            break;
+        }
+    }
+
+    stacker->setTargetImageFileNames(lights);
+    stacker->setDarkFrameFileNames(darks);
+    stacker->setDarkFlatFrameFileNames(darkFlats);
+    stacker->setFlatFrameFileNames(flats);
+
     // asynchronously trigger the processing
     emit stackImages();
 
@@ -134,32 +218,27 @@ void MainWindow::handleButtonStack() {
     }
 }
 
-void MainWindow::handleButtonRefImage() {
-    QFileDialog dialog(this);
-    dialog.setDirectory(QDir::homePath());
-    dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setNameFilters(imageFileFilter);
+//void MainWindow::handleButtonRefImage() {
+//    QFileDialog dialog(this);
+//    dialog.setDirectory(QDir::homePath());
+//    dialog.setFileMode(QFileDialog::ExistingFile);
+//    dialog.setNameFilters(imageFileFilter);
 
-    if (!dialog.exec()) return;
+//    if (!dialog.exec()) return;
 
-    QString refImageFileName = dialog.selectedFiles().at(0);
-    stacker->setRefImageFileName(refImageFileName);
+//    ImageRecord *record = stacker->getImageRecord(refImageFileName);
+//    record->setType(ImageRecord::LIGHT);
+//    record->setReference(true);
 
-    ImageRecord record = stacker->getImageRecord(refImageFileName);
-    record.setType(ImageRecord::LIGHT);
-    record.setReference(true);
+//    tableModel.append(record);
 
-    tableModel.append(record);
+//    QFileInfo info(refImageFileName);
+//    selectedDir = QDir(info.absoluteFilePath());
+//    setFileImage(refImageFileName);
+//    qDebug() << refImageFileName;
+//}
 
-    QFileInfo info(refImageFileName);
-    selectedDir = QDir(info.absoluteFilePath());
-    setFileImage(refImageFileName);
-    qDebug() << refImageFileName;
-
-    ui->buttonSelectTargetImages->setEnabled(true);
-}
-
-void MainWindow::handleButtonTargetImages() {
+void MainWindow::handleButtonLightFrames() {
     QFileDialog dialog(this);
     dialog.setDirectory(selectedDir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
@@ -168,18 +247,14 @@ void MainWindow::handleButtonTargetImages() {
     if (!dialog.exec()) return;
 
     QStringList targetImageFileNames = dialog.selectedFiles();
-    stacker->setTargetImageFileNames(targetImageFileNames);
 
     for (int i = 0; i < targetImageFileNames.length(); i++) {
-        ImageRecord record = stacker->getImageRecord(targetImageFileNames.at(i));
-        record.setType(ImageRecord::LIGHT);
+        ImageRecord *record = stacker->getImageRecord(targetImageFileNames.at(i));
+        record->setType(ImageRecord::LIGHT);
         tableModel.append(record);
     }
 
     ui->buttonStack->setEnabled(true);
-    ui->buttonSelectDarkFrames->setEnabled(true);
-    ui->buttonSelectDarkFlatFrames->setEnabled(true);
-    ui->buttonSelectFlatFrames->setEnabled(true);
 }
 
 void MainWindow::handleButtonDarkFrames() {
@@ -191,12 +266,10 @@ void MainWindow::handleButtonDarkFrames() {
     if (!dialog.exec()) return;
 
     QStringList darkFrameFileNames = dialog.selectedFiles();
-    stacker->setDarkFrameFileNames(darkFrameFileNames);
-    stacker->setUseDarks(true);
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
-        ImageRecord record = stacker->getImageRecord(darkFrameFileNames.at(i));
-        record.setType(ImageRecord::DARK);
+        ImageRecord *record = stacker->getImageRecord(darkFrameFileNames.at(i));
+        record->setType(ImageRecord::DARK);
         tableModel.append(record);
     }
 }
@@ -210,12 +283,10 @@ void MainWindow::handleButtonDarkFlatFrames() {
     if (!dialog.exec()) return;
 
     QStringList darkFlatFrameFileNames = dialog.selectedFiles();
-    stacker->setDarkFlatFrameFileNames(darkFlatFrameFileNames);
-    stacker->setUseDarkFlats(true);
 
     for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
-        ImageRecord record = stacker->getImageRecord(darkFlatFrameFileNames.at(i));
-        record.setType(ImageRecord::DARK_FLAT);
+        ImageRecord *record = stacker->getImageRecord(darkFlatFrameFileNames.at(i));
+        record->setType(ImageRecord::DARK_FLAT);
         tableModel.append(record);
     }
 }
@@ -229,12 +300,10 @@ void MainWindow::handleButtonFlatFrames() {
     if (!dialog.exec()) return;
 
     QStringList flatFrameFileNames = dialog.selectedFiles();
-    stacker->setFlatFrameFileNames(flatFrameFileNames);
-    stacker->setUseFlats(true);
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
-        ImageRecord record = stacker->getImageRecord(flatFrameFileNames.at(i));
-        record.setType(ImageRecord::FLAT);
+        ImageRecord *record = stacker->getImageRecord(flatFrameFileNames.at(i));
+        record->setType(ImageRecord::FLAT);
         tableModel.append(record);
     }
 }
@@ -285,6 +354,17 @@ void MainWindow::setMemImage(QImage image) {
     QGraphicsPixmapItem *p = scene->addPixmap(QPixmap::fromImage(image));
     ui->imageHolder->setScene(scene);
     ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
+}
+
+void MainWindow::clearReferenceFrame()
+{
+    QTableView *table = ui->imageListView;
+    ImageTableModel *model = (ImageTableModel*)table->model();
+
+    for (int i = 0; i < model->rowCount(); i++) {
+        ImageRecord *record = model->at(i);
+        record->setReference(false);
+    }
 }
 
 MainWindow::~MainWindow()

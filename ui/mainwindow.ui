@@ -117,26 +117,16 @@ QPushButton:disabled {
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QPushButton" name="buttonSelectRefImage">
+         <widget class="QPushButton" name="buttonSelectLightFrames">
           <property name="text">
-           <string>Select Reference Image...</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="buttonSelectTargetImages">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Select Target Images...</string>
+           <string>Select Light Frames</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="buttonSelectDarkFrames">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Select Dark Frames</string>
@@ -146,7 +136,7 @@ QPushButton:disabled {
         <item>
          <widget class="QPushButton" name="buttonSelectDarkFlatFrames">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Select Dark Flat Frames</string>
@@ -156,7 +146,7 @@ QPushButton:disabled {
         <item>
          <widget class="QPushButton" name="buttonSelectFlatFrames">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Select Flat Frames</string>

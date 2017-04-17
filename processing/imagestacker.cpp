@@ -26,7 +26,7 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
     bitsPerChannel = BITS_16;
 }
 
-ImageRecord ImageStacker::getImageRecord(QString filename)
+ImageRecord* ImageStacker::getImageRecord(QString filename)
 {
     LibRaw processor;
 
@@ -34,11 +34,11 @@ ImageRecord ImageStacker::getImageRecord(QString filename)
 
     libraw_imgother_t other = processor.imgdata.other;
 
-    ImageRecord record;
-    record.setFilename(filename);
-    record.setIso(other.iso_speed);
-    record.setShutter(other.shutter);
-    record.setTimestamp(other.timestamp);
+    ImageRecord *record = new ImageRecord();
+    record->setFilename(filename);
+    record->setIso(other.iso_speed);
+    record->setShutter(other.shutter);
+    record->setTimestamp(other.timestamp);
 
     return record;
 }
