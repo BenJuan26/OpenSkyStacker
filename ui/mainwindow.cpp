@@ -109,6 +109,11 @@ void MainWindow::showTableContextMenu(QPoint pos)
     QAction *setAsReferenceAction = new QAction("Set As Reference", this);
     connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,SLOT(setFrameAsReference()));
     menu->addAction(setAsReferenceAction);
+
+    QAction *removeImageAction = new QAction("Remove", this);
+    connect(removeImageAction, SIGNAL(triggered(bool)), this, SLOT(removeImages()));
+    menu->addAction(removeImageAction);
+
     menu->popup(table->viewport()->mapToGlobal(pos));
 }
 
@@ -116,7 +121,6 @@ void MainWindow::setFrameAsReference()
 {
     QTableView *table = ui->imageListView;
     QItemSelectionModel *select = table->selectionModel();
-    ImageTableModel *model = (ImageTableModel*)table->model();
     QModelIndexList rows = select->selectedRows();
 
     if (rows.count() > 1) {
@@ -129,8 +133,18 @@ void MainWindow::setFrameAsReference()
     clearReferenceFrame();
     int i = rows.at(0).row();
     qDebug() << "Set reference frame, row" << i;
-    ImageRecord *record = model->at(i);
+    ImageRecord *record = tableModel.at(i);
     record->setReference(true);
+}
+
+void MainWindow::removeImages()
+{
+    QItemSelectionModel *select = ui->imageListView->selectionModel();
+    QModelIndexList rows = select->selectedRows();
+
+    for (int i = 0; i < rows.count(); i++) {
+        tableModel.removeAt(rows.at(i).row() - i);
+    }
 }
 
 void MainWindow::handleButtonStack() {
@@ -145,18 +159,15 @@ void MainWindow::handleButtonStack() {
 
     stacker->setSaveFilePath(saveFilePath);
 
-    QTableView *table = ui->imageListView;
-    ImageTableModel *model = (ImageTableModel*)table->model();
-
     bool referenceSet = false;
-    for (int i = 0; i < model->rowCount(); i++) {
-        ImageRecord *record = model->at(i);
+    for (int i = 0; i < tableModel.rowCount(); i++) {
+        ImageRecord *record = tableModel.at(i);
         if (record->isReference()) referenceSet = true;
     }
 
     if (!referenceSet) {
-        for (int i = 0; i < model->rowCount(); i++) {
-            ImageRecord *record = model->at(i);
+        for (int i = 0; i < tableModel.rowCount(); i++) {
+            ImageRecord *record = tableModel.at(i);
 
             if (record->getType() == ImageRecord::LIGHT) {
                 record->setReference(true);
@@ -170,8 +181,8 @@ void MainWindow::handleButtonStack() {
     QStringList darkFlats;
     QStringList flats;
 
-    for (int i = 0; i < model->rowCount(); i++) {
-        ImageRecord *record = model->at(i);
+    for (int i = 0; i < tableModel.rowCount(); i++) {
+        ImageRecord *record = tableModel.at(i);
         QString filename = record->getFilename();
 
         switch (record->getType()) {
@@ -218,26 +229,6 @@ void MainWindow::handleButtonStack() {
     }
 }
 
-//void MainWindow::handleButtonRefImage() {
-//    QFileDialog dialog(this);
-//    dialog.setDirectory(QDir::homePath());
-//    dialog.setFileMode(QFileDialog::ExistingFile);
-//    dialog.setNameFilters(imageFileFilter);
-
-//    if (!dialog.exec()) return;
-
-//    ImageRecord *record = stacker->getImageRecord(refImageFileName);
-//    record->setType(ImageRecord::LIGHT);
-//    record->setReference(true);
-
-//    tableModel.append(record);
-
-//    QFileInfo info(refImageFileName);
-//    selectedDir = QDir(info.absoluteFilePath());
-//    setFileImage(refImageFileName);
-//    qDebug() << refImageFileName;
-//}
-
 void MainWindow::handleButtonLightFrames() {
     QFileDialog dialog(this);
     dialog.setDirectory(selectedDir);
@@ -253,6 +244,10 @@ void MainWindow::handleButtonLightFrames() {
         record->setType(ImageRecord::LIGHT);
         tableModel.append(record);
     }
+
+    QFileInfo info(targetImageFileNames.at(0));
+    selectedDir = QDir(info.absoluteFilePath());
+    setFileImage(targetImageFileNames.at(0));
 
     ui->buttonStack->setEnabled(true);
 }

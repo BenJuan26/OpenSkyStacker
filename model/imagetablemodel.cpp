@@ -11,6 +11,7 @@ ImageTableModel::ImageTableModel(QObject *parent) : QAbstractTableModel{parent}
 
 int ImageTableModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return list.count();
 }
 
@@ -21,6 +22,7 @@ int ImageTableModel::rowCount()
 
 int ImageTableModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 5;
 }
 
@@ -89,4 +91,11 @@ void ImageTableModel::append(ImageRecord *record)
 ImageRecord *ImageTableModel::at(int i)
 {
     return list.at(i);
+}
+
+void ImageTableModel::removeAt(int i)
+{
+    beginRemoveRows({}, i, i);
+    list.removeAt(i);
+    endRemoveRows();
 }

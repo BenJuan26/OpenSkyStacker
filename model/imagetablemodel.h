@@ -16,6 +16,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     void append(ImageRecord *record);
     ImageRecord* at(int i);
+    void removeAt(int i);
 private:
     QList<ImageRecord*> list;
 };

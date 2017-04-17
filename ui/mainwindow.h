@@ -29,6 +29,7 @@ public slots:
     void clearProgress(QString message);
     void showTableContextMenu(QPoint pos);
     void setFrameAsReference();
+    void removeImages();
 
 private slots:
     //void handleButtonRefImage();
