@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent) :
     imageFileFilter << "All files (*)" << "Image files (*.jpg *.jpeg *.png *.tif)";
     imageFileFilter << "Raw image files (*.NEF *.CR2 *.DNG *.RAW)";
 
+    selectedDir = QDir::home();
+
     QTableView *table = ui->imageListView;
     table->setModel(&tableModel);
     table->setColumnWidth(0,260);
