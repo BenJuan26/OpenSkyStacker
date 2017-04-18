@@ -22,6 +22,7 @@ public:
 
 signals:
     void stackImages();
+    void readQImage(QString filename);
 
 public slots:
     void finishedStacking(cv::Mat image);
@@ -30,6 +31,8 @@ public slots:
     void showTableContextMenu(QPoint pos);
     void setFrameAsReference();
     void removeImages();
+    void imageSelectionChanged();
+    void setImage(QImage image);
 
 private slots:
     //void handleButtonRefImage();

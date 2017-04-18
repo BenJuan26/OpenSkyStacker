@@ -22,7 +22,7 @@ public:
     float getExtendedPixelValue(cv::Mat image, int x, int y);
     cv::Mat generateSkyBackground(cv::Mat image);
 
-    void drawDetectedStars(const std::string& path, uint width, uint height, uint limit, std::vector<Star> stars);
+    void drawDetectedStars(const std::string& path, uint width, uint height, int limit, std::vector<Star> stars);
 
     void test();
 

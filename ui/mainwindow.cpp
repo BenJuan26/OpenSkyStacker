@@ -53,6 +53,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     table->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    QItemSelectionModel *selection = table->selectionModel();
+    connect(selection, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(imageSelectionChanged()));
+
     //connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
     connect(ui->buttonSelectLightFrames, SIGNAL (released()), this, SLOT (handleButtonLightFrames()));
     connect(ui->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
@@ -65,6 +68,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL (stackImages()), stacker, SLOT(process()));
     connect(stacker, SIGNAL(finished(cv::Mat)), this, SLOT(finishedStacking(cv::Mat)));
     connect(stacker, SIGNAL(finishedDialog(QString)), this, SLOT(clearProgress(QString)));
+
+    connect(this, SIGNAL(readQImage(QString)), stacker, SLOT(readQImage(QString)));
+    connect(stacker, SIGNAL(QImageReady(QImage)), this, SLOT(setImage(QImage)));
 }
 
 void MainWindow::finishedStacking(Mat image) {
@@ -130,10 +136,19 @@ void MainWindow::setFrameAsReference()
         return;
     }
 
-    clearReferenceFrame();
     int i = rows.at(0).row();
-    qDebug() << "Set reference frame, row" << i;
     ImageRecord *record = tableModel.at(i);
+
+    if (record->getType() != ImageRecord::LIGHT) {
+        QMessageBox msg;
+        msg.setText("Reference frame must be a light frame.");
+        msg.exec();
+        return;
+    }
+
+    clearReferenceFrame();
+
+    qDebug() << "Set reference frame, row" << i;
     record->setReference(true);
 }
 
@@ -145,6 +160,27 @@ void MainWindow::removeImages()
     for (int i = 0; i < rows.count(); i++) {
         tableModel.removeAt(rows.at(i).row() - i);
     }
+}
+
+void MainWindow::imageSelectionChanged()
+{
+    QItemSelectionModel *selection = ui->imageListView->selectionModel();
+    QModelIndexList rows = selection->selectedRows();
+
+    if (rows.count() != 1)
+        return;
+
+    ImageRecord *record = tableModel.at(rows.at(0).row());
+    // asynchronously read the image from disk
+    emit readQImage(record->getFilename());
+}
+
+void MainWindow::setImage(QImage image)
+{
+    QGraphicsScene* scene = new QGraphicsScene(this);
+    QGraphicsPixmapItem *p = scene->addPixmap(QPixmap::fromImage(image));
+    ui->imageHolder->setScene(scene);
+    ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
 }
 
 void MainWindow::handleButtonStack() {
@@ -247,7 +283,8 @@ void MainWindow::handleButtonLightFrames() {
 
     QFileInfo info(targetImageFileNames.at(0));
     selectedDir = QDir(info.absoluteFilePath());
-    setFileImage(targetImageFileNames.at(0));
+
+    emit readQImage(targetImageFileNames.at(0));
 
     ui->buttonStack->setEnabled(true);
 }
@@ -333,7 +370,6 @@ QImage MainWindow::Mat2QImage(const cv::Mat &src) {
         }
         return dest;
 }
-
 
 void MainWindow::setFileImage(QString filename) {
 

@@ -7,6 +7,7 @@
 #include "stardetector.h"
 #include "focas.h"
 #include "model/imagerecord.h"
+#include <QImage>
 
 class ImageStacker : public QObject
 {
@@ -66,12 +67,16 @@ signals:
     void finished(cv::Mat image);
     void finishedDialog(QString message);
     void updateProgress(QString message, int percentComplete);
+    void QImageReady(QImage image);
 public slots:
     void process();
+    void readQImage(QString filename);
 
 private:
     cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
     cv::Mat averageImages(cv::Mat img1, cv::Mat img2);
+
+    QImage Mat2QImage(const cv::Mat &src);
 
     BITS_PER_CHANNEL bitsPerChannel;
 
