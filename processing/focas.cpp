@@ -373,7 +373,5 @@ std::vector<std::vector<float> > findTransform(std::vector<std::vector<int> > ma
     qDebug() << xfrm[0][0] << xfrm[0][1] << xfrm[0][2];
     qDebug() << xfrm[1][0] << xfrm[1][1] << xfrm[1][2];
 
-    printf ("Number of matches = %d, RMS of fit = %8.2f\n", m, rms);
-
     return xfrm;
 }

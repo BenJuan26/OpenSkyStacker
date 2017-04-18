@@ -7,6 +7,8 @@
 
 QT       += core gui
 
+TRANSLATIONS += openskystacker_es.ts
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 win32: QT += winextras

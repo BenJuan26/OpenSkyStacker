@@ -3,6 +3,7 @@
 ImageRecord::ImageRecord()
 {
     reference = false;
+    checked = true;
 }
 
 QString ImageRecord::getFilename() const
@@ -63,4 +64,14 @@ time_t ImageRecord::getTimestamp() const
 void ImageRecord::setTimestamp(const time_t &value)
 {
     timestamp = value;
+}
+
+bool ImageRecord::isChecked() const
+{
+    return checked;
+}
+
+void ImageRecord::setChecked(bool value)
+{
+    checked = value;
 }

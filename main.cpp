@@ -1,5 +1,6 @@
 #include "ui/mainwindow.h"
 #include <QApplication>
+#include <QTranslator>
 
 // cv::Mat can't be passed through a signal without this declaration
 Q_DECLARE_METATYPE(cv::Mat)

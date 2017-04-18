@@ -23,7 +23,7 @@ int ImageTableModel::rowCount()
 int ImageTableModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 5;
+    return 6;
 }
 
 QVariant ImageTableModel::data(const QModelIndex &index, int role) const
@@ -36,6 +36,15 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
         font.setBold(true);
         return font;
     }
+    if (role == Qt::CheckStateRole) {
+        if (index.column() == 5) {
+            if (list.at(index.row())->isChecked() == true)
+                return Qt::Checked;
+            return Qt::Unchecked;
+        }
+        return {};
+    }
+
     if (role != Qt::DisplayRole && role != Qt::EditRole) return {};
 
     ImageRecord *image = list[index.row()];
@@ -49,11 +58,11 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
     }
     case 1:
         switch(image->getType()) {
-        case ImageRecord::LIGHT: default: return "Light";
-        case ImageRecord::DARK: return "Dark";
-        case ImageRecord::DARK_FLAT: return "Dark Flat";
-        case ImageRecord::FLAT: return "Flat";
-        case ImageRecord::BIAS: return "Bias";
+        case ImageRecord::LIGHT: default: return tr("Light");
+        case ImageRecord::DARK: return tr("Dark");
+        case ImageRecord::DARK_FLAT: return tr("Dark Flat");
+        case ImageRecord::FLAT: return tr("Flat");
+        case ImageRecord::BIAS: return tr("Bias");
         }
         break;
     case 2: return QString::number(image->getShutter()) + " s";
@@ -72,11 +81,11 @@ QVariant ImageTableModel::headerData(int section, Qt::Orientation orientation, i
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole) return {};
 
     switch(section) {
-    case 0: return "Filename";
-    case 1: return "Type";
-    case 2: return "Exposure";
-    case 3: return "ISO";
-    case 4: return "Timestamp";
+    case 0: return tr("Filename");
+    case 1: return tr("Type");
+    case 2: return tr("Exposure");
+    case 3: return tr("ISO");
+    case 4: return tr("Timestamp");
     default: return {};
     }
 }
@@ -98,4 +107,28 @@ void ImageTableModel::removeAt(int i)
     beginRemoveRows({}, i, i);
     list.removeAt(i);
     endRemoveRows();
+}
+
+bool ImageTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (index.column() == 5) {
+        bool checked = false;
+        if (value.toInt() == Qt::Checked)
+            checked = true;
+        ImageRecord *record = list.at(index.row());
+        record->setChecked(checked);
+    }
+
+    return true;
+}
+
+Qt::ItemFlags ImageTableModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags flags = QAbstractTableModel::flags(index);
+    if (index.column() == 5) {
+        flags |= Qt::ItemIsUserCheckable;
+        flags |= Qt::ItemIsEnabled;
+    }
+
+    return flags;
 }

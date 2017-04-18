@@ -3,6 +3,7 @@
 
 #include <QAbstractTableModel>
 #include "imagerecord.h"
+#include <QDebug>
 
 
 class ImageTableModel : public QAbstractTableModel
@@ -17,6 +18,8 @@ public:
     void append(ImageRecord *record);
     ImageRecord* at(int i);
     void removeAt(int i);
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 private:
     QList<ImageRecord*> list;
 };

@@ -40,8 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
     stacker->moveToThread(workerThread);
     workerThread->start();
 
-    imageFileFilter << "All files (*)" << "Image files (*.jpg *.jpeg *.png *.tif)";
-    imageFileFilter << "Raw image files (*.NEF *.CR2 *.DNG *.RAW)";
+    imageFileFilter << tr("All files (*)") << tr("Image files (*.jpg *.jpeg *.png *.tif)");
+    imageFileFilter << tr("Raw image files (*.NEF *.CR2 *.DNG *.RAW)");
 
     selectedDir = QDir::home();
 
@@ -114,11 +114,11 @@ void MainWindow::showTableContextMenu(QPoint pos)
     QMenu *menu = new QMenu(this);
     QTableView *table = ui->imageListView;
 
-    QAction *setAsReferenceAction = new QAction("Set As Reference", this);
+    QAction *setAsReferenceAction = new QAction(tr("Set As Reference"), this);
     connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,SLOT(setFrameAsReference()));
     menu->addAction(setAsReferenceAction);
 
-    QAction *removeImageAction = new QAction("Remove", this);
+    QAction *removeImageAction = new QAction(tr("Remove"), this);
     connect(removeImageAction, SIGNAL(triggered(bool)), this, SLOT(removeImages()));
     menu->addAction(removeImageAction);
 
@@ -133,7 +133,7 @@ void MainWindow::setFrameAsReference()
 
     if (rows.count() > 1) {
         QMessageBox msg;
-        msg.setText("Cannot set more than one frame as the reference frame.");
+        msg.setText(tr("Cannot set more than one frame as the reference frame."));
         msg.exec();
         return;
     }
@@ -143,7 +143,7 @@ void MainWindow::setFrameAsReference()
 
     if (record->getType() != ImageRecord::LIGHT) {
         QMessageBox msg;
-        msg.setText("Reference frame must be a light frame.");
+        msg.setText(tr("Reference frame must be a light frame."));
         msg.exec();
         return;
     }
@@ -188,7 +188,7 @@ void MainWindow::setImage(QImage image)
 void MainWindow::handleButtonStack() {
 
     QString saveFilePath = QFileDialog::getSaveFileName(
-                this, "Select Output Image", selectedDir.absolutePath(), "TIFF Image (*.tif)");
+                this, tr("Select Output Image"), selectedDir.absolutePath(), tr("TIFF Image (*.tif)"));
 
     if (saveFilePath.isEmpty()) {
         qDebug() << "No output file selected. Cancelling.";
