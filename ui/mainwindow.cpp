@@ -47,11 +47,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QTableView *table = ui->imageListView;
     table->setModel(&tableModel);
-    table->setColumnWidth(0,260);
-    table->setColumnWidth(1,80);
+    table->setColumnWidth(0,25);
+    table->setColumnWidth(1,260);
     table->setColumnWidth(2,80);
-    table->setColumnWidth(3,60);
-    table->setColumnWidth(4,140);
+    table->setColumnWidth(3,80);
+    table->setColumnWidth(4,60);
+    table->setColumnWidth(5,140);
 
     table->setContextMenuPolicy(Qt::CustomContextMenu);
 

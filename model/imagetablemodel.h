@@ -4,10 +4,12 @@
 #include <QAbstractTableModel>
 #include "imagerecord.h"
 #include <QDebug>
-
+#include <QCoreApplication>
 
 class ImageTableModel : public QAbstractTableModel
 {
+    Q_DECLARE_TR_FUNCTIONS(ImageTableModel)
+
 public:
     ImageTableModel(QObject *parent = {});
     int rowCount(const QModelIndex &parent) const override;

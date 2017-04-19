@@ -65,7 +65,7 @@
     <message>
         <location filename="processing/imagestacker.cpp" line="142"/>
         <source>Stacking completed</source>
-        <translation type="unfinished"></translation>
+        <translation>Terminado</translation>
     </message>
     <message numerus="yes">
         <location filename="processing/imagestacker.cpp" line="251"/>
@@ -97,27 +97,27 @@
     <message>
         <location filename="model/imagetablemodel.cpp" line="61"/>
         <source>Light</source>
-        <translation type="unfinished"></translation>
+        <translation>Light</translation>
     </message>
     <message>
         <location filename="model/imagetablemodel.cpp" line="62"/>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>Dark</translation>
     </message>
     <message>
         <location filename="model/imagetablemodel.cpp" line="63"/>
         <source>Dark Flat</source>
-        <translation type="unfinished"></translation>
+        <translation>Dark Flat</translation>
     </message>
     <message>
         <location filename="model/imagetablemodel.cpp" line="64"/>
         <source>Flat</source>
-        <translation type="unfinished"></translation>
+        <translation>Flat</translation>
     </message>
     <message>
         <location filename="model/imagetablemodel.cpp" line="65"/>
         <source>Bias</source>
-        <translation type="unfinished"></translation>
+        <translation>Bias</translation>
     </message>
     <message>
         <location filename="model/imagetablemodel.cpp" line="84"/>
@@ -132,17 +132,17 @@
     <message>
         <location filename="model/imagetablemodel.cpp" line="86"/>
         <source>Exposure</source>
-        <translation type="unfinished"></translation>
+        <translation>Exposición</translation>
     </message>
     <message>
         <location filename="model/imagetablemodel.cpp" line="87"/>
         <source>ISO</source>
-        <translation type="unfinished"></translation>
+        <translation>ISO</translation>
     </message>
     <message>
         <location filename="model/imagetablemodel.cpp" line="88"/>
         <source>Timestamp</source>
-        <translation>Hora</translation>
+        <translation>Marca de tiempo</translation>
     </message>
 </context>
 <context>
@@ -150,12 +150,12 @@
     <message>
         <location filename="ui/mainwindow.ui" line="20"/>
         <source>OpenSkyStacker</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenSkyStacker</translation>
     </message>
     <message>
         <location filename="ui/mainwindow.ui" line="116"/>
         <source>Image Selection</source>
-        <translation>Selección de imagen</translation>
+        <translation>Selección de imágenes</translation>
     </message>
     <message>
         <location filename="ui/mainwindow.ui" line="122"/>
@@ -185,17 +185,17 @@
     <message>
         <location filename="ui/mainwindow.ui" line="181"/>
         <source>Image Manipulation</source>
-        <translation type="unfinished"></translation>
+        <translation>Manipulación de imágenes</translation>
     </message>
     <message>
         <location filename="ui/mainwindow.ui" line="196"/>
         <source>Brightness</source>
-        <translation type="unfinished"></translation>
+        <translation>Brillo</translation>
     </message>
     <message>
         <location filename="ui/mainwindow.ui" line="210"/>
         <source>Contrast</source>
-        <translation type="unfinished"></translation>
+        <translation>Contraste</translation>
     </message>
     <message>
         <location filename="ui/mainwindow.cpp" line="43"/>
@@ -248,7 +248,7 @@
     <message>
         <location filename="ui/processingdialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>Diálogo</translation>
     </message>
 </context>
 </TS>
