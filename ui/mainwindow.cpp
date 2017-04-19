@@ -123,6 +123,14 @@ void MainWindow::showTableContextMenu(QPoint pos)
     connect(removeImageAction, SIGNAL(triggered(bool)), this, SLOT(removeImages()));
     menu->addAction(removeImageAction);
 
+    QAction *checkImageAction = new QAction(tr("Check"), this);
+    connect(checkImageAction, SIGNAL(triggered(bool)), this, SLOT(checkImages()));
+    menu->addAction(checkImageAction);
+
+    QAction *uncheckImageAction = new QAction(tr("Uncheck"), this);
+    connect(uncheckImageAction, SIGNAL(triggered(bool)), this, SLOT(uncheckImages()));
+    menu->addAction(uncheckImageAction);
+
     menu->popup(table->viewport()->mapToGlobal(pos));
 }
 
@@ -186,6 +194,28 @@ void MainWindow::setImage(QImage image)
     ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
 }
 
+void MainWindow::checkImages()
+{
+    QItemSelectionModel *selection = ui->imageListView->selectionModel();
+    QModelIndexList rows = selection->selectedRows();
+
+    for (int i = 0; i < rows.count(); i++) {
+        ImageRecord *record = tableModel.at(rows.at(i).row());
+        record->setChecked(true);
+    }
+}
+
+void MainWindow::uncheckImages()
+{
+    QItemSelectionModel *selection = ui->imageListView->selectionModel();
+    QModelIndexList rows = selection->selectedRows();
+
+    for (int i = 0; i < rows.count(); i++) {
+        ImageRecord *record = tableModel.at(rows.at(i).row());
+        record->setChecked(false);
+    }
+}
+
 void MainWindow::handleButtonStack() {
 
     QString saveFilePath = QFileDialog::getSaveFileName(
@@ -222,6 +252,10 @@ void MainWindow::handleButtonStack() {
 
     for (int i = 0; i < tableModel.rowCount(); i++) {
         ImageRecord *record = tableModel.at(i);
+
+        if (!record->isChecked())
+            continue;
+
         QString filename = record->getFilename();
 
         switch (record->getType()) {

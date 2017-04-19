@@ -33,6 +33,8 @@ public slots:
     void removeImages();
     void imageSelectionChanged();
     void setImage(QImage image);
+    void checkImages();
+    void uncheckImages();
 
 private slots:
     //void handleButtonRefImage();
