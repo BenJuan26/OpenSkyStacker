@@ -147,6 +147,12 @@ void ImageStacker::process() {
 void ImageStacker::readQImage(QString filename)
 {
     cv::Mat image = readImage(filename);
+
+    double min, max;
+    cv::minMaxLoc(image, &min, &max);
+
+    image *= (1.0/max);
+
     emit QImageReady(Mat2QImage(image));
 }
 
