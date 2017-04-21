@@ -88,15 +88,13 @@ void ImageStacker::process() {
     QString message;
 
     for (int k = 0; k < targetImageFileNames.length() && !cancel; k++) {
-        message = tr("Reading light frame %n", "", k+2)
-                + tr(" of %n", "", targetImageFileNames.length() + 1);
+        message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
         qDebug() << message;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
         Mat targetImage = readImage(targetImageFileNames.at(k));
 
 
-        message = tr("Calibrating light frame %n", "", k+2)
-                + tr(" of %n", "", targetImageFileNames.length() + 1);
+        message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
         qDebug() << message;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
@@ -110,8 +108,7 @@ void ImageStacker::process() {
         }
 
         // -------------- ALIGNMENT ---------------
-        message = tr("Aligning image %n", "", k+2) + tr(" of %n", "", targetImageFileNames.length() + 1);
-        qDebug() << message;
+        message = tr("Aligning image %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
@@ -120,7 +117,7 @@ void ImageStacker::process() {
         if (cancel) break;
 
         // -------------- STACKING ---------------
-        message = tr("Stacking image %n", "", k+2) + tr(" of %n", "", targetImageFileNames.length() + 1);
+        message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
         qDebug() << message;
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
@@ -251,15 +248,16 @@ void ImageStacker::stackDarks()
 
     QString message;
 
-    for (int i = 0; i < darkFrameFileNames.length() && !cancel; i++) {
+    for (int i = 1; i < darkFrameFileNames.length() && !cancel; i++) {
         Mat dark = readImage(darkFrameFileNames.at(i));
 
-        message = tr("Stacking dark frame %n", "", i+2) + tr(" of %n", "", darkFrameFileNames.length() + 1);
+        message = tr("Stacking dark frame %1 of %2").arg(QString::number(i+1), QString::number(darkFrameFileNames.length()));
         qDebug() << message;
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
-        result = averageImages(result, dark);
+        result += dark;
     }
+    result /= darkFrameFileNames.size();
 
     masterDark = result;
 }
@@ -271,15 +269,17 @@ void ImageStacker::stackDarkFlats()
 
     QString message;
 
-    for (int i = 0; i < darkFlatFrameFileNames.length() && !cancel; i++) {
+    for (int i = 1; i < darkFlatFrameFileNames.length() && !cancel; i++) {
         Mat dark = readImage(darkFlatFrameFileNames.at(i));
 
-        message = tr("Stacking dark flat frame %n", "", i+2) + tr(" of %n", "", darkFlatFrameFileNames.length() + 1);
+        message = tr("Stacking dark flat frame %1 of %2").arg(QString::number(i+1), QString::number(darkFlatFrameFileNames.length()));
         qDebug() << message;
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
-        result = averageImages(result, dark);
+        result += dark;
     }
+
+    result /= darkFlatFrameFileNames.size();
 
     masterDarkFlat = result;
 }
@@ -297,13 +297,15 @@ void ImageStacker::stackFlats()
     for (int i = 0; i < flatFrameFileNames.length() && !cancel; i++) {
         Mat flat = readImage(flatFrameFileNames.at(i));
 
-        message = tr("Stacking flat frame %n", "", i+2) + tr(" of %n", "", flatFrameFileNames.length() + 1);
+        message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flatFrameFileNames.length()));
         qDebug() << message;
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
         if (useDarkFlats) flat -= masterDarkFlat;
-        result = averageImages(result, flat);
+        result += flat;
     }
+
+    result /= flatFrameFileNames.size();
 
     Scalar meanScalar = cv::mean(result);
     float avg = (meanScalar.val[0] + meanScalar.val[1] + meanScalar.val[2])/3;

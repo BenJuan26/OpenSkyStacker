@@ -16,77 +16,92 @@
             <numerusform>Cargando imagen light 1 de %n</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
+    <message>
         <location filename="processing/imagestacker.cpp" line="91"/>
-        <source>Reading light frame %n</source>
-        <translation>
-            <numerusform>Cargando imagen light %n</numerusform>
-            <numerusform>Cargando imagen light %n</numerusform>
-        </translation>
+        <source>Reading light frame %1 of %2</source>
+        <oldsource>Reading light frame %n</oldsource>
+        <translation>Cargando imagen light %1 de %2</translation>
+    </message>
+    <message>
+        <location filename="processing/imagestacker.cpp" line="97"/>
+        <source>Calibrating light frame %1 of %2</source>
+        <translation>Calibrando imagen light %1 de %2</translation>
+    </message>
+    <message>
+        <location filename="processing/imagestacker.cpp" line="111"/>
+        <source>Aligning image %1 of %2</source>
+        <translation>Alineando imagen %1 de %2</translation>
+    </message>
+    <message>
+        <location filename="processing/imagestacker.cpp" line="120"/>
+        <source>Stacking image %1 of %2</source>
+        <translation>Combinando imagen %1 de %2</translation>
+    </message>
+    <message>
+        <location filename="processing/imagestacker.cpp" line="254"/>
+        <source>Stacking dark frame %1 of %2</source>
+        <translation>Combinando imagen dark %1 de %2</translation>
+    </message>
+    <message>
+        <location filename="processing/imagestacker.cpp" line="274"/>
+        <source>Stacking dark flat frame %1 of %2</source>
+        <translation>Combinando imagen dark flat %1 de %2</translation>
+    </message>
+    <message>
+        <location filename="processing/imagestacker.cpp" line="297"/>
+        <source>Stacking flat frame %1 of %2</source>
+        <translation>Combinando imagen flat %1 de %2</translation>
     </message>
     <message numerus="yes">
-        <location filename="processing/imagestacker.cpp" line="92"/>
-        <location filename="processing/imagestacker.cpp" line="99"/>
-        <location filename="processing/imagestacker.cpp" line="113"/>
-        <location filename="processing/imagestacker.cpp" line="123"/>
-        <location filename="processing/imagestacker.cpp" line="251"/>
-        <location filename="processing/imagestacker.cpp" line="271"/>
-        <location filename="processing/imagestacker.cpp" line="294"/>
         <source> of %n</source>
-        <translation>
+        <translation type="vanished">
             <numerusform> de %n</numerusform>
             <numerusform> de %n</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="processing/imagestacker.cpp" line="98"/>
         <source>Calibrating light frame %n</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Calibrando imagen light %n</numerusform>
             <numerusform>Calibrando imagen light %n</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="processing/imagestacker.cpp" line="113"/>
         <source>Aligning image %n</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Alineando imagen %n</numerusform>
             <numerusform>Alineando imagen %n</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="processing/imagestacker.cpp" line="123"/>
         <source>Stacking image %n</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Combinando imagen %n</numerusform>
             <numerusform>Combinando imagen %n</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="processing/imagestacker.cpp" line="142"/>
+        <location filename="processing/imagestacker.cpp" line="139"/>
         <source>Stacking completed</source>
         <translation>Terminado</translation>
     </message>
     <message numerus="yes">
-        <location filename="processing/imagestacker.cpp" line="251"/>
         <source>Stacking dark frame %n</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Combinando imagen dark %n</numerusform>
             <numerusform>Combinando imagen dark %n</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="processing/imagestacker.cpp" line="271"/>
         <source>Stacking dark flat frame %n</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Combinando imagen dark flat %n</numerusform>
             <numerusform>Combinando imagen dark flat %n</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="processing/imagestacker.cpp" line="294"/>
         <source>Stacking flat frame %n</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Combinando imagen flat %n</numerusform>
             <numerusform>Combinando imagen flat %n</numerusform>
         </translation>
@@ -95,52 +110,52 @@
 <context>
     <name>ImageTableModel</name>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="61"/>
+        <location filename="model/imagetablemodel.cpp" line="64"/>
         <source>Light</source>
         <translation>Light</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="62"/>
+        <location filename="model/imagetablemodel.cpp" line="65"/>
         <source>Dark</source>
         <translation>Dark</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="63"/>
+        <location filename="model/imagetablemodel.cpp" line="66"/>
         <source>Dark Flat</source>
         <translation>Dark Flat</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="64"/>
+        <location filename="model/imagetablemodel.cpp" line="67"/>
         <source>Flat</source>
         <translation>Flat</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="65"/>
+        <location filename="model/imagetablemodel.cpp" line="68"/>
         <source>Bias</source>
         <translation>Bias</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="84"/>
+        <location filename="model/imagetablemodel.cpp" line="92"/>
         <source>Filename</source>
         <translation>Nombre del archivo</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="85"/>
+        <location filename="model/imagetablemodel.cpp" line="93"/>
         <source>Type</source>
         <translation>Tipo</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="86"/>
+        <location filename="model/imagetablemodel.cpp" line="94"/>
         <source>Exposure</source>
         <translation>Exposición</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="87"/>
+        <location filename="model/imagetablemodel.cpp" line="95"/>
         <source>ISO</source>
         <translation>ISO</translation>
     </message>
     <message>
-        <location filename="model/imagetablemodel.cpp" line="88"/>
+        <location filename="model/imagetablemodel.cpp" line="96"/>
         <source>Timestamp</source>
         <translation>Marca de tiempo</translation>
     </message>
@@ -213,32 +228,42 @@
         <translation>Imágenes raw (*.NEF *.CR2 *.DNG *.RAW)</translation>
     </message>
     <message>
-        <location filename="ui/mainwindow.cpp" line="117"/>
+        <location filename="ui/mainwindow.cpp" line="118"/>
         <source>Set As Reference</source>
         <translation>Imágenes raw</translation>
     </message>
     <message>
-        <location filename="ui/mainwindow.cpp" line="121"/>
+        <location filename="ui/mainwindow.cpp" line="122"/>
         <source>Remove</source>
         <translation>Quitar</translation>
     </message>
     <message>
-        <location filename="ui/mainwindow.cpp" line="136"/>
+        <location filename="ui/mainwindow.cpp" line="126"/>
+        <source>Check</source>
+        <translation>Usar</translation>
+    </message>
+    <message>
+        <location filename="ui/mainwindow.cpp" line="130"/>
+        <source>Uncheck</source>
+        <translation>No Usar</translation>
+    </message>
+    <message>
+        <location filename="ui/mainwindow.cpp" line="145"/>
         <source>Cannot set more than one frame as the reference frame.</source>
         <translation>Sólo una imagen puede ser la imágen de referencia.</translation>
     </message>
     <message>
-        <location filename="ui/mainwindow.cpp" line="146"/>
+        <location filename="ui/mainwindow.cpp" line="155"/>
         <source>Reference frame must be a light frame.</source>
         <translation>La imagen de referencia debe ser una imagen light.</translation>
     </message>
     <message>
-        <location filename="ui/mainwindow.cpp" line="191"/>
+        <location filename="ui/mainwindow.cpp" line="222"/>
         <source>Select Output Image</source>
         <translation>Seleccionar imagen final</translation>
     </message>
     <message>
-        <location filename="ui/mainwindow.cpp" line="191"/>
+        <location filename="ui/mainwindow.cpp" line="222"/>
         <source>TIFF Image (*.tif)</source>
         <translation>Imágenes TIFF (*.tif)</translation>
     </message>
