@@ -4,7 +4,7 @@ Multi-platform astroimaging stacker.
 
 ## Setup
 
-Qt and OpenCV are required for this project. Instructions on how to install OpenCV with Qt on Linux and Windows can be found [here](https://wiki.qt.io/OpenCV_with_Qt).
+Qt 5 is required for this project. In order to prevent some relatively severe memory issues, building for 64-bit is required.
 
 ## Building
 
