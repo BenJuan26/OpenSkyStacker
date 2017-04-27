@@ -15,15 +15,14 @@
 using namespace cv;
 
 const std::vector<QString> ImageStacker::RAW_EXTENSIONS = {"3fr", "ari", "arw", "bay", "crw", "cr2",
-                                                                  "cap", "data", "dcs", "dcr", "dng", "drf", "eip", "erf", "fff", "gpr",
-                                                                  "iiq", "k25", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw", "obm",
-                                                                  "orf", "pef", "ptx", "pxn", "r3d", "raf", "raw", "rwl", "rw2", "rwz",
-                                                                  "sr2", "srf", "srw", "x3f"};
+        "cap", "data", "dcs", "dcr", "dng", "drf", "eip", "erf", "fff", "gpr", "iiq", "k25", "kdc",
+        "mdc", "mef", "mos", "mrw", "nef", "nrw", "obm", "orf", "pef", "ptx", "pxn", "r3d", "raf",
+        "raw", "rwl", "rw2", "rwz", "sr2", "srf", "srw", "x3f"};
 
 ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 {
     cancel = false;
-    bitsPerChannel = BITS_16;
+    bitsPerChannel = BITS_32;
 }
 
 ImageRecord* ImageStacker::getImageRecord(QString filename)
@@ -49,6 +48,9 @@ void ImageStacker::process() {
     currentOperation = 0;
     totalOperations = targetImageFileNames.length() * 2 + 1;
 
+    if (useBias) {
+        totalOperations += biasFrameFileNames.length();
+    }
     if (useDarks) {
         totalOperations += darkFrameFileNames.length();
     }
@@ -59,6 +61,9 @@ void ImageStacker::process() {
         totalOperations += flatFrameFileNames.length();
     }
 
+    if (useBias) {
+        stackBias();
+    }
     if (useDarks) {
         stackDarks();
     }
@@ -72,6 +77,8 @@ void ImageStacker::process() {
     emit updateProgress(tr("Reading light frame 1 of %n", "", targetImageFileNames.length() + 1), 0);
 
     refImage = readImage(refImageFileName);
+
+    if (useBias) refImage -= masterBias;
     if (useDarks) {
         refImage -= masterDark;
     }
@@ -79,7 +86,7 @@ void ImageStacker::process() {
         if (bitsPerChannel == BITS_16)
             cv::divide(refImage, masterFlat, refImage, 1, CV_16U);
         else if (bitsPerChannel == BITS_32)
-            cv::divide(refImage, masterFlat, refImage, 1, CV_32F);
+            refImage /= masterFlat;
     }
 
     // 32-bit float no matter what for the working image
@@ -99,12 +106,13 @@ void ImageStacker::process() {
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
         // ------------- CALIBRATION --------------
+        if (useBias) targetImage -= masterBias;
         if (useDarks) targetImage -= masterDark;
         if (useFlats) {
             if (bitsPerChannel == BITS_16)
                 cv::divide(targetImage, masterFlat, targetImage, 1, CV_16U);
             else if (bitsPerChannel == BITS_32)
-                cv::divide(targetImage, masterFlat, targetImage, 1, CV_32F);
+                targetImage /= masterFlat;
         }
 
         // -------------- ALIGNMENT ---------------
@@ -148,6 +156,7 @@ void ImageStacker::readQImage(QString filename)
     double min, max;
     cv::minMaxLoc(image, &min, &max);
 
+    // stretch intensity levels
     image *= (1.0/max);
 
     emit QImageReady(Mat2QImage(image));
@@ -244,6 +253,8 @@ QImage ImageStacker::Mat2QImage(const Mat &src)
 void ImageStacker::stackDarks()
 {
     Mat dark1 = readImage(darkFrameFileNames.at(0));
+    if (useBias) dark1 -= masterBias;
+
     Mat result = dark1.clone();
 
     QString message;
@@ -255,9 +266,12 @@ void ImageStacker::stackDarks()
         qDebug() << message;
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+
+        if (useBias) dark -= masterBias;
         result += dark;
     }
-    result /= darkFrameFileNames.size();
+
+    result /= darkFrameFileNames.length();
 
     masterDark = result;
 }
@@ -265,6 +279,8 @@ void ImageStacker::stackDarks()
 void ImageStacker::stackDarkFlats()
 {
     Mat darkFlat1 = readImage(darkFlatFrameFileNames.at(0));
+    if (useBias) darkFlat1 -= masterBias;
+
     Mat result = darkFlat1.clone();
 
     QString message;
@@ -276,10 +292,12 @@ void ImageStacker::stackDarkFlats()
         qDebug() << message;
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+
+        if (useBias) dark -= masterBias;
         result += dark;
     }
 
-    result /= darkFlatFrameFileNames.size();
+    result /= darkFlatFrameFileNames.length();
 
     masterDarkFlat = result;
 }
@@ -290,31 +308,60 @@ void ImageStacker::stackFlats()
     Mat flat1 = readImage(flatFrameFileNames.at(0));
     Mat result = flat1.clone();
 
+    if (useBias) result -= masterBias;
     if (useDarkFlats) result -= masterDarkFlat;
 
     QString message;
 
-    for (int i = 0; i < flatFrameFileNames.length() && !cancel; i++) {
+    for (int i = 1; i < flatFrameFileNames.length() && !cancel; i++) {
         Mat flat = readImage(flatFrameFileNames.at(i));
 
         message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flatFrameFileNames.length()));
         qDebug() << message;
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+
+        if (useBias) flat -= masterBias;
         if (useDarkFlats) flat -= masterDarkFlat;
         result += flat;
     }
 
-    result /= flatFrameFileNames.size();
+    result /= flatFrameFileNames.length();
 
+    // scale the flat frame so that the average value is 1.0
+    // since we're dividing, flat values darker than the average value will brighten the image
+    //  and values brighter than the average will darken the image, flattening the field
     Scalar meanScalar = cv::mean(result);
     float avg = (meanScalar.val[0] + meanScalar.val[1] + meanScalar.val[2])/3;
 
     qDebug() << "Average: " << avg;
     if (bitsPerChannel == BITS_16)
-        result.convertTo(masterFlat, CV_32F, 1/avg);
+        result.convertTo(masterFlat, CV_32F, 1.0/avg);
     else if (bitsPerChannel == BITS_32)
         masterFlat = result / avg;
+}
+
+void ImageStacker::stackBias()
+{
+    Mat bias1 = readImage(biasFrameFileNames.at(0));
+    Mat result = bias1.clone();
+
+    QString message;
+
+    for (int i = 1; i < biasFrameFileNames.length() && !cancel; i++) {
+        Mat bias = readImage(biasFrameFileNames.at(i));
+
+        message = tr("Stacking bias frame %1 of %2").arg(QString::number(i+1), QString::number(biasFrameFileNames.length()));
+        qDebug() << message;
+        currentOperation++;
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+
+        result += bias;
+    }
+
+    result /= biasFrameFileNames.length();
+
+    masterBias = result;
 }
 
 Mat ImageStacker::convertAndScaleImage(Mat image)
@@ -428,6 +475,7 @@ Mat ImageStacker::readImage(QString filename)
     return result;
 }
 
+// derived from FOCAS mktransform.c
 cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     StarDetector sd;
     std::vector<Star> List1 = sd.getStars(ref);
@@ -439,8 +487,8 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     int nobjs = 40;
 
     int k = 0;
-    std::vector<std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB, List1, List2);
-    std::vector<std::vector<float> > transformVec = findTransform(matches, k, List1, List2);
+    std::vector< std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB, List1, List2);
+    std::vector< std::vector<float> > transformVec = findTransform(matches, k, List1, List2);
 
     cv::Mat matTransform(2,3,CV_32F);
     for(int i = 0; i < 2; i++)
@@ -450,61 +498,6 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     warpAffine(target, target, matTransform, target.size(), INTER_LINEAR + WARP_INVERSE_MAP);
 
     return target;
-}
-
-cv::Mat ImageStacker::generateAlignedImageOld(Mat ref, Mat target) {
-    // Convert images to gray scale;
-    Mat ref_gray, target_gray;
-    float scale = 256;
-    if (bitsPerChannel == BITS_16) scale = 1/256.0;
-    ref.convertTo(ref_gray, CV_8U, scale);
-    target.convertTo(target_gray, CV_8U, scale);
-
-    cvtColor(ref_gray, ref_gray, CV_BGR2GRAY);
-    cvtColor(target_gray, target_gray, CV_BGR2GRAY);
-
-    // Define the motion model
-    const int warp_mode = MOTION_EUCLIDEAN;
-
-    // Set a 2x3 or 3x3 warp matrix depending on the motion model.
-    Mat warp_matrix;
-
-    // Initialize the matrix to identity
-    if ( warp_mode == MOTION_HOMOGRAPHY )
-        warp_matrix = Mat::eye(3, 3, CV_32F);
-    else
-        warp_matrix = Mat::eye(2, 3, CV_32F);
-
-    // Specify the number of iterations.
-    int number_of_iterations = 50;
-
-    // Specify the threshold of the increment
-    // in the correlation coefficient between two iterations
-    double termination_eps = 1e-6;
-
-    // Define termination criteria
-    TermCriteria criteria (TermCriteria::COUNT+TermCriteria::EPS, number_of_iterations, termination_eps);
-
-    // Run the ECC algorithm. The results are stored in warp_matrix.
-    findTransformECC(
-                     ref_gray,
-                     target_gray,
-                     warp_matrix,
-                     warp_mode,
-                     criteria
-                 );
-
-    // Storage for warped image.
-    Mat target_aligned;
-
-    if (warp_mode != MOTION_HOMOGRAPHY)
-        // Use warpAffine for Translation, Euclidean and Affine
-        warpAffine(target, target_aligned, warp_matrix, ref.size(), INTER_LINEAR + WARP_INVERSE_MAP);
-    else
-        // Use warpPerspective for Homography
-        warpPerspective (target, target_aligned, warp_matrix, ref.size(),INTER_LINEAR + WARP_INVERSE_MAP);
-
-    return target_aligned;
 }
 
 
@@ -601,6 +594,22 @@ void ImageStacker::setUseDarks(bool value)
     mutex.unlock();
 }
 
+bool ImageStacker::getUseBias() const
+{
+    mutex.lock();
+    bool value = useBias;
+    mutex.unlock();
+
+    return value;
+}
+
+void ImageStacker::setUseBias(bool value)
+{
+    mutex.lock();
+    useBias = value;
+    mutex.unlock();
+}
+
 QString ImageStacker::getRefImageFileName() const {
     mutex.lock();
     QString string = refImageFileName;
@@ -663,6 +672,22 @@ QStringList ImageStacker::getFlatFrameFileNames() const {
 void ImageStacker::setFlatFrameFileNames(const QStringList &value) {
     mutex.lock();
     flatFrameFileNames = value;
+    mutex.unlock();
+}
+
+QStringList ImageStacker::getBiasFrameFileNames() const
+{
+    mutex.lock();
+    QStringList list = biasFrameFileNames;
+    mutex.unlock();
+
+    return list;
+}
+
+void ImageStacker::setBiasFrameFileNames(const QStringList &value)
+{
+    mutex.lock();
+    biasFrameFileNames = value;
     mutex.unlock();
 }
 

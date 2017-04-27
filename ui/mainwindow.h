@@ -43,6 +43,7 @@ private slots:
     void handleButtonDarkFrames();
     void handleButtonDarkFlatFrames();
     void handleButtonFlatFrames();
+    void handleButtonBiasFrames();
 
 private:
     void setFileImage(QString filename);

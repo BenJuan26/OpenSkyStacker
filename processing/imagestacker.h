@@ -63,6 +63,12 @@ public:
     BITS_PER_CHANNEL getBitsPerChannel() const;
     void setBitsPerChannel(const BITS_PER_CHANNEL &value);
 
+    QStringList getBiasFrameFileNames() const;
+    void setBiasFrameFileNames(const QStringList &value);
+
+    bool getUseBias() const;
+    void setUseBias(bool value);
+
 signals:
     void finished(cv::Mat image);
     void finishedDialog(QString message);
@@ -83,6 +89,7 @@ private:
     void stackDarks();
     void stackDarkFlats();
     void stackFlats();
+    void stackBias();
 
     mutable QMutex mutex;
 
@@ -92,12 +99,14 @@ private:
     bool useDarks = false;
     bool useDarkFlats = false;
     bool useFlats = false;
+    bool useBias = false;
 
     QString refImageFileName;
     QStringList targetImageFileNames;
     QStringList darkFrameFileNames;
     QStringList darkFlatFrameFileNames;
     QStringList flatFrameFileNames;
+    QStringList biasFrameFileNames;
 
     QString saveFilePath;
 
@@ -108,6 +117,7 @@ private:
     cv::Mat masterDark;
     cv::Mat masterDarkFlat;
     cv::Mat masterFlat;
+    cv::Mat masterBias;
 
     cv::Mat convertAndScaleImage(cv::Mat image);
     cv::Mat rawToMat(QString filename);

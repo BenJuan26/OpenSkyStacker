@@ -64,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
     connect(ui->buttonSelectDarkFlatFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFlatFrames()));
     connect(ui->buttonSelectFlatFrames, SIGNAL (released()), this, SLOT (handleButtonFlatFrames()));
+    connect(ui->buttonSelectBiasFrames, SIGNAL (released()), this, SLOT (handleButtonBiasFrames()));
     connect(stacker, SIGNAL(updateProgress(QString,int)), this, SLOT(updateProgress(QString,int)));
     connect(table,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(showTableContextMenu(QPoint)));
 
@@ -249,6 +250,7 @@ void MainWindow::handleButtonStack() {
     QStringList darks;
     QStringList darkFlats;
     QStringList flats;
+    QStringList bias;
 
     for (int i = 0; i < tableModel.rowCount(); i++) {
         ImageRecord *record = tableModel.at(i);
@@ -279,6 +281,9 @@ void MainWindow::handleButtonStack() {
             flats.append(filename);
             stacker->setUseFlats(true);
             break;
+        case ImageRecord::BIAS:
+            bias.append(filename);
+            stacker->setUseBias(true);
         default:
             break;
         }
@@ -288,6 +293,7 @@ void MainWindow::handleButtonStack() {
     stacker->setDarkFrameFileNames(darks);
     stacker->setDarkFlatFrameFileNames(darkFlats);
     stacker->setFlatFrameFileNames(flats);
+    stacker->setBiasFrameFileNames(bias);
 
     // asynchronously trigger the processing
     emit stackImages();
@@ -373,6 +379,24 @@ void MainWindow::handleButtonFlatFrames() {
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
         ImageRecord *record = stacker->getImageRecord(flatFrameFileNames.at(i));
         record->setType(ImageRecord::FLAT);
+        tableModel.append(record);
+    }
+}
+
+void MainWindow::handleButtonBiasFrames()
+{
+    QFileDialog dialog(this);
+    dialog.setDirectory(selectedDir);
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+    dialog.setNameFilters(imageFileFilter);
+
+    if (!dialog.exec()) return;
+
+    QStringList biasFrameFileNames = dialog.selectedFiles();
+
+    for (int i = 0; i < biasFrameFileNames.length(); i++) {
+        ImageRecord *record = stacker->getImageRecord(biasFrameFileNames.at(i));
+        record->setType(ImageRecord::BIAS);
         tableModel.append(record);
     }
 }
