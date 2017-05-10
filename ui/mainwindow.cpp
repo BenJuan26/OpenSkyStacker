@@ -12,6 +12,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/video/video.hpp>
 #include <QDesktopWidget>
+#include <stdexcept>
 #ifdef WIN32
 #include <QtWinExtras/QWinTaskbarButton>
 #include <QtWinExtras/QWinTaskbarProgress>
@@ -72,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL (stackImages()), stacker, SLOT(process()));
     connect(stacker, SIGNAL(finished(cv::Mat)), this, SLOT(finishedStacking(cv::Mat)));
     connect(stacker, SIGNAL(finishedDialog(QString)), this, SLOT(clearProgress(QString)));
+    connect(stacker, SIGNAL(processingError(QString)), this, SLOT(processingError(QString)));
 
     connect(this, SIGNAL(readQImage(QString)), stacker, SLOT(readQImage(QString)));
     connect(stacker, SIGNAL(QImageReady(QImage)), this, SLOT(setImage(QImage)));
@@ -217,7 +219,17 @@ void MainWindow::uncheckImages()
     }
 }
 
+void MainWindow::processingError(QString message)
+{
+    if (processingDialog)
+        processingDialog->reject();
+
+    hasFailed = true;
+    errorMessage = message;
+}
+
 void MainWindow::handleButtonStack() {
+    hasFailed = false;
 
     QString saveFilePath = QFileDialog::getSaveFileName(
                 this, tr("Select Output Image"), selectedDir.absolutePath(), tr("TIFF Image (*.tif)"));
@@ -298,13 +310,21 @@ void MainWindow::handleButtonStack() {
     // asynchronously trigger the processing
     emit stackImages();
 
-    ProcessingDialog *dialog = new ProcessingDialog(this);
-    connect(stacker, SIGNAL(updateProgress(QString,int)), dialog, SLOT(updateProgress(QString,int)));
-    connect(stacker, SIGNAL(finishedDialog(QString)), dialog, SLOT(complete(QString)));
+    processingDialog = new ProcessingDialog(this);
+    connect(stacker, SIGNAL(updateProgress(QString,int)), processingDialog, SLOT(updateProgress(QString,int)));
+    connect(stacker, SIGNAL(finishedDialog(QString)), processingDialog, SLOT(complete(QString)));
 
-    if (!dialog->exec()) {
+    if (!processingDialog->exec()) {
         qDebug() << "Cancelling...";
         stacker->cancel = true;
+    }
+
+    delete processingDialog;
+
+    if (hasFailed) {
+        QMessageBox box;
+        box.setText(errorMessage);
+        box.exec();
     }
 }
 

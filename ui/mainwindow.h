@@ -7,6 +7,7 @@
 #include <processing/imagestacker.h>
 #include <QThread>
 #include "model/imagetablemodel.h"
+#include "ui/processingdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -35,6 +36,7 @@ public slots:
     void setImage(QImage image);
     void checkImages();
     void uncheckImages();
+    void processingError(QString message);
 
 private slots:
     //void handleButtonRefImage();
@@ -55,10 +57,14 @@ private:
     QThread *workerThread;
 
     ImageStacker *stacker;
+    ProcessingDialog *processingDialog;
 
     QDir selectedDir;
     QStringList imageFileFilter;
     ImageTableModel tableModel;
+
+    bool hasFailed = false;
+    QString errorMessage;
 };
 
 #endif // MAINWINDOW_H

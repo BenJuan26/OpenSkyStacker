@@ -74,6 +74,7 @@ signals:
     void finishedDialog(QString message);
     void updateProgress(QString message, int percentComplete);
     void QImageReady(QImage image);
+    void processingError(QString message);
 public slots:
     void process();
     void readQImage(QString filename);
@@ -81,6 +82,8 @@ public slots:
 private:
     cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
     cv::Mat averageImages(cv::Mat img1, cv::Mat img2);
+
+    void validateImageSizes();
 
     QImage Mat2QImage(const cv::Mat &src);
 
