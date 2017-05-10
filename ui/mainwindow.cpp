@@ -307,12 +307,12 @@ void MainWindow::handleButtonStack() {
     stacker->setFlatFrameFileNames(flats);
     stacker->setBiasFrameFileNames(bias);
 
-    // asynchronously trigger the processing
-    emit stackImages();
-
     processingDialog = new ProcessingDialog(this);
     connect(stacker, SIGNAL(updateProgress(QString,int)), processingDialog, SLOT(updateProgress(QString,int)));
     connect(stacker, SIGNAL(finishedDialog(QString)), processingDialog, SLOT(complete(QString)));
+
+    // asynchronously trigger the processing
+    emit stackImages();
 
     if (!processingDialog->exec()) {
         qDebug() << "Cancelling...";

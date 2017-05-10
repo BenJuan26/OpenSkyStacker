@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Progress</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -52,7 +52,7 @@
     </rect>
    </property>
    <property name="text">
-    <string/>
+    <string>Stacking...</string>
    </property>
   </widget>
  </widget>
