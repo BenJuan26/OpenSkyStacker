@@ -105,6 +105,7 @@ else:macx {
 }
 else:unix {
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
+    INCLUDEPATH += $$PWD/3rdparty/libraw/unix/include
     INCLUDEPATH += $$(QTDIR)/include/QtWidgets
     LIBS += -L$$PWD/3rdparty/opencv/unix/lib \
         -L$$PWD/3rdparty/libraw/unix/lib \
