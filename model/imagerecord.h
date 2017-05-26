@@ -33,6 +33,12 @@ public:
     bool isChecked() const;
     void setChecked(bool value);
 
+    int getWidth() const;
+    void setWidth(int value);
+
+    int getHeight() const;
+    void setHeight(int value);
+
 private:
     QString filename;
     FRAME_TYPE type;
@@ -41,6 +47,8 @@ private:
     time_t timestamp;
     bool reference;
     bool checked;
+    int width;
+    int height;
 };
 
 #endif // IMAGERECORD_H

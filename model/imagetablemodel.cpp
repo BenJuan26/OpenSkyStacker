@@ -23,7 +23,7 @@ int ImageTableModel::rowCount()
 int ImageTableModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 6;
+    return 8;
 }
 
 QVariant ImageTableModel::data(const QModelIndex &index, int role) const
@@ -75,6 +75,8 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             std::tm *timeinfo = std::localtime(&time);
             return std::asctime(timeinfo);
         }
+        case 6: return image->getWidth();
+        case 7: return image->getHeight();
         default: return {};
         }
     }
@@ -94,6 +96,8 @@ QVariant ImageTableModel::headerData(int section, Qt::Orientation orientation, i
     case 3: return tr("Exposure");
     case 4: return tr("ISO");
     case 5: return tr("Timestamp");
+    case 6: return tr("Width");
+    case 7: return tr("Height");
     default: return {};
     }
 }

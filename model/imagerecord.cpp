@@ -75,3 +75,23 @@ void ImageRecord::setChecked(bool value)
 {
     checked = value;
 }
+
+int ImageRecord::getWidth() const
+{
+    return width;
+}
+
+void ImageRecord::setWidth(int value)
+{
+    width = value;
+}
+
+int ImageRecord::getHeight() const
+{
+    return height;
+}
+
+void ImageRecord::setHeight(int value)
+{
+    height = value;
+}

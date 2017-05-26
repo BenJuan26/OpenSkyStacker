@@ -83,7 +83,7 @@ private:
     cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
     cv::Mat averageImages(cv::Mat img1, cv::Mat img2);
 
-    void validateImageSizes();
+    int validateImageSizes();
 
     QImage Mat2QImage(const cv::Mat &src);
 

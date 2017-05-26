@@ -77,6 +77,8 @@ win32 {
     LIBS += -lWS2_32
 }
 else:macx {
+    ICON = $$PWD/OpenSkyStacker.icns
+
     # OpenCV
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
     LIBS += -L$$PWD/3rdparty/opencv/macx/lib \

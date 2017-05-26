@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // centre window
+    // Centre window on startup
     QRect desktopRect = QApplication::desktop()->availableGeometry(this);
     QPoint center = desktopRect.center();
     this->move(center.x() - this->width()*0.5, center.y() - this->height()*0.5);
@@ -48,35 +48,39 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QTableView *table = ui->imageListView;
     table->setModel(&tableModel);
-    table->setColumnWidth(0,25);
-    table->setColumnWidth(1,260);
-    table->setColumnWidth(2,80);
-    table->setColumnWidth(3,80);
-    table->setColumnWidth(4,60);
-    table->setColumnWidth(5,140);
+    table->setColumnWidth(0,25);  // checked
+    table->setColumnWidth(1,260); // filename
+    table->setColumnWidth(2,80);  // type
+    table->setColumnWidth(3,80);  // exposure
+    table->setColumnWidth(4,60);  // iso
+    table->setColumnWidth(5,140); // timestamp
+    table->setColumnWidth(6,80);  // width
+    table->setColumnWidth(7,80);  // height
 
+    // Right-click support for the image list
     table->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(table,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(showTableContextMenu(QPoint)));
 
     QItemSelectionModel *selection = table->selectionModel();
     connect(selection, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(imageSelectionChanged()));
 
-    //connect(ui->buttonSelectRefImage, SIGNAL (released()), this, SLOT (handleButtonRefImage()));
+    // Signals / slots for buttons
     connect(ui->buttonSelectLightFrames, SIGNAL (released()), this, SLOT (handleButtonLightFrames()));
     connect(ui->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
     connect(ui->buttonSelectDarkFlatFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFlatFrames()));
     connect(ui->buttonSelectFlatFrames, SIGNAL (released()), this, SLOT (handleButtonFlatFrames()));
     connect(ui->buttonSelectBiasFrames, SIGNAL (released()), this, SLOT (handleButtonBiasFrames()));
-    connect(stacker, SIGNAL(updateProgress(QString,int)), this, SLOT(updateProgress(QString,int)));
-    connect(table,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(showTableContextMenu(QPoint)));
-
     connect(ui->buttonStack, SIGNAL (released()), this, SLOT (handleButtonStack()));
+
+    // Signals / slots for stacker
     connect(this, SIGNAL (stackImages()), stacker, SLOT(process()));
+    connect(this, SIGNAL(readQImage(QString)), stacker, SLOT(readQImage(QString)));
     connect(stacker, SIGNAL(finished(cv::Mat)), this, SLOT(finishedStacking(cv::Mat)));
     connect(stacker, SIGNAL(finishedDialog(QString)), this, SLOT(clearProgress(QString)));
     connect(stacker, SIGNAL(processingError(QString)), this, SLOT(processingError(QString)));
-
-    connect(this, SIGNAL(readQImage(QString)), stacker, SLOT(readQImage(QString)));
+    connect(stacker, SIGNAL(updateProgress(QString,int)), this, SLOT(updateProgress(QString,int)));
     connect(stacker, SIGNAL(QImageReady(QImage)), this, SLOT(setImage(QImage)));
+
 }
 
 void MainWindow::finishedStacking(Mat image) {
@@ -87,6 +91,8 @@ void MainWindow::finishedStacking(Mat image) {
     qDebug() << "Done stacking";
 }
 
+// For the main window this is only used to update the progress indicator in the taskbar
+//  i.e. green bar in Windows
 void MainWindow::updateProgress(QString message, int percentComplete)
 {
     Q_UNUSED(message);
@@ -101,6 +107,7 @@ void MainWindow::updateProgress(QString message, int percentComplete)
 #endif // WIN32
 }
 
+// Taskbar progress should clear on completion
 void MainWindow::clearProgress(QString message)
 {
     Q_UNUSED(message);
@@ -123,7 +130,7 @@ void MainWindow::showTableContextMenu(QPoint pos)
     menu->addAction(setAsReferenceAction);
 
     QAction *removeImageAction = new QAction(tr("Remove"), this);
-    connect(removeImageAction, SIGNAL(triggered(bool)), this, SLOT(removeImages()));
+    connect(removeImageAction, SIGNAL(triggered(bool)), this, SLOT(removeSelectedImages()));
     menu->addAction(removeImageAction);
 
     QAction *checkImageAction = new QAction(tr("Check"), this);
@@ -134,6 +141,7 @@ void MainWindow::showTableContextMenu(QPoint pos)
     connect(uncheckImageAction, SIGNAL(triggered(bool)), this, SLOT(uncheckImages()));
     menu->addAction(uncheckImageAction);
 
+    // Show menu where the user clicked
     menu->popup(table->viewport()->mapToGlobal(pos));
 }
 
@@ -166,7 +174,7 @@ void MainWindow::setFrameAsReference()
     record->setReference(true);
 }
 
-void MainWindow::removeImages()
+void MainWindow::removeSelectedImages()
 {
     QItemSelectionModel *select = ui->imageListView->selectionModel();
     QModelIndexList rows = select->selectedRows();
@@ -181,11 +189,13 @@ void MainWindow::imageSelectionChanged()
     QItemSelectionModel *selection = ui->imageListView->selectionModel();
     QModelIndexList rows = selection->selectedRows();
 
+    // We're only going to load a preview image on a new selection
     if (rows.count() != 1)
         return;
 
     ImageRecord *record = tableModel.at(rows.at(0).row());
-    // asynchronously read the image from disk
+
+    // Asynchronously read the image from disk
     emit readQImage(record->getFilename());
 }
 
@@ -241,77 +251,14 @@ void MainWindow::handleButtonStack() {
 
     stacker->setSaveFilePath(saveFilePath);
 
-    bool referenceSet = false;
-    for (int i = 0; i < tableModel.rowCount(); i++) {
-        ImageRecord *record = tableModel.at(i);
-        if (record->isReference()) referenceSet = true;
-    }
-
-    if (!referenceSet) {
-        for (int i = 0; i < tableModel.rowCount(); i++) {
-            ImageRecord *record = tableModel.at(i);
-
-            if (record->getType() == ImageRecord::LIGHT) {
-                record->setReference(true);
-                break;
-            }
-        }
-    }
-
-    QStringList lights;
-    QStringList darks;
-    QStringList darkFlats;
-    QStringList flats;
-    QStringList bias;
-
-    for (int i = 0; i < tableModel.rowCount(); i++) {
-        ImageRecord *record = tableModel.at(i);
-
-        if (!record->isChecked())
-            continue;
-
-        QString filename = record->getFilename();
-
-        switch (record->getType()) {
-        case ImageRecord::LIGHT:
-            if (record->isReference()) {
-                stacker->setRefImageFileName(filename);
-                break;
-            }
-
-            lights.append(filename);
-            break;
-        case ImageRecord::DARK:
-            darks.append(filename);
-            stacker->setUseDarks(true);
-            break;
-        case ImageRecord::DARK_FLAT:
-            darkFlats.append(filename);
-            stacker->setUseDarkFlats(true);
-            break;
-        case ImageRecord::FLAT:
-            flats.append(filename);
-            stacker->setUseFlats(true);
-            break;
-        case ImageRecord::BIAS:
-            bias.append(filename);
-            stacker->setUseBias(true);
-        default:
-            break;
-        }
-    }
-
-    stacker->setTargetImageFileNames(lights);
-    stacker->setDarkFrameFileNames(darks);
-    stacker->setDarkFlatFrameFileNames(darkFlats);
-    stacker->setFlatFrameFileNames(flats);
-    stacker->setBiasFrameFileNames(bias);
+    setDefaultReferenceImage();
+    loadImagesIntoStacker();
 
     processingDialog = new ProcessingDialog(this);
     connect(stacker, SIGNAL(updateProgress(QString,int)), processingDialog, SLOT(updateProgress(QString,int)));
     connect(stacker, SIGNAL(finishedDialog(QString)), processingDialog, SLOT(complete(QString)));
 
-    // asynchronously trigger the processing
+    // Asynchronously trigger the processing
     emit stackImages();
 
     if (!processingDialog->exec()) {
@@ -477,6 +424,81 @@ void MainWindow::clearReferenceFrame()
         ImageRecord *record = model->at(i);
         record->setReference(false);
     }
+}
+
+void MainWindow::setDefaultReferenceImage()
+{
+    // Is there already a reference image?
+    bool referenceSet = false;
+    for (int i = 0; i < tableModel.rowCount(); i++) {
+        ImageRecord *record = tableModel.at(i);
+        if (record->isReference()) referenceSet = true;
+    }
+
+    // Set first light frame as reference
+    if (!referenceSet) {
+        for (int i = 0; i < tableModel.rowCount(); i++) {
+            ImageRecord *record = tableModel.at(i);
+
+            if (record->getType() == ImageRecord::LIGHT) {
+                record->setReference(true);
+                break;
+            }
+        }
+    }
+}
+
+void MainWindow::loadImagesIntoStacker()
+{
+    QStringList lights;
+    QStringList darks;
+    QStringList darkFlats;
+    QStringList flats;
+    QStringList bias;
+
+    for (int i = 0; i < tableModel.rowCount(); i++) {
+        ImageRecord *record = tableModel.at(i);
+
+        if (!record->isChecked())
+            continue;
+
+        QString filename = record->getFilename();
+
+        switch (record->getType()) {
+        case ImageRecord::LIGHT:
+            if (record->isReference()) {
+                stacker->setRefImageFileName(filename);
+                break;
+            }
+
+            lights.append(filename);
+            break;
+        case ImageRecord::DARK:
+            darks.append(filename);
+            stacker->setUseDarks(true);
+            break;
+        case ImageRecord::DARK_FLAT:
+            darkFlats.append(filename);
+            stacker->setUseDarkFlats(true);
+            break;
+        case ImageRecord::FLAT:
+            flats.append(filename);
+            stacker->setUseFlats(true);
+            break;
+        case ImageRecord::BIAS:
+            bias.append(filename);
+            stacker->setUseBias(true);
+            break;
+        default:
+            break;
+        }
+    }
+
+    stacker->setTargetImageFileNames(lights);
+    stacker->setDarkFrameFileNames(darks);
+    stacker->setDarkFlatFrameFileNames(darkFlats);
+    stacker->setFlatFrameFileNames(flats);
+    stacker->setBiasFrameFileNames(bias);
 }
 
 MainWindow::~MainWindow()

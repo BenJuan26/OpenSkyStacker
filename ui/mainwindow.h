@@ -31,7 +31,7 @@ public slots:
     void clearProgress(QString message);
     void showTableContextMenu(QPoint pos);
     void setFrameAsReference();
-    void removeImages();
+    void removeSelectedImages();
     void imageSelectionChanged();
     void setImage(QImage image);
     void checkImages();
@@ -51,6 +51,8 @@ private:
     void setFileImage(QString filename);
     void setMemImage(QImage image);
     void clearReferenceFrame();
+    void setDefaultReferenceImage();
+    void loadImagesIntoStacker();
     QImage Mat2QImage(const cv::Mat &src);
     Ui::MainWindow *ui;
 

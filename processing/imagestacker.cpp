@@ -38,132 +38,97 @@ ImageRecord* ImageStacker::getImageRecord(QString filename)
     record->setIso(other.iso_speed);
     record->setShutter(other.shutter);
     record->setTimestamp(other.timestamp);
+    record->setWidth(processor.imgdata.sizes.width);
+    record->setHeight(processor.imgdata.sizes.height);
 
     return record;
 }
 
 void ImageStacker::process() {
     cancel = false;
-    emit updateProgress(tr("Starting stacking process..."), 0);
+    emit updateProgress(tr("Checking image sizes"), 0);
 
-    try {
-
-        validateImageSizes();
-
-        currentOperation = 0;
-        totalOperations = targetImageFileNames.length() * 2 + 1;
-
-        if (useBias) {
-            totalOperations += biasFrameFileNames.length();
-        }
-        if (useDarks) {
-            totalOperations += darkFrameFileNames.length();
-        }
-        if (useDarkFlats) {
-            totalOperations += darkFlatFrameFileNames.length();
-        }
-        if (useFlats) {
-            totalOperations += flatFrameFileNames.length();
-        }
-
-        if (useBias) {
-            stackBias();
-        }
-        if (useDarks) {
-            stackDarks();
-        }
-        if (useDarkFlats) {
-            stackDarkFlats();
-        }
-        if (useFlats) {
-            stackFlats();
-        }
-
-        emit updateProgress(tr("Reading light frame 1 of %n", "", targetImageFileNames.length() + 1), 0);
-
-        refImage = readImage(refImageFileName);
-
-        qDebug() << "Ref image depth:" << refImage.depth();
-        qDebug() << "Ref image type:" << refImage.type();
-
-        qDebug() << "Bias image depth:" << masterBias.depth();
-        qDebug() << "Bias image type:" << masterBias.type();
-
-        if (useBias) refImage -= masterBias;
-        if (useDarks) {
-            refImage -= masterDark;
-        }
-        if (useFlats) {
-            if (bitsPerChannel == BITS_16)
-                cv::divide(refImage, masterFlat, refImage, 1, CV_16U);
-            else if (bitsPerChannel == BITS_32)
-                refImage /= masterFlat;
-        }
-
-        // 32-bit float no matter what for the working image
-        refImage.convertTo(workingImage, CV_32F);
-
-        QString message;
-
-        for (int k = 0; k < targetImageFileNames.length() && !cancel; k++) {
-            message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
-            qDebug() << message;
-            if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
-            Mat targetImage = readImage(targetImageFileNames.at(k));
-
-
-            message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
-            qDebug() << message;
-            if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
-
-            // ------------- CALIBRATION --------------
-            if (useBias) targetImage -= masterBias;
-            if (useDarks) targetImage -= masterDark;
-            if (useFlats) {
-                if (bitsPerChannel == BITS_16)
-                    cv::divide(targetImage, masterFlat, targetImage, 1, CV_16U);
-                else if (bitsPerChannel == BITS_32)
-                    targetImage /= masterFlat;
-            }
-
-            // -------------- ALIGNMENT ---------------
-            message = tr("Aligning image %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
-            currentOperation++;
-            if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
-
-            Mat targetAligned = generateAlignedImage(refImage, targetImage);
-
-            if (cancel) break;
-
-            // -------------- STACKING ---------------
-            message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
-            qDebug() << message;
-            currentOperation++;
-            if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
-
-            cv::add(workingImage, targetAligned, workingImage, noArray(), CV_32F);
-        }
-
-        workingImage /= targetImageFileNames.length() + 1;
-
-        // only need to change the bit depth, no scaling
-        if (bitsPerChannel == BITS_16) {
-            workingImage.convertTo(workingImage, CV_16U);
-        }
-
-        if (cancel) {
-            qDebug() << "Cancelled.";
-        }
-        else {
-            emit finishedDialog(tr("Stacking completed"));
-            emit finished(workingImage);
-        }
-
-
-
-    } catch (std::exception &e) {
-        emit processingError(e.what());
+    int err = validateImageSizes();
+    if (err) {
+        emit processingError("Images must all be the same size.");
+        return;
     }
+
+    currentOperation = 0;
+    totalOperations = targetImageFileNames.length() * 2 + 1;
+
+    if (useBias)      totalOperations += biasFrameFileNames.length();
+    if (useDarks)     totalOperations += darkFrameFileNames.length();
+    if (useDarkFlats) totalOperations += darkFlatFrameFileNames.length();
+    if (useFlats)     totalOperations += flatFrameFileNames.length();
+
+    if (useBias)      stackBias();
+    if (useDarks)     stackDarks();
+    if (useDarkFlats) stackDarkFlats();
+    if (useFlats)     stackFlats();
+
+
+    emit updateProgress(tr("Reading light frame 1 of %n", "", targetImageFileNames.length() + 1), 0);
+
+    refImage = readImage(refImageFileName);
+
+    if (useBias)  refImage -= masterBias;
+    if (useDarks) refImage -= masterDark;
+    if (useFlats) refImage /= masterFlat;
+
+    // 32-bit float no matter what for the working image
+    refImage.convertTo(workingImage, CV_32F);
+
+    QString message;
+
+    for (int k = 0; k < targetImageFileNames.length() && !cancel; k++) {
+        // ---------------- LOAD -----------------
+        message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
+        qDebug() << message;
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+
+        Mat targetImage = readImage(targetImageFileNames.at(k));
+
+
+        // ------------- CALIBRATION --------------
+        message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
+        qDebug() << message;
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+
+        if (useBias)  targetImage -= masterBias;
+        if (useDarks) targetImage -= masterDark;
+        if (useFlats) targetImage /= masterFlat;
+
+
+        // -------------- ALIGNMENT ---------------
+        message = tr("Aligning image %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
+        currentOperation++;
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+
+        Mat targetAligned = generateAlignedImage(refImage, targetImage);
+
+        if (cancel) return;
+
+        // -------------- STACKING ---------------
+        message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(targetImageFileNames.length() + 1));
+        qDebug() << message;
+        currentOperation++;
+        if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
+
+        cv::add(workingImage, targetAligned, workingImage, noArray(), CV_32F);
+    }
+
+    if (cancel) return;
+
+    workingImage /= targetImageFileNames.length() + 1;
+
+    // only need to change the bit depth, no scaling
+    if (bitsPerChannel == BITS_16) {
+        workingImage.convertTo(workingImage, CV_16U);
+    }
+
+    emit finishedDialog(tr("Stacking completed"));
+    emit finished(workingImage);
 }
 
 void ImageStacker::readQImage(QString filename)
@@ -235,7 +200,7 @@ cv::Mat ImageStacker::averageImages(cv::Mat img1, cv::Mat img2) {
     return result;
 }
 
-void ImageStacker::validateImageSizes()
+int ImageStacker::validateImageSizes()
 {
     Mat ref = readImage(refImageFileName);
 
@@ -250,7 +215,7 @@ void ImageStacker::validateImageSizes()
         Mat image = readImage(filename);
 
         if (image.cols != width ||  image.rows != height) {
-            throw std::runtime_error("Images sizes must match!");
+            return -1;
         }
     }
 
@@ -261,7 +226,7 @@ void ImageStacker::validateImageSizes()
             Mat image = readImage(filename);
 
             if (image.cols != width ||  image.rows != height) {
-                throw std::runtime_error("Images sizes must match!");
+                return -1;
             }
         }
     }
@@ -273,7 +238,7 @@ void ImageStacker::validateImageSizes()
             Mat image = readImage(filename);
 
             if (image.cols != width ||  image.rows != height) {
-                throw std::runtime_error("Images sizes must match!");
+                return -1;
             }
         }
     }
@@ -285,7 +250,7 @@ void ImageStacker::validateImageSizes()
             Mat image = readImage(filename);
 
             if (image.cols != width ||  image.rows != height) {
-                throw std::runtime_error("Images sizes must match!");
+                return -1;
             }
         }
     }
@@ -297,10 +262,12 @@ void ImageStacker::validateImageSizes()
             Mat image = readImage(filename);
 
             if (image.cols != width ||  image.rows != height) {
-                throw std::runtime_error("Images sizes must match!");
+                return -1;
             }
         }
     }
+
+    return 0;
 }
 
 QImage ImageStacker::Mat2QImage(const Mat &src)
