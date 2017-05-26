@@ -59,6 +59,8 @@ FORMS    += ui/mainwindow.ui \
     ui/processingdialog.ui
 
 win32 {
+    RC_ICONS = $$PWD/OpenSkyStacker.ico
+
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
     INCLUDEPATH += $$PWD/3rdparty/libraw/win64/include
     LIBS += -L$$PWD/3rdparty/opencv/win64/lib
