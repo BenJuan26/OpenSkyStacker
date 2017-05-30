@@ -153,19 +153,19 @@ cv::Mat ImageStacker::averageImages(cv::Mat img1, cv::Mat img2) {
         for(int x = 0; x < img1.cols; x++) {
             for(int y = 0; y < img1.rows; y++) {
 
-                Vec<unsigned short, 3> pixel1 = img1.at<Vec<unsigned short,3>>(y,x);
+                Vec<unsigned short, 3> pixel1 = img1.at< Vec<unsigned short,3> >(y,x);
                 unsigned short b1 = pixel1.val[0];
                 unsigned short g1 = pixel1.val[1];
                 unsigned short r1 = pixel1.val[2];
 
-                Vec<unsigned short,3> pixel2 = img2.at<Vec<unsigned short,3>>(y,x);
+                Vec<unsigned short,3> pixel2 = img2.at< Vec<unsigned short,3> >(y,x);
                 unsigned short b2 = pixel2.val[0];
                 unsigned short g2 = pixel2.val[1];
                 unsigned short r2 = pixel2.val[2];
 
-                result.at<Vec<unsigned short,3>>(y,x).val[0] = (b1 + b2) / 2;
-                result.at<Vec<unsigned short,3>>(y,x).val[1] = (g1 + g2) / 2;
-                result.at<Vec<unsigned short,3>>(y,x).val[2] = (r1 + r2) / 2;
+                result.at< Vec<unsigned short,3> >(y,x).val[0] = (b1 + b2) / 2;
+                result.at< Vec<unsigned short,3> >(y,x).val[1] = (g1 + g2) / 2;
+                result.at< Vec<unsigned short,3> >(y,x).val[2] = (r1 + r2) / 2;
             }
         }
 
@@ -279,7 +279,7 @@ QImage ImageStacker::Mat2QImage(const Mat &src)
         for(int x = 0; x < src.cols; x++) {
             for(int y = 0; y < src.rows; y++) {
 
-                Vec<unsigned short,3> pixel = src.at<Vec<unsigned short,3>>(y,x);
+                Vec<unsigned short,3> pixel = src.at< Vec<unsigned short,3> >(y,x);
                 b = pixel.val[0]/256;
                 g = pixel.val[1]/256;
                 r = pixel.val[2]/256;

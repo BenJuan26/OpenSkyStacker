@@ -376,7 +376,7 @@ QImage MainWindow::Mat2QImage(const cv::Mat &src) {
             for(int x = 0; x < src.cols; x++) {
                 for(int y = 0; y < src.rows; y++) {
 
-                    Vec<unsigned short,3> pixel = src.at<Vec<unsigned short,3>>(y,x);
+                    Vec<unsigned short,3> pixel = src.at< Vec<unsigned short,3> >(y,x);
                     b = pixel.val[0]/256;
                     g = pixel.val[1]/256;
                     r = pixel.val[2]/256;
