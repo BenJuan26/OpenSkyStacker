@@ -2,3 +2,9 @@
 *.pro.user*
 *.lnk
 .DS_Store
+
+# Snapcraft
+*.snap
+parts
+stage
+prime

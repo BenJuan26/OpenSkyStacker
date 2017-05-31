@@ -122,4 +122,18 @@ else:unix {
     LIBS += $$PWD/3rdparty/focas/unix/hfti.o
     LIBS += $$PWD/3rdparty/focas/unix/h12.o
     LIBS += $$PWD/3rdparty/focas/unix/diff.o
+
+    snapcraft: {
+        opencv.path = /usr/lib
+        opencv.files = $$PWD/3rdparty/opencv/unix/lib/*
+
+        libraw.path = /usr/lib
+        libraw.files = $$PWD/3rdparty/libraw/unix/lib/*
+
+#        qtplatforms.path = /bin/platforms
+#        qtplatforms.files = $$PWD/lib/*
+
+        target.path = /bin
+        INSTALLS += target opencv libraw #qtplatforms
+    }
 }
