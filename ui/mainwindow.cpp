@@ -85,7 +85,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::finishedStacking(Mat image) {
     QString path = stacker->getSaveFilePath();
-    imwrite(path.toUtf8().constData(), image);
+    try {
+        imwrite(path.toUtf8().constData(), image);
+    }
+    catch (std::exception) {
+        QMessageBox errorBox;
+        errorBox.setText(tr("Couldn't write file to disk. Make sure the extension is valid."));
+        errorBox.exec();
+        return;
+    }
+
     setMemImage(Mat2QImage(image));
 
     qDebug() << "Done stacking";

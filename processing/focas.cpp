@@ -82,7 +82,7 @@ int sidesPos(int i, int j, int n)
         return(j*(2*n-j-3)/2 + i);
 }
 
-std::vector<std::vector<int> > findMatches(int nobjs, int *k_, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB, std::vector<Star> List1, std::vector<Star> List2)
+std::vector<std::vector<int> > findMatches(int nobjs, int *k_, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB)
 {
     std::vector<std::vector<int> > matches(3, std::vector<int>(MAX_MATCH, 0));
     int	i, j, l, n, first, last;

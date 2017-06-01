@@ -539,7 +539,7 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
     int nobjs = 40;
 
     int k = 0;
-    std::vector< std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB, List1, List2);
+    std::vector< std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB);
     std::vector< std::vector<float> > transformVec = findTransform(matches, k, List1, List2);
 
     cv::Mat matTransform(2,3,CV_32F);

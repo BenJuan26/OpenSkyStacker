@@ -123,6 +123,8 @@ void ImageTableModel::removeAt(int i)
 
 bool ImageTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    Q_UNUSED(role);
+
     if (index.column() == 0) {
         bool checked = false;
         if (value.toInt() == Qt::Checked)
