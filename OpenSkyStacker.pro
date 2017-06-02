@@ -65,6 +65,8 @@ win32 {
 
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
     INCLUDEPATH += $$PWD/3rdparty/libraw/win64/include
+    LIBS += -lucrt
+    LIBS += -lucrtd
     LIBS += -L$$PWD/3rdparty/opencv/win64/lib
     LIBS += -lopencv_core320
     LIBS += -lopencv_highgui320
