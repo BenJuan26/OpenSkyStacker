@@ -502,7 +502,6 @@ Mat ImageStacker::rawToMat(QString filename)
         image.convertTo(image, CV_32F, 1/65535.0);
 
     // free the memory that otherwise wouldn't have been handled by OpenCV
-    delete proc;
     processor.recycle();
 
     return image;
