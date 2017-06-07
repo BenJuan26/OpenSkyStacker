@@ -85,7 +85,7 @@ else:macx {
 
     # OpenCV
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
-    LIBS += -L$$PWD/3rdparty/opencv/macx/lib \
+    LIBS += -L$$PWD/3rdparty/opencv/build/lib \
         -lopencv_core \
         -lopencv_highgui \
         -lopencv_imgcodecs \
@@ -94,16 +94,35 @@ else:macx {
         -lopencv_calib3d \
         -lopencv_video
 
+    opencv.target = $$PWD/3rdparty/opencv/build/lib/libopencv_core.dylib
+    opencv.commands = source ~/.bash_profile;\
+        cd $$PWD/3rdparty/opencv/build;\
+        /Applications/CMake.app/Contents/bin/cmake -DBUILD_SHARED_LIBS=ON -DBUILD_TESTS=OFF \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_1394=OFF -DWITH_FFMPEG=OFF ..;\
+        make
+
+    QMAKE_EXTRA_TARGETS += opencv
+    PRE_TARGETDEPS += $$PWD/3rdparty/opencv/build/lib/libopencv_core.dylib
+
     # LibRaw
-    INCLUDEPATH += $$PWD/3rdparty/libraw/macx/include
-    LIBS += -L$$PWD/3rdparty/libraw/macx/lib \
+    INCLUDEPATH += $$PWD/3rdparty/libraw
+    LIBS += -L$$PWD/3rdparty/libraw/lib/.libs \
         -lraw \
         -lraw_r
+
+    libraw.target = $$PWD/3rdparty/libraw/lib/.libs/libraw.dylib
+    # sourcing .bash_profile is for includes and paths
+    libraw.commands = source ~/.bash_profile; cd $$PWD/3rdparty/libraw; ./configure; make
+
+    QMAKE_EXTRA_TARGETS += libraw
+    PRE_TARGETDEPS += $$PWD/3rdparty/libraw/lib/.libs/libraw.dylib
 
     # FOCAS
     LIBS += $$PWD/3rdparty/focas/macx/hfti.o
     LIBS += $$PWD/3rdparty/focas/macx/h12.o
     LIBS += $$PWD/3rdparty/focas/macx/diff.o
+
+
 }
 else:unix {
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
