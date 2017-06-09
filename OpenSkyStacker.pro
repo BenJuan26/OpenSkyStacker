@@ -88,7 +88,8 @@ win32 {
     LIBS += -lraw
     LIBS += -lWS2_32
 }
-else:macx {
+
+macx {
     ICON = $$PWD/OpenSkyStacker.icns
 
     INCLUDEPATH += /usr/local/include
@@ -137,7 +138,8 @@ else:macx {
     LIBS += $$PWD/3rdparty/focas/macx/diff.o
 
 }
-else:unix {
+
+linux {
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
     INCLUDEPATH += $$PWD/3rdparty/libraw/unix/include
     INCLUDEPATH += $$(QTDIR)/include/QtWidgets
