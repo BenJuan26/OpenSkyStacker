@@ -24,6 +24,14 @@ CONFIG += c++11
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
+
+DESTDIR = $$PWD/build
+
+OBJECTS_DIR = $$DESTDIR/obj
+MOC_DIR = $$DESTDIR/moc
+RCC_DIR = $$DESTDIR/qrc
+UI_DIR = $$DESTDIR/ui
+
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
@@ -82,12 +90,17 @@ win32 {
     LIBS += -lraw
     LIBS += -lWS2_32
 }
-else:macx {
+
+macx {
     ICON = $$PWD/OpenSkyStacker.icns
 
+    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/lib
+
     # OpenCV
-    INCLUDEPATH += $$PWD/3rdparty/opencv/include
-    LIBS += -L$$PWD/3rdparty/opencv/macx/lib \
+    # INCLUDEPATH += $$PWD/3rdparty/opencv/include
+    # INCLUDEPATH += $$PWD/3rdparty/opencv/build
+    LIBS += \
         -lopencv_core \
         -lopencv_highgui \
         -lopencv_imgcodecs \
@@ -96,18 +109,39 @@ else:macx {
         -lopencv_calib3d \
         -lopencv_video
 
+    opencv.target = /usr/local/lib/libopencv_core.dylib
+    opencv.commands = source ~/.bash_profile;\
+        cd $$PWD/3rdparty/opencv/build;\
+        /Applications/CMake.app/Contents/bin/cmake -DBUILD_SHARED_LIBS=ON -DBUILD_TESTS=OFF \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_1394=OFF -DWITH_FFMPEG=OFF ..;\
+        make;\
+        make install
+
+    QMAKE_EXTRA_TARGETS += opencv
+    PRE_TARGETDEPS += /usr/local/lib/libopencv_core.dylib
+
+
     # LibRaw
-    INCLUDEPATH += $$PWD/3rdparty/libraw/macx/include
-    LIBS += -L$$PWD/3rdparty/libraw/macx/lib \
+    # INCLUDEPATH += $$PWD/3rdparty/libraw
+    LIBS += \
         -lraw \
         -lraw_r
+
+    libraw.target = /usr/local/lib/libraw.dylib
+    # sourcing .bash_profile is for includes and paths
+    libraw.commands = source ~/.bash_profile; cd $$PWD/3rdparty/libraw; ./configure; make; make install
+
+    QMAKE_EXTRA_TARGETS += libraw
+    PRE_TARGETDEPS += /usr/local/lib/libraw.dylib
 
     # FOCAS
     LIBS += $$PWD/3rdparty/focas/macx/hfti.o
     LIBS += $$PWD/3rdparty/focas/macx/h12.o
     LIBS += $$PWD/3rdparty/focas/macx/diff.o
+
 }
-else:unix {
+
+linux {
     INCLUDEPATH += $$PWD/3rdparty/opencv/include
     INCLUDEPATH += $$PWD/3rdparty/libraw/unix/include
     INCLUDEPATH += $$(QTDIR)/include/QtWidgets
@@ -132,10 +166,7 @@ else:unix {
         libraw.path = /usr/lib
         libraw.files = $$PWD/3rdparty/libraw/unix/lib/*
 
-#        qtplatforms.path = /bin/platforms
-#        qtplatforms.files = $$PWD/lib/*
-
         target.path = /bin
-        INSTALLS += target opencv libraw #qtplatforms
+        INSTALLS += target opencv libraw
     }
 }
