@@ -1,6 +1,20 @@
 #!/bin/bash
 
-APP_PATH=OpenSkyStacker.app
+DEFAULT_APP_PATH=build/OpenSkyStacker.app
+APP_PATH=$1
+
+if [ "$1" = "" ]; then
+    APP_PATH=$DEFAULT_APP_PATH
+fi
+
+if [ ! -d $APP_PATH ]; then
+    echo "App doesn't exist at $APP_PATH"
+    echo "You can specify the location as an argument."
+    echo "Example:"
+    echo "./mac_deploy.sh build/OpenSkyStacker.app"
+    exit 1
+fi
+
 BASE_LIB_PATH=$APP_PATH/Contents/Frameworks
 
 error_exit() {
@@ -56,13 +70,31 @@ if [ "$deploy_bin" = "" ]; then
 fi
 
 echo "Running macdeployqt..."
-$deploy_bin $APP_PATH || error_exit "Error running macdeployqt"
+$deploy_bin $APP_PATH -libpath=3rdparty/opencv/build/lib || error_exit "Error running macdeployqt"
 echo "Done"
 echo ""
 
-fix_lib libIexMath-2_2.12.dylib libIex-2_2.12.dylib
-fix_lib libIlmThread-2_2.12.dylib libIex-2_2.12.dylib
-fix_lib libImath-2_2.12.dylib libIex-2_2.12.dylib
+cp 3rdparty/opencv/build/lib/libopencv_calib3d.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_core.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_features2d.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_flann.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_highgui.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_imgcodecs.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_imgproc.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_ml.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_video.3.2.dylib $BASE_LIB_PATH/
+cp 3rdparty/opencv/build/lib/libopencv_videoio.3.2.dylib $BASE_LIB_PATH/
+
+echo "Copied opencv libs"
+
+cp 3rdparty/libraw/lib/.libs/libraw.16.dylib $BASE_LIB_PATH/
+cp 3rdparty/libraw/lib/.libs/libraw_r.16.dylib $BASE_LIB_PATH/
+
+echo "Copied libraw libs"
+
+# fix_lib libIexMath-2_2.12.dylib libIex-2_2.12.dylib
+# fix_lib libIlmThread-2_2.12.dylib libIex-2_2.12.dylib
+# fix_lib libImath-2_2.12.dylib libIex-2_2.12.dylib
 
 fix_rpath libopencv_calib3d.3.2.dylib
 fix_rpath libopencv_features2d.3.2.dylib
