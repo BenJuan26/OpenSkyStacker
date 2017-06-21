@@ -9,16 +9,31 @@
 #include "model/imagerecord.h"
 #include <QImage>
 
+//! The main class for handling the image processing.
 class ImageStacker : public QObject
 {
     Q_OBJECT
+
+#ifdef TEST_OSS
+    friend class TestOSS;
+#endif
 public:
     explicit ImageStacker(QObject *parent = 0);
     bool cancel;
 
+    //! The extensions that the app will treat as RAW images.
     static const std::vector<QString> RAW_EXTENSIONS;
-    enum BITS_PER_CHANNEL{BITS_16, BITS_32};
 
+    //! Used to define the number of bits of the final image.
+    enum BITS_PER_CHANNEL{
+        BITS_16, /*!< 16-bit image. */
+        BITS_32  /*!< 32-bit image. */
+    };
+
+    //! Constructs an ImageRecord from the given file.
+    /*!
+        @param filename The image file to get the record from.
+    */
     ImageRecord* getImageRecord(QString filename);
 
     cv::Mat readImage(QString filename);
@@ -70,19 +85,37 @@ public:
     void setUseBias(bool value);
 
 signals:
+    //! Emitted when the processing is finished.
+    /*!
+        @param image The final processed image.
+    */
     void finished(cv::Mat image);
     void finishedDialog(QString message);
+
+    //! Provides a percentage of completion and a description of what's happening.
     void updateProgress(QString message, int percentComplete);
     void QImageReady(QImage image);
+
+    //! Emitted when an error occurs during processing.
     void processingError(QString message);
 public slots:
+    //! The main method for processing the images.
     void process();
     void readQImage(QString filename);
 
 private:
+    //! Aligns the target image to the reference image and returns it.
+    /*!
+        @param ref The reference image.
+        @param target The image to be aligned.
+    */
     cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
     cv::Mat averageImages(cv::Mat img1, cv::Mat img2);
 
+    //! Checks that all checked images are the same size
+    /*!
+        @return 0 if all images are validated; -1 otherwise.
+    */
     int validateImageSizes();
 
     QImage Mat2QImage(const cv::Mat &src);
