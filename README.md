@@ -2,6 +2,8 @@
 
 Multi-platform astroimaging stacker.
 
+[![Documentation](https://codedocs.xyz/BenJuan26/OpenSkyStacker.svg)](https://codedocs.xyz/BenJuan26/OpenSkyStacker/)
+
 ## Setup
 
 Qt 5 is required for this project. In order to prevent some relatively severe memory issues, building for 64-bit is required.
