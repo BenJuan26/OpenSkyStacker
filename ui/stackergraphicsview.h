@@ -10,6 +10,7 @@
 #include <QScrollBar>
 #include <QTouchEvent>
 
+//! Custom QGraphicsView for displaying the preview image.
 class StackerGraphicsView : public QGraphicsView
 {
     Q_OBJECT

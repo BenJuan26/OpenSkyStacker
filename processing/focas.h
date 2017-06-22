@@ -38,15 +38,23 @@
 #include "hfti.h"
 #include <qdebug.h>
 
-#define TOL		0.002   /* Default matching tolerance */
-#define	NOBJS		40	/* Default number of objects */
-#define MIN_MATCH	6	/* Min # of matched objects for transform */
-#define MAX_MATCH	120	/* Max # of matches to use (~MAX_OBJS) */
-#define MIN_OBJS	10	/* Min # of objects to use */
-#define MAX_OBJS	100	/* Max # of objects to use */
-#define	CLIP		3	/* Sigma clipping factor */
-#define PM		57.2958 /* Radian to degree conversion */
+/*! @file focas.h
+    @brief Variables and functions from the FOCAS library.
+*/
 
+#define TOL		0.002   /*!< Default matching tolerance */
+#define	NOBJS		40	/*!< Default number of objects */
+#define MIN_MATCH	6	/*!< Min # of matched objects for transform */
+#define MAX_MATCH	120	/*!< Max # of matches to use (~MAX_OBJS) */
+#define MIN_OBJS	10	/*!< Min # of objects to use */
+#define MAX_OBJS	100	/*!< Max # of objects to use */
+#define	CLIP		3	/*!< Sigma clipping factor */
+#define PM		57.2958 /*!< Radian to degree conversion */
+
+//! Generates a list of triangles to be used for the alignment algorithm.
+/*!
+    @param List The list of stars to generate triangles from.
+*/
 std::vector<Triangle> generateTriangleList(std::vector<Star> List);
 int sidesPos(int i, int j, int n);
 

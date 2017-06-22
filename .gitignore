@@ -8,3 +8,6 @@
 parts
 stage
 prime
+
+build
+.vscode

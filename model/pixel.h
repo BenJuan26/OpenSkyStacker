@@ -1,11 +1,18 @@
 #ifndef PIXEL_H
 #define PIXEL_H
 
-
+//! Represents a pixel in an image.
 class Pixel
 {
 public:
+    //! Constructor.
     Pixel();
+
+    //! Constructor.
+    /*! @param x The x coordinate of the pixel.
+        @param y The y coordinate of the pixel.
+        @param value The intensity of the pixel.
+    */
     Pixel(int x, int y, float value);
 
     int getX() const;
