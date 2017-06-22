@@ -21,6 +21,7 @@ test {
     TARGET = testoss
     SOURCES -= main.cpp
     SOURCES += test/testoss.cpp
+    HEADERS += test/testoss.h
     DEFINES += TEST_OSS
 
     # On macOS we don't want the app bundled; a standalone executable is fine.

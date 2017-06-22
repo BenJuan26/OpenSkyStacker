@@ -1,12 +1,6 @@
+#include "testoss.h"
 #include "processing/imagestacker.h"
 #include <QtTest/QtTest>
-
-class TestOSS: public QObject
-{
-    Q_OBJECT
-private slots:
-    void testUseDarks();
-};
 
 void TestOSS::testUseDarks()
 {
@@ -17,4 +11,3 @@ void TestOSS::testUseDarks()
 }
 
 QTEST_MAIN(TestOSS)
-#include "testoss.moc"
