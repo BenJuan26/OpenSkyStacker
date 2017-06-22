@@ -4,13 +4,21 @@
 #include <QString>
 #include <ctime>
 
+//! Contains metadata regarding an image.
 class ImageRecord
 {
 public:
-
+    //! Constructor.
     ImageRecord();
 
-    enum FRAME_TYPE{LIGHT,DARK,DARK_FLAT,FLAT,BIAS};
+    //! Describes the type of frame (e.g. Light, Dark, etc.).
+    enum FRAME_TYPE {
+        LIGHT,     /*!< Light frame. */
+        DARK,      /*!< Dark frame. */
+        DARK_FLAT, /*!< Dark flat frame. */
+        FLAT,      /*!< Flat frame. */
+        BIAS       /*!< Bias/offset frame. */
+    };
 
     QString getFilename() const;
     void setFilename(const QString &value);

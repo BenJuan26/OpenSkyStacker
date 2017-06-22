@@ -1,13 +1,21 @@
 #ifndef STAR_H
 #define STAR_H
 
-
+//! Represents a star as it appears in an image.
 class Star
 {
 public:
+    //! Constructor.
     Star();
+
+    //! Constructor.
+    /*! @param x_ The x coordinate of the Star.
+        @param y_ The y coordinate of the Star.
+        @param value_ The intensity of the Star.
+    */
     Star(int x_, int y_, float value_);
 
+    //! Destructor.
     ~Star();
 
     bool operator==(const Star& s);
