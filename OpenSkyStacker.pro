@@ -14,19 +14,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 win32: QT += winextras
 
 TARGET = OpenSkyStacker
-SOURCES += main.cpp
-
-test {
-    QT += testlib
-    TARGET = testoss
-    SOURCES -= main.cpp
-    SOURCES += test/testoss.cpp
-    HEADERS += test/testoss.h
-    DEFINES += TEST_OSS
-
-    # On macOS we don't want the app bundled; a standalone executable is fine.
-    CONFIG -= app_bundle
-}
 
 TEMPLATE = app
 
@@ -51,9 +38,8 @@ UI_DIR = $$DESTDIR/ui
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-#SOURCES += main.cpp\
-SOURCES += \
-        ui/mainwindow.cpp \
+SOURCES += main.cpp\
+    ui/mainwindow.cpp \
     processing/imagestacker.cpp \
     ui/processingdialog.cpp \
     model/star.cpp \
@@ -82,6 +68,18 @@ HEADERS  += ui/mainwindow.h \
 
 FORMS    += ui/mainwindow.ui \
     ui/processingdialog.ui
+
+test {
+    QT += testlib
+    TARGET = testoss
+    SOURCES -= main.cpp
+    SOURCES += test/testoss.cpp
+    HEADERS += test/testoss.h
+    DEFINES += TEST_OSS
+
+    # On macOS we don't want the app bundled; a standalone executable is fine.
+    CONFIG -= app_bundle
+}
 
 win32 {
     RC_ICONS = $$PWD/OpenSkyStacker.ico
