@@ -38,18 +38,6 @@ public:
     //! Gets the titles of the columns.
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
-    //! Adds an ImageRecord to the table.
-    /*! @param record The ImageRecord to add to the table. */
-    void append(ImageRecord *record);
-
-    //! Fetches the ImageRecord at the index `i`.
-    /*! @param i The index of the desired ImageRecord. */
-    ImageRecord* at(int i);
-
-    //! Removes the ImageRecord at the index `i`.
-    /*! @param i The index of the ImageRecord to be removed. */
-    void removeAt(int i);
-
     //! Sets the value of the cell at the given index.
     /*! @param index The index of the cell to be modified.
         @param value The value to be assigned to the cell.
@@ -63,6 +51,20 @@ public:
         @return The flags associated with the cell.
     */
     Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+    //! Adds an ImageRecord to the table.
+    /*! @param record The ImageRecord to add to the table. */
+    void Append(ImageRecord *record);
+
+    //! Fetches the ImageRecord at the index `i`.
+    /*! @param i The index of the desired ImageRecord. */
+    ImageRecord* At(int i);
+
+    //! Removes the ImageRecord at the index `i`.
+    /*! @param i The index of the ImageRecord to be removed. */
+    void RemoveAt(int i);
+
+
 private:
     QList<ImageRecord*> list;
 };

@@ -55,14 +55,14 @@
 /*!
     @param List The list of stars to generate triangles from.
 */
-std::vector<Triangle> generateTriangleList(std::vector<Star> List);
-int sidesPos(int i, int j, int n);
+std::vector<Triangle> GenerateTriangleList(std::vector<Star> List);
+int SidesPos(int i, int j, int n);
 
-std::vector<std::vector<int> > findMatches(int nobjs, int *k, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB);
-std::vector<std::vector<float> > findTransform(std::vector<std::vector<int> > matches, int m, std::vector<Star> List1, std::vector<Star> List2);
-void sortTriangles(std::vector<Triangle> *List_Triang_, int l, int r);
-void binSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last);
-void checkTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_,
+std::vector<std::vector<int> > FindMatches(int nobjs, int *k, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB);
+std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > matches, int m, std::vector<Star> List1, std::vector<Star> List2);
+void SortTriangles(std::vector<Triangle> *List_Triang_, int l, int r);
+void BinSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last);
+void CheckTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_,
                     int first, int last, int Table_match[]);
 
 #endif // FOCAS_H

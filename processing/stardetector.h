@@ -25,7 +25,7 @@ public:
         @param image The image containing the stars.
         @return A list of detected stars.
     */
-    std::vector<Star> getStars(cv::Mat image);
+    std::vector<Star> GetStars(cv::Mat image);
 
     //! Gets the value of the pixel at the given coordinates, truncating to the edges if the coordinates are outside the image bounds.
     /*!
@@ -34,14 +34,14 @@ public:
         @param y The y coordinate of the desired pixel.
         @return The value of the pixel at (x,y), truncated to the bounds of the image.
     */
-    float getExtendedPixelValue(cv::Mat image, int x, int y);
+    float GetExtendedPixelValue(cv::Mat image, int x, int y);
 
     //! Generates approximately what the sky background would look like without the stars.
     /*!
         @param image The full image with stars.
         @return The sky background.
     */
-    cv::Mat generateSkyBackground(cv::Mat image);
+    cv::Mat GenerateSkyBackground(cv::Mat image);
 
     //! Draw a white-on-black plot of the provided stars.
     /*! This started as a debugging tool but ended up being really cool and potentially useful.
@@ -51,13 +51,13 @@ public:
         @param limit Draw only the brightest N stars, or all of the stars if a negative value is given.
         @param stars The list of stars to draw.
     */
-    void drawDetectedStars(const std::string& path, uint width, uint height, int limit, std::vector<Star> stars);
+    void DrawDetectedStars(const std::string& path, uint width, uint height, int limit, std::vector<Star> stars);
 
     void test();
 
 private:
-    std::vector<AdjoiningPixel> getAdjoiningPixels(cv::Mat image, float threshold, float minPeak);
-    AdjoiningPixel detectAdjoiningPixel(cv::Mat image, int x, int y, float threshold);
+    std::vector<AdjoiningPixel> GetAdjoiningPixels(cv::Mat image, float threshold, float minPeak);
+    AdjoiningPixel DetectAdjoiningPixel(cv::Mat image, int x, int y, float threshold);
 };
 
 #endif // STARDETECTOR_H

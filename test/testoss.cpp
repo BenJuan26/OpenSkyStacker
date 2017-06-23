@@ -5,9 +5,9 @@
 void TestOSS::testUseDarks()
 {
     ImageStacker stacker;
-    stacker.useDarks = true;
+    stacker.use_darks_ = true;
 
-    QCOMPARE(stacker.useDarks, true);
+    QCOMPARE(stacker.use_darks_, true);
 }
 
 QTEST_MAIN(TestOSS)

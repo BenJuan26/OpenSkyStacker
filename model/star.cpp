@@ -5,11 +5,11 @@ Star::Star()
 
 }
 
-Star::Star(int x_, int y_, float value_)
+Star::Star(int x, int y, float value)
 {
-    x = x_;
-    y = y_;
-    value = value_;
+    x_ = x;
+    y_ = y;
+    value_ = value;
 }
 
 Star::~Star()
@@ -19,75 +19,75 @@ Star::~Star()
 
 bool Star::operator==(const Star &s)
 {
-    return x == s.getX() && y == s.getY();
+    return x_ == s.GetX() && y_ == s.GetY();
 }
 
 bool Star::operator>(const Star &other) const
 {
-    return value > other.getValue();
+    return value_ > other.GetValue();
 }
 
 bool Star::operator<(const Star &other) const
 {
-    return value < other.getValue();
+    return value_ < other.GetValue();
 }
 
-int Star::getX() const
+int Star::GetX() const
 {
-    return x;
+    return x_;
 }
 
-void Star::setX(int value)
+void Star::SetX(int value)
 {
-    x = value;
+    x_ = value;
 }
 
-int Star::getY() const
+int Star::GetY() const
 {
-    return y;
+    return y_;
 }
 
-void Star::setY(int value)
+void Star::SetY(int value)
 {
-    y = value;
+    y_ = value;
 }
 
-float Star::getPeak() const
+float Star::GetPeak() const
 {
-    return peak;
+    return peak_;
 }
 
-void Star::setPeak(float value)
+void Star::SetPeak(float value)
 {
-    peak = value;
+    peak_ = value;
 }
 
-float Star::getRadius() const
+float Star::GetRadius() const
 {
-    return radius;
+    return radius_;
 }
 
-void Star::setRadius(float value)
+void Star::SetRadius(float value)
 {
-    radius = value;
+    radius_ = value;
 }
 
-int Star::getArea() const
+int Star::GetArea() const
 {
-    return area;
+    return area_;
 }
 
-void Star::setArea(int value)
+void Star::SetArea(int value)
 {
-    area = value;
+    area_ = value;
 }
 
-float Star::getValue() const
+float Star::GetValue() const
 {
-    return value;
+    return value_;
 }
 
-void Star::setValue(float newValue)
+void Star::SetValue(float value)
 {
-    value = newValue;
+    value_ = value;
 }

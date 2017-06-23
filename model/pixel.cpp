@@ -5,49 +5,49 @@ Pixel::Pixel()
 
 }
 
-Pixel::Pixel(int x_, int y_, float value_)
+Pixel::Pixel(int x, int y, float value)
 {
-    x = x_;
-    y = y_;
-    value = value_;
+    x_ = x;
+    y_ = y;
+    value_ = value;
 }
 
-int Pixel::getX() const
+int Pixel::GetX() const
 {
-    return x;
+    return x_;
 }
 
-void Pixel::setX(int value)
+void Pixel::SetX(int value)
 {
-    x = value;
+    x_ = value;
 }
 
-int Pixel::getY() const
+int Pixel::GetY() const
 {
-    return y;
+    return y_;
 }
 
-void Pixel::setY(int value)
+void Pixel::SetY(int value)
 {
-    y = value;
+    y_ = value;
 }
 
-float Pixel::getValue() const
+float Pixel::GetValue() const
 {
-    return value;
+    return value_;
 }
 
-void Pixel::setValue(float otherValue)
+void Pixel::SetValue(float value)
 {
-    value = otherValue;
+    value_ = value;
 }
 
 bool Pixel::operator>(const Pixel &other) const
 {
-    return value > other.getValue();
+    return value_ > other.GetValue();
 }
 
 bool Pixel::operator<(const Pixel &other) const
 {
-    return value < other.getValue();
+    return value_ < other.GetValue();
 }

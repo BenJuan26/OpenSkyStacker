@@ -15,22 +15,22 @@ public:
     */
     Pixel(int x, int y, float value);
 
-    int getX() const;
-    void setX(int value);
+    int GetX() const;
+    void SetX(int value_);
 
-    int getY() const;
-    void setY(int value);
+    int GetY() const;
+    void SetY(int value_);
 
-    float getValue() const;
-    void setValue(float otherValue);
+    float GetValue() const;
+    void SetValue(float value);
 
     bool operator>(const Pixel& other) const;
     bool operator<(const Pixel& other) const;
 
 private:
-    int x;
-    int y;
-    float value;
+    int x_;
+    int y_;
+    float value_;
 };
 
 #endif // PIXEL_H

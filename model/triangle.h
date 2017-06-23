@@ -13,23 +13,23 @@ public:
         @param s2_ The index of the Star between sides A and C.
         @param s3_ The index of the Star between sides B and C.
     */
-    Triangle(int s1_, int s2_, int s3_);
+    Triangle(int s1, int s2, int s3);
 
     // indices of corresponding objects
     //! The index of the Star between sides A and B.
-    int s1;
+    int s1_;
 
     //! The index of the Star between sides A and C.
-    int s2;
+    int s2_;
 
     //! The index of the Star between sides B and C.
-    int s3;
+    int s3_;
 
     // coordinates in triangle space
     //! The x coordinate in triangle space.
-    float x;
+    float x_;
     //! The y coordinate in triangle space
-    float y;
+    float y_;
 };
 
 #endif // TRIANGLE_H

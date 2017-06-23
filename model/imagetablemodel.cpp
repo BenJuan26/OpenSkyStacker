@@ -33,7 +33,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
         return QVariant(QBrush (QColor(Qt::white)));
 
     case Qt::FontRole:
-        if (list[index.row()]->isReference()) {
+        if (list[index.row()]->IsReference()) {
             QFont font;
             font.setBold(true);
             return font;
@@ -42,7 +42,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 
     case Qt::CheckStateRole:
         if (index.column() == 0) {
-            if (list[index.row()]->isChecked() == true)
+            if (list[index.row()]->IsChecked() == true)
                 return Qt::Checked;
             return Qt::Unchecked;
         }
@@ -57,10 +57,10 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             // Strip off the path
     //        QFileInfo info(image.getFilename());
     //        return info.fileName();
-            return image->getFilename();
+            return image->GetFilename();
         }
         case 2:
-            switch(image->getType()) {
+            switch(image->GetType()) {
             case ImageRecord::LIGHT: default: return tr("Light");
             case ImageRecord::DARK: return tr("Dark");
             case ImageRecord::DARK_FLAT: return tr("Dark Flat");
@@ -69,14 +69,14 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             }
             break;
         case 3: return QString::number(image->getShutter()) + " s";
-        case 4: return image->getIso();
+        case 4: return image->GetIso();
         case 5: {
-            std::time_t time = image->getTimestamp();
+            std::time_t time = image->GetTimestamp();
             std::tm *timeinfo = std::localtime(&time);
             return std::asctime(timeinfo);
         }
-        case 6: return image->getWidth();
-        case 7: return image->getHeight();
+        case 6: return image->GetWidth();
+        case 7: return image->GetHeight();
         default: return {};
         }
     }
@@ -102,19 +102,19 @@ QVariant ImageTableModel::headerData(int section, Qt::Orientation orientation, i
     }
 }
 
-void ImageTableModel::append(ImageRecord *record)
+void ImageTableModel::Append(ImageRecord *record)
 {
     beginInsertRows({}, list.count(), list.count());
     list.append(record);
     endInsertRows();
 }
 
-ImageRecord *ImageTableModel::at(int i)
+ImageRecord *ImageTableModel::At(int i)
 {
     return list[i];
 }
 
-void ImageTableModel::removeAt(int i)
+void ImageTableModel::RemoveAt(int i)
 {
     beginRemoveRows({}, i, i);
     list.removeAt(i);
@@ -130,7 +130,7 @@ bool ImageTableModel::setData(const QModelIndex &index, const QVariant &value, i
         if (value.toInt() == Qt::Checked)
             checked = true;
         ImageRecord *record = list.at(index.row());
-        record->setChecked(checked);
+        record->SetChecked(checked);
     }
 
     return true;
