@@ -30,7 +30,7 @@
 #ifndef FOCAS_H
 #define FOCAS_H
 
-#include "opencv2/core.hpp"
+#include "opencv2/core/core.hpp"
 #include <cmath>
 #include <algorithm>
 #include "model/triangle.h"

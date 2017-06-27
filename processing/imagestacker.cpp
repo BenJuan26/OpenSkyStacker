@@ -12,7 +12,7 @@
 #endif
 #include <libraw/libraw.h>
 
-using namespace cv;
+//using namespace cv;
 
 const std::vector<QString> ImageStacker::RAW_EXTENSIONS = {"3fr", "ari", "arw", "bay", "crw", "cr2",
         "cap", "data", "dcs", "dcr", "dng", "drf", "eip", "erf", "fff", "gpr", "iiq", "k25", "kdc",
@@ -87,7 +87,7 @@ void ImageStacker::process() {
         qDebug() << message;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
-        Mat targetImage = readImage(targetImageFileNames.at(k));
+        cv::Mat targetImage = readImage(targetImageFileNames.at(k));
 
 
         // ------------- CALIBRATION --------------
@@ -105,7 +105,7 @@ void ImageStacker::process() {
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
-        Mat targetAligned = generateAlignedImage(refImage, targetImage);
+        cv::Mat targetAligned = generateAlignedImage(refImage, targetImage);
 
         if (cancel) return;
 
@@ -115,7 +115,7 @@ void ImageStacker::process() {
         currentOperation++;
         if (totalOperations != 0) emit updateProgress(message, 100*currentOperation/totalOperations);
 
-        cv::add(workingImage, targetAligned, workingImage, noArray(), CV_32F);
+        cv::add(workingImage, targetAligned, workingImage, cv::noArray(), CV_32F);
     }
 
     if (cancel) return;
@@ -145,27 +145,27 @@ void ImageStacker::readQImage(QString filename)
 }
 
 cv::Mat ImageStacker::averageImages(cv::Mat img1, cv::Mat img2) {
-    Mat result;
+    cv::Mat result;
 
     switch (bitsPerChannel) {
     case BITS_16: {
-        result = Mat(img1.rows, img1.cols, CV_16UC3);
+        result = cv::Mat(img1.rows, img1.cols, CV_16UC3);
         for(int x = 0; x < img1.cols; x++) {
             for(int y = 0; y < img1.rows; y++) {
 
-                Vec<unsigned short, 3> pixel1 = img1.at< Vec<unsigned short,3> >(y,x);
+                cv::Vec<unsigned short, 3> pixel1 = img1.at< cv::Vec<unsigned short,3> >(y,x);
                 unsigned short b1 = pixel1.val[0];
                 unsigned short g1 = pixel1.val[1];
                 unsigned short r1 = pixel1.val[2];
 
-                Vec<unsigned short,3> pixel2 = img2.at< Vec<unsigned short,3> >(y,x);
+                cv::Vec<unsigned short,3> pixel2 = img2.at< cv::Vec<unsigned short,3> >(y,x);
                 unsigned short b2 = pixel2.val[0];
                 unsigned short g2 = pixel2.val[1];
                 unsigned short r2 = pixel2.val[2];
 
-                result.at< Vec<unsigned short,3> >(y,x).val[0] = (b1 + b2) / 2;
-                result.at< Vec<unsigned short,3> >(y,x).val[1] = (g1 + g2) / 2;
-                result.at< Vec<unsigned short,3> >(y,x).val[2] = (r1 + r2) / 2;
+                result.at< cv::Vec<unsigned short,3> >(y,x).val[0] = (b1 + b2) / 2;
+                result.at< cv::Vec<unsigned short,3> >(y,x).val[1] = (g1 + g2) / 2;
+                result.at< cv::Vec<unsigned short,3> >(y,x).val[2] = (r1 + r2) / 2;
             }
         }
 
@@ -173,23 +173,23 @@ cv::Mat ImageStacker::averageImages(cv::Mat img1, cv::Mat img2) {
     }
 
     case BITS_32: {
-        result = Mat(img1.rows, img1.cols, CV_32FC3);
+        result = cv::Mat(img1.rows, img1.cols, CV_32FC3);
         for(int x = 0; x < img1.cols; x++) {
             for(int y = 0; y < img1.rows; y++) {
 
-                Vec3f pixel1 = img1.at<Vec3f>(y,x);
+                cv::Vec3f pixel1 = img1.at<cv::Vec3f>(y,x);
                 float b1 = pixel1.val[0];
                 float g1 = pixel1.val[1];
                 float r1 = pixel1.val[2];
 
-                Vec3f pixel2 = img2.at<Vec3f>(y,x);
+                cv::Vec3f pixel2 = img2.at<cv::Vec3f>(y,x);
                 float b2 = pixel2.val[0];
                 float g2 = pixel2.val[1];
                 float r2 = pixel2.val[2];
 
-                result.at<Vec3f>(y,x).val[0] = (b1 + b2) / 2.0;
-                result.at<Vec3f>(y,x).val[1] = (g1 + g2) / 2.0;
-                result.at<Vec3f>(y,x).val[2] = (r1 + r2) / 2.0;
+                result.at<cv::Vec3f>(y,x).val[0] = (b1 + b2) / 2.0;
+                result.at<cv::Vec3f>(y,x).val[1] = (g1 + g2) / 2.0;
+                result.at<cv::Vec3f>(y,x).val[2] = (r1 + r2) / 2.0;
             }
         }
 
@@ -202,7 +202,7 @@ cv::Mat ImageStacker::averageImages(cv::Mat img1, cv::Mat img2) {
 
 int ImageStacker::validateImageSizes()
 {
-    Mat ref = readImage(refImageFileName);
+    cv::Mat ref = readImage(refImageFileName);
 
     int width = ref.cols;
     int height = ref.rows;
@@ -212,7 +212,7 @@ int ImageStacker::validateImageSizes()
     for (int i = 0; i < targetImageFileNames.length(); i++) {
         QString filename = targetImageFileNames.at(i);
 
-        Mat image = readImage(filename);
+        cv::Mat image = readImage(filename);
 
         if (image.cols != width ||  image.rows != height) {
             return -1;
@@ -223,7 +223,7 @@ int ImageStacker::validateImageSizes()
         for (int i = 0; i < biasFrameFileNames.length(); i++) {
             QString filename = biasFrameFileNames.at(i);
 
-            Mat image = readImage(filename);
+            cv::Mat image = readImage(filename);
 
             if (image.cols != width ||  image.rows != height) {
                 return -1;
@@ -235,7 +235,7 @@ int ImageStacker::validateImageSizes()
         for (int i = 0; i < darkFrameFileNames.length(); i++) {
             QString filename = darkFrameFileNames.at(i);
 
-            Mat image = readImage(filename);
+            cv::Mat image = readImage(filename);
 
             if (image.cols != width ||  image.rows != height) {
                 return -1;
@@ -247,7 +247,7 @@ int ImageStacker::validateImageSizes()
         for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
             QString filename = darkFlatFrameFileNames.at(i);
 
-            Mat image = readImage(filename);
+            cv::Mat image = readImage(filename);
 
             if (image.cols != width ||  image.rows != height) {
                 return -1;
@@ -259,7 +259,7 @@ int ImageStacker::validateImageSizes()
         for (int i = 0; i < flatFrameFileNames.length(); i++) {
             QString filename = flatFrameFileNames.at(i);
 
-            Mat image = readImage(filename);
+            cv::Mat image = readImage(filename);
 
             if (image.cols != width ||  image.rows != height) {
                 return -1;
@@ -270,7 +270,7 @@ int ImageStacker::validateImageSizes()
     return 0;
 }
 
-QImage ImageStacker::Mat2QImage(const Mat &src)
+QImage ImageStacker::Mat2QImage(const cv::Mat &src)
 {
     QImage dest(src.cols, src.rows, QImage::Format_RGB32);
     int r, g, b;
@@ -279,7 +279,7 @@ QImage ImageStacker::Mat2QImage(const Mat &src)
         for(int x = 0; x < src.cols; x++) {
             for(int y = 0; y < src.rows; y++) {
 
-                Vec<unsigned short,3> pixel = src.at< Vec<unsigned short,3> >(y,x);
+                cv::Vec<unsigned short,3> pixel = src.at< cv::Vec<unsigned short,3> >(y,x);
                 b = pixel.val[0]/256;
                 g = pixel.val[1]/256;
                 r = pixel.val[2]/256;
@@ -291,7 +291,7 @@ QImage ImageStacker::Mat2QImage(const Mat &src)
         for(int x = 0; x < src.cols; x++) {
             for(int y = 0; y < src.rows; y++) {
 
-                Vec3f pixel = src.at<Vec3f>(y,x);
+                cv::Vec3f pixel = src.at<cv::Vec3f>(y,x);
                 b = pixel.val[0]*255;
                 g = pixel.val[1]*255;
                 r = pixel.val[2]*255;
@@ -304,15 +304,15 @@ QImage ImageStacker::Mat2QImage(const Mat &src)
 
 void ImageStacker::stackDarks()
 {
-    Mat dark1 = readImage(darkFrameFileNames.at(0));
+    cv::Mat dark1 = readImage(darkFrameFileNames.at(0));
     if (useBias) dark1 -= masterBias;
 
-    Mat result = dark1.clone();
+    cv::Mat result = dark1.clone();
 
     QString message;
 
     for (int i = 1; i < darkFrameFileNames.length() && !cancel; i++) {
-        Mat dark = readImage(darkFrameFileNames.at(i));
+        cv::Mat dark = readImage(darkFrameFileNames.at(i));
 
         message = tr("Stacking dark frame %1 of %2").arg(QString::number(i+1), QString::number(darkFrameFileNames.length()));
         qDebug() << message;
@@ -330,15 +330,15 @@ void ImageStacker::stackDarks()
 
 void ImageStacker::stackDarkFlats()
 {
-    Mat darkFlat1 = readImage(darkFlatFrameFileNames.at(0));
+    cv::Mat darkFlat1 = readImage(darkFlatFrameFileNames.at(0));
     if (useBias) darkFlat1 -= masterBias;
 
-    Mat result = darkFlat1.clone();
+    cv::Mat result = darkFlat1.clone();
 
     QString message;
 
     for (int i = 1; i < darkFlatFrameFileNames.length() && !cancel; i++) {
-        Mat dark = readImage(darkFlatFrameFileNames.at(i));
+        cv::Mat dark = readImage(darkFlatFrameFileNames.at(i));
 
         message = tr("Stacking dark flat frame %1 of %2").arg(QString::number(i+1), QString::number(darkFlatFrameFileNames.length()));
         qDebug() << message;
@@ -357,8 +357,8 @@ void ImageStacker::stackDarkFlats()
 void ImageStacker::stackFlats()
 {
     // most algorithms compute the median, but we will stick with mean for now
-    Mat flat1 = readImage(flatFrameFileNames.at(0));
-    Mat result = flat1.clone();
+    cv::Mat flat1 = readImage(flatFrameFileNames.at(0));
+    cv::Mat result = flat1.clone();
 
     if (useBias) result -= masterBias;
     if (useDarkFlats) result -= masterDarkFlat;
@@ -366,7 +366,7 @@ void ImageStacker::stackFlats()
     QString message;
 
     for (int i = 1; i < flatFrameFileNames.length() && !cancel; i++) {
-        Mat flat = readImage(flatFrameFileNames.at(i));
+        cv::Mat flat = readImage(flatFrameFileNames.at(i));
 
         message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flatFrameFileNames.length()));
         qDebug() << message;
@@ -383,7 +383,7 @@ void ImageStacker::stackFlats()
     // scale the flat frame so that the average value is 1.0
     // since we're dividing, flat values darker than the average value will brighten the image
     //  and values brighter than the average will darken the image, flattening the field
-    Scalar meanScalar = cv::mean(result);
+    cv::Scalar meanScalar = cv::mean(result);
     float avg = (meanScalar.val[0] + meanScalar.val[1] + meanScalar.val[2])/3;
 
     qDebug() << "Average: " << avg;
@@ -395,13 +395,13 @@ void ImageStacker::stackFlats()
 
 void ImageStacker::stackBias()
 {
-    Mat bias1 = readImage(biasFrameFileNames.at(0));
-    Mat result = bias1.clone();
+    cv::Mat bias1 = readImage(biasFrameFileNames.at(0));
+    cv::Mat result = bias1.clone();
 
     QString message;
 
     for (int i = 1; i < biasFrameFileNames.length() && !cancel; i++) {
-        Mat bias = readImage(biasFrameFileNames.at(i));
+        cv::Mat bias = readImage(biasFrameFileNames.at(i));
 
         message = tr("Stacking bias frame %1 of %2").arg(QString::number(i+1), QString::number(biasFrameFileNames.length()));
         qDebug() << message;
@@ -416,12 +416,12 @@ void ImageStacker::stackBias()
     masterBias = result;
 }
 
-Mat ImageStacker::convertAndScaleImage(Mat image)
+cv::Mat ImageStacker::convertAndScaleImage(cv::Mat image)
 {
-    Mat result;
+    cv::Mat result;
 
     if (bitsPerChannel == BITS_16) {
-        result = Mat(image.rows, image.cols, CV_16UC3);
+        result = cv::Mat(image.rows, image.cols, CV_16UC3);
         switch (image.depth()) {
         case CV_8U: default:
             image.convertTo(result, CV_16U, 256);
@@ -444,7 +444,7 @@ Mat ImageStacker::convertAndScaleImage(Mat image)
         }
     }
     else if (bitsPerChannel == BITS_32) {
-        result = Mat(image.rows, image.cols, CV_32FC3);
+        result = cv::Mat(image.rows, image.cols, CV_32FC3);
         switch (image.depth()) {
         case CV_8U: default:
             image.convertTo(result, CV_32F, 1/255.0);
@@ -472,7 +472,7 @@ Mat ImageStacker::convertAndScaleImage(Mat image)
     return result;
 }
 
-Mat ImageStacker::rawToMat(QString filename)
+cv::Mat ImageStacker::rawToMat(QString filename)
 {
     LibRaw processor;
 
@@ -481,7 +481,7 @@ Mat ImageStacker::rawToMat(QString filename)
     processor.imgdata.params.use_camera_wb = 1;
     processor.imgdata.params.no_auto_bright = 1;
     processor.imgdata.params.output_bps = 16;
-    processor.imgdata.params.no_auto_scale = 1;
+    //processor.imgdata.params.no_auto_scale = 1;
 
     processor.open_file(filename.toUtf8().constData());
     processor.unpack();
@@ -490,12 +490,12 @@ Mat ImageStacker::rawToMat(QString filename)
     processor.dcraw_process();
 
     libraw_processed_image_t *proc = processor.dcraw_make_mem_image();
-    Mat tmp = Mat(Size(processor.imgdata.sizes.width, processor.imgdata.sizes.height),
+    cv::Mat tmp = cv::Mat(cv::Size(processor.imgdata.sizes.width, processor.imgdata.sizes.height),
                     CV_16UC3, proc->data);
 
     // copy data -- slower, but then we can rely on OpenCV's reference counting
     // also, we have to convert RGB->BGR anyway
-    Mat image = Mat(processor.imgdata.sizes.width, processor.imgdata.sizes.height, CV_16UC3);
+    cv::Mat image = cv::Mat(processor.imgdata.sizes.width, processor.imgdata.sizes.height, CV_16UC3);
     cvtColor(tmp, image, CV_RGB2BGR);
 
     if (bitsPerChannel == BITS_32)
@@ -507,9 +507,9 @@ Mat ImageStacker::rawToMat(QString filename)
     return image;
 }
 
-Mat ImageStacker::readImage(QString filename)
+cv::Mat ImageStacker::readImage(QString filename)
 {
-    Mat result;
+    cv::Mat result;
 
     QFileInfo info(filename);
     QString ext = info.completeSuffix();
@@ -519,7 +519,7 @@ Mat ImageStacker::readImage(QString filename)
         result = rawToMat(filename);
     }
     else {
-        result = imread(filename.toUtf8().constData(), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+        result = cv::imread(filename.toUtf8().constData(), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
         result = convertAndScaleImage(result);
     }
 
@@ -527,7 +527,7 @@ Mat ImageStacker::readImage(QString filename)
 }
 
 // derived from FOCAS mktransform.c
-cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
+cv::Mat ImageStacker::generateAlignedImage(cv::Mat ref, cv::Mat target) {
     StarDetector sd;
     std::vector<Star> List1 = sd.getStars(ref);
     std::vector<Star> List2 = sd.getStars(target);
@@ -546,7 +546,7 @@ cv::Mat ImageStacker::generateAlignedImage(Mat ref, Mat target) {
         for (int j = 0; j < 3; j++)
             matTransform.at<float>(i,j) = transformVec[i][j];
 
-    warpAffine(target, target, matTransform, target.size(), INTER_LINEAR + WARP_INVERSE_MAP);
+    warpAffine(target, target, matTransform, target.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
 
     return target;
 }
