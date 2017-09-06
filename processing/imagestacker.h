@@ -2,10 +2,10 @@
 #define IMAGESTACKER_H
 
 #include <QObject>
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 #include <QMutex>
-#include "stardetector.h"
-#include "focas.h"
+#include "processing/stardetector.h"
+#include "processing/focas.h"
 #include "model/imagerecord.h"
 #include <QImage>
 

@@ -111,8 +111,8 @@ macx {
     LIBS += -L/usr/local/lib
 
     # OpenCV
-    # INCLUDEPATH += $$PWD/3rdparty/opencv/include
-    # INCLUDEPATH += $$PWD/3rdparty/opencv/build
+    INCLUDEPATH += $$PWD/3rdparty/opencv/include
+    INCLUDEPATH += $$PWD/3rdparty/opencv/build
     LIBS += \
         -lopencv_core \
         -lopencv_highgui \
@@ -155,14 +155,15 @@ macx {
 }
 
 linux {
-    INCLUDEPATH += $$PWD/3rdparty/opencv/include
-    INCLUDEPATH += $$PWD/3rdparty/libraw/unix/include
-    INCLUDEPATH += $$(QTDIR)/include/QtWidgets
-    LIBS += -L$$PWD/3rdparty/opencv/unix/lib \
-        -L$$PWD/3rdparty/libraw/unix/lib \
+    #INCLUDEPATH += $$PWD/3rdparty/opencv/include
+    #INCLUDEPATH += $$PWD/3rdparty/libraw/unix/include
+    #INCLUDEPATH += $$(QTDIR)/include/QtWidgets
+    INCLUDE += /usr/include /usr/local/include /usr/include/x86_64-linux-gnu
+    #LIBS += -L$$PWD/3rdparty/opencv/unix/lib \
+    #    -L$$PWD/3rdparty/libraw/unix/lib \
+    LIBS += -L/usr/lib/x86_64-linux-gnu \
         -lopencv_core \
         -lopencv_highgui \
-        -lopencv_imgcodecs \
         -lopencv_imgproc \
         -lopencv_features2d \
         -lopencv_calib3d \
