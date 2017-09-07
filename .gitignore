@@ -2,6 +2,7 @@
 *.pro.user*
 *.lnk
 .DS_Store
+Makefile
 
 # Snapcraft
 *.snap
@@ -11,3 +12,11 @@ prime
 
 build
 .vscode
+.qmake.stash
+doc
+
+3rdparty/libraw/bin
+3rdparty/libraw/*/*.o
+3rdparty/libraw/*/*.lo
+3rdparty/libraw/*/*.la
+3rdparty/libraw/*/.libs

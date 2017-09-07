@@ -18,8 +18,6 @@
 #include <QtWinExtras/QWinTaskbarProgress>
 #endif
 
-using namespace cv;
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui_(new Ui::MainWindow)
@@ -83,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 }
 
-void MainWindow::finishedStacking(Mat image) {
+void MainWindow::finishedStacking(cv::Mat image) {
     QString path = stacker_->GetSaveFilePath();
     try {
         imwrite(path.toUtf8().constData(), image);
@@ -385,7 +383,7 @@ QImage MainWindow::Mat2QImage(const cv::Mat &src) {
             for(int x = 0; x < src.cols; x++) {
                 for(int y = 0; y < src.rows; y++) {
 
-                    Vec<unsigned short,3> pixel = src.at< Vec<unsigned short,3> >(y,x);
+                    cv::Vec<unsigned short,3> pixel = src.at< cv::Vec<unsigned short,3> >(y,x);
                     b = pixel.val[0]/256;
                     g = pixel.val[1]/256;
                     r = pixel.val[2]/256;
@@ -397,7 +395,7 @@ QImage MainWindow::Mat2QImage(const cv::Mat &src) {
             for(int x = 0; x < src.cols; x++) {
                 for(int y = 0; y < src.rows; y++) {
 
-                    Vec3f pixel = src.at<Vec3f>(y,x);
+                    cv::Vec3f pixel = src.at<cv::Vec3f>(y,x);
                     b = pixel.val[0]*255;
                     g = pixel.val[1]*255;
                     r = pixel.val[2]*255;
