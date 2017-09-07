@@ -2,96 +2,96 @@
 
 ImageRecord::ImageRecord()
 {
-    reference = false;
-    checked = true;
+    reference_ = false;
+    checked_ = true;
 }
 
-QString ImageRecord::getFilename() const
+QString ImageRecord::GetFilename() const
 {
-    return filename;
+    return filename_;
 }
 
-void ImageRecord::setFilename(const QString &value)
+void ImageRecord::SetFilename(const QString &value)
 {
-    filename = value;
+    filename_ = value;
 }
 
-ImageRecord::FRAME_TYPE ImageRecord::getType() const
+ImageRecord::FrameType ImageRecord::GetType() const
 {
-    return type;
+    return type_;
 }
 
-void ImageRecord::setType(const FRAME_TYPE &value)
+void ImageRecord::SetType(const FrameType &value)
 {
-    type = value;
+    type_ = value;
 }
 
 float ImageRecord::getShutter() const
 {
-    return shutter;
+    return shutter_;
 }
 
 void ImageRecord::setShutter(float value)
 {
-    shutter = value;
+    shutter_ = value;
 }
 
-float ImageRecord::getIso() const
+float ImageRecord::GetIso() const
 {
-    return iso;
+    return iso_;
 }
 
-void ImageRecord::setIso(float value)
+void ImageRecord::SetIso(float value)
 {
-    iso = value;
+    iso_ = value;
 }
 
-bool ImageRecord::isReference() const
+bool ImageRecord::IsReference() const
 {
-    return reference;
+    return reference_;
 }
 
-void ImageRecord::setReference(bool value)
+void ImageRecord::SetReference(bool value)
 {
-    reference = value;
+    reference_ = value;
 }
 
-time_t ImageRecord::getTimestamp() const
+time_t ImageRecord::GetTimestamp() const
 {
-    return timestamp;
+    return timestamp_;
 }
 
-void ImageRecord::setTimestamp(const time_t &value)
+void ImageRecord::SetTimestamp(const time_t &value)
 {
-    timestamp = value;
+    timestamp_ = value;
 }
 
-bool ImageRecord::isChecked() const
+bool ImageRecord::IsChecked() const
 {
-    return checked;
+    return checked_;
 }
 
-void ImageRecord::setChecked(bool value)
+void ImageRecord::SetChecked(bool value)
 {
-    checked = value;
+    checked_ = value;
 }
 
-int ImageRecord::getWidth() const
+int ImageRecord::GetWidth() const
 {
-    return width;
+    return width_;
 }
 
-void ImageRecord::setWidth(int value)
+void ImageRecord::SetWidth(int value)
 {
-    width = value;
+    width_ = value;
 }
 
-int ImageRecord::getHeight() const
+int ImageRecord::GetHeight() const
 {
-    return height;
+    return height_;
 }
 
-void ImageRecord::setHeight(int value)
+void ImageRecord::SetHeight(int value)
 {
-    height = value;
+    height_ = value;
 }

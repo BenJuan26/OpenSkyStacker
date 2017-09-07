@@ -22,13 +22,13 @@ public:
     explicit ImageStacker(QObject *parent = 0);
 
     //! Flag set to asynchronously cancel processing.
-    bool cancel;
+    bool cancel_;
 
     //! The extensions that the app will treat as RAW images.
     static const std::vector<QString> RAW_EXTENSIONS;
 
     //! Used to define the number of bits of the final image.
-    enum BITS_PER_CHANNEL{
+    enum BitsPerChannel {
         BITS_16, /*!< 16-bit image. */
         BITS_32  /*!< 32-bit image. */
     };
@@ -37,142 +37,140 @@ public:
     /*!
         @param filename The image file to get the record from.
     */
-    ImageRecord* getImageRecord(QString filename);
+    ImageRecord* GetImageRecord(QString filename);
 
     //! Gets an OpenCV Mat from the image at the specified filename.
     /*!
         @param filename The image file to read.
     */
-    cv::Mat readImage(QString filename);
+    cv::Mat ReadImage(QString filename);
 
     // get/set
-    QString getRefImageFileName() const;
-    void setRefImageFileName(const QString &value);
+    QString GetRefImageFileName() const;
+    void SetRefImageFileName(const QString &value);
 
-    QStringList getTargetImageFileNames() const;
-    void setTargetImageFileNames(const QStringList &value);
+    QStringList GetTargetImageFileNames() const;
+    void SetTargetImageFileNames(const QStringList &value);
 
-    QStringList getDarkFrameFileNames() const;
-    void setDarkFrameFileNames(const QStringList &value);
+    QStringList GetDarkFrameFileNames() const;
+    void SetDarkFrameFileNames(const QStringList &value);
 
-    QStringList getDarkFlatFrameFileNames() const;
-    void setDarkFlatFrameFileNames(const QStringList &value);
+    QStringList GetDarkFlatFrameFileNames() const;
+    void SetDarkFlatFrameFileNames(const QStringList &value);
 
-    QStringList getFlatFrameFileNames() const;
-    void setFlatFrameFileNames(const QStringList &value);
+    QStringList GetFlatFrameFileNames() const;
+    void SetFlatFrameFileNames(const QStringList &value);
 
-    QString getSaveFilePath() const;
-    void setSaveFilePath(const QString &value);
+    QString GetSaveFilePath() const;
+    void SetSaveFilePath(const QString &value);
 
-    cv::Mat getWorkingImage() const;
-    void setWorkingImage(const cv::Mat &value);
+    cv::Mat GetWorkingImage() const;
+    void SetWorkingImage(const cv::Mat &value);
 
-    cv::Mat getRefImage() const;
-    void setRefImage(const cv::Mat &value);
+    cv::Mat GetRefImage() const;
+    void SetRefImage(const cv::Mat &value);
 
-    cv::Mat getFinalImage() const;
-    void setFinalImage(const cv::Mat &value);
+    cv::Mat GetFinalImage() const;
+    void SetFinalImage(const cv::Mat &value);
 
-    bool getUseDarks() const;
-    void setUseDarks(bool value);
+    bool GetUseDarks() const;
+    void SetUseDarks(bool value);
 
-    bool getUseDarkFlats() const;
-    void setUseDarkFlats(bool value);
+    bool GetUseDarkFlats() const;
+    void SetUseDarkFlats(bool value);
 
-    bool getUseFlats() const;
-    void setUseFlats(bool value);
+    bool GetUseFlats() const;
+    void SetUseFlats(bool value);
 
-    BITS_PER_CHANNEL getBitsPerChannel() const;
-    void setBitsPerChannel(const BITS_PER_CHANNEL &value);
+    BitsPerChannel GetBitsPerChannel() const;
+    void SetBitsPerChannel(const BitsPerChannel &value);
 
-    QStringList getBiasFrameFileNames() const;
-    void setBiasFrameFileNames(const QStringList &value);
+    QStringList GetBiasFrameFileNames() const;
+    void SetBiasFrameFileNames(const QStringList &value);
 
-    bool getUseBias() const;
-    void setUseBias(bool value);
+    bool GetUseBias() const;
+    void SetUseBias(bool value);
 
 signals:
     //! Provides the final image when the processing is finished.
     /*!
         @param image The final processed image.
     */
-    void finished(cv::Mat image);
+    void Finished(cv::Mat image);
 
     //! Provides a message when processing is finished, and marks the processing as complete.
     /*!
         @param message The message to accompany the process completion.
     */
-    void finishedDialog(QString message);
+    void FinishedDialog(QString message);
 
     //! Provides a percentage of completion and a description of what's happening.
     /*!
         @param message A description of the current section of processing.
         @param percentComplete An integer, out of 100, representing the percentage of completion.
     */
-    void updateProgress(QString message, int percentComplete);
+    void UpdateProgress(QString message, int percentComplete);
 
     //! Emits a QImage after asynchronously reading it.
     void QImageReady(QImage image);
 
     //! Emitted when an error occurs during processing.
-    void processingError(QString message);
+    void ProcessingError(QString message);
 public slots:
     //! The main method for processing the images.
-    void process();
+    void Process();
 
     //! Gets an image from disk and asynchronously reads it as a QImage.
     /*! Emits QImageReady once the image is ready.
         @param filename The image file to read.
     */
-    void readQImage(QString filename);
+    void ReadQImage(QString filename);
 
 private:
+    cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target);
+    cv::Mat AverageImages(cv::Mat img1, cv::Mat img2);
 
-    cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target);
-    cv::Mat averageImages(cv::Mat img1, cv::Mat img2);
-
-    int validateImageSizes();
+    int ValidateImageSizes();
 
     QImage Mat2QImage(const cv::Mat &src);
 
-    BITS_PER_CHANNEL bitsPerChannel;
+    cv::Mat ConvertAndScaleImage(cv::Mat image);
+    cv::Mat RawToMat(QString filename);
+    cv::Mat GenerateAlignedImageOld(cv::Mat ref, cv::Mat target);
 
-    void stackDarks();
-    void stackDarkFlats();
-    void stackFlats();
-    void stackBias();
+    void StackDarks();
+    void StackDarkFlats();
+    void StackFlats();
+    void StackBias();
 
-    mutable QMutex mutex;
+    mutable QMutex mutex_;
 
-    int currentOperation;
-    int totalOperations;
+    int current_operation_;
+    int total_operations_;
+    BitsPerChannel bits_per_channel_;
 
-    bool useDarks = false;
-    bool useDarkFlats = false;
-    bool useFlats = false;
-    bool useBias = false;
+    bool use_darks_ = false;
+    bool use_dark_flats_ = false;
+    bool use_flats_ = false;
+    bool use_bias_ = false;
 
-    QString refImageFileName;
-    QStringList targetImageFileNames;
-    QStringList darkFrameFileNames;
-    QStringList darkFlatFrameFileNames;
-    QStringList flatFrameFileNames;
-    QStringList biasFrameFileNames;
+    QString ref_image_file_name_;
+    QStringList target_image_file_names_;
+    QStringList dark_frame_file_names_;
+    QStringList dark_flat_frame_file_names_;
+    QStringList flat_frame_file_names_;
+    QStringList bias_frame_file_names_;
 
-    QString saveFilePath;
+    QString save_file_path_;
 
-    cv::Mat workingImage;
-    cv::Mat refImage;
-    cv::Mat finalImage;
+    cv::Mat working_image_;
+    cv::Mat ref_image_;
+    cv::Mat final_image_;
 
-    cv::Mat masterDark;
-    cv::Mat masterDarkFlat;
-    cv::Mat masterFlat;
-    cv::Mat masterBias;
-
-    cv::Mat convertAndScaleImage(cv::Mat image);
-    cv::Mat rawToMat(QString filename);
-    cv::Mat generateAlignedImageOld(cv::Mat ref, cv::Mat target);
+    cv::Mat master_dark_;
+    cv::Mat master_dark_flat_;
+    cv::Mat master_flat_;
+    cv::Mat master_bias_;
 };
 
 #endif // IMAGESTACKER_H

@@ -1,6 +1,6 @@
 #include "focas.h"
 
-std::vector<Triangle> generateTriangleList(std::vector<Star> List)
+std::vector<Triangle> GenerateTriangleList(std::vector<Star> List)
 {
     int nobjs = NOBJS;
     if (List.size() < NOBJS) nobjs = List.size();
@@ -17,9 +17,9 @@ std::vector<Triangle> generateTriangleList(std::vector<Star> List)
     /* Minimize the number of triangle sides to compute */
     for (i = 0; i < nobjs; i++) {
         for (j = i + 1; j < nobjs; j++) {
-            h1 = (List[i].getX() - List[j].getX());
-            h2 = (List[i].getY() - List[j].getY());
-            k = sidesPos(i, j, nobjs);
+            h1 = (List[i].GetX() - List[j].GetX());
+            h2 = (List[i].GetY() - List[j].GetY());
+            k = SidesPos(i, j, nobjs);
             sides[k] = sqrt(h1*h1 + h2*h2);
         }
     }
@@ -28,9 +28,9 @@ std::vector<Triangle> generateTriangleList(std::vector<Star> List)
     for (i = 0; i < (nobjs-2); i++) {
         for (j = i+1; j < (nobjs-1); j++) {
             for (k = j+1; k < nobjs; k++) {
-                di = sides [sidesPos(i, j, nobjs)] ;
-                dj = sides [sidesPos(j, k, nobjs)] ;
-                dk = sides [sidesPos(k, i, nobjs)] ;
+                di = sides [SidesPos(i, j, nobjs)] ;
+                dj = sides [SidesPos(j, k, nobjs)] ;
+                dk = sides [SidesPos(k, i, nobjs)] ;
 
                 if (dk > dj) {
                     if (dk > di) {
@@ -60,8 +60,8 @@ std::vector<Triangle> generateTriangleList(std::vector<Star> List)
 
                 /* Include only triangles with b/a < 0.9 */
                 if ( b/a < 0.9 ) {
-                    List_triang[p].x = b/a;
-                    List_triang[p].y = c/a;
+                    List_triang[p].x_ = b/a;
+                    List_triang[p].y_ = c/a;
                     p++;
                 }
                 else {
@@ -74,7 +74,7 @@ std::vector<Triangle> generateTriangleList(std::vector<Star> List)
     return List_triang;
 }
 
-int sidesPos(int i, int j, int n)
+int SidesPos(int i, int j, int n)
 {
     if (i < j)
         return(i*(2*n-i-3)/2 + j);
@@ -82,7 +82,7 @@ int sidesPos(int i, int j, int n)
         return(j*(2*n-j-3)/2 + i);
 }
 
-std::vector<std::vector<int> > findMatches(int nobjs, int *k_, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB)
+std::vector<std::vector<int> > FindMatches(int nobjs, int *k_, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB)
 {
     std::vector<std::vector<int> > matches(3, std::vector<int>(MAX_MATCH, 0));
     int	i, j, l, n, first, last;
@@ -96,12 +96,12 @@ std::vector<std::vector<int> > findMatches(int nobjs, int *k_, std::vector<Trian
     }
 
     /* Sort List_triangB by x coordinate. */
-    sortTriangles(&List_triangB, 0, List_triangB.size() - 1);
+    SortTriangles(&List_triangB, 0, List_triangB.size() - 1);
 
     /* Find objects within tolerance distance in triangle space. */
     for (i = 0; i < List_triangA.size(); i++) {
-        binSearchTriangles(List_triangA[i].x, &List_triangB, &first, &last);
-        checkTolerance(nobjs, List_triangA[i], &List_triangB, first, last, Table_match);
+        BinSearchTriangles(List_triangA[i].x_, &List_triangB, &first, &last);
+        CheckTolerance(nobjs, List_triangA[i], &List_triangB, first, last, Table_match);
     }
 
     /* Find the nobjs points with the most matches. */
@@ -142,7 +142,7 @@ std::vector<std::vector<int> > findMatches(int nobjs, int *k_, std::vector<Trian
     return matches;
 }
 
-void sortTriangles(std::vector<Triangle> *List_Triang_, int l, int r)
+void SortTriangles(std::vector<Triangle> *List_Triang_, int l, int r)
 {
     // make index operator easier
     std::vector<Triangle> &List_Triang = *List_Triang_;
@@ -152,63 +152,63 @@ void sortTriangles(std::vector<Triangle> *List_Triang_, int l, int r)
     int	i, j;
 
     if( r > l ) {
-        v.x = List_Triang[r].x;
+        v.x_ = List_Triang[r].x_;
         i = l-1;
         j = r;
 
         for(;;) {
-        while(List_Triang[++i].x < v.x );
-        while((j > 1) && (List_Triang[--j].x > v.x));
+        while(List_Triang[++i].x_ < v.x_ );
+        while((j > 1) && (List_Triang[--j].x_ > v.x_));
         if(i >= j)
             break;
 
-        t.x = List_Triang[i].x;
-        List_Triang[i].x = List_Triang[j].x;
-        List_Triang[j].x = t.x;
+        t.x_ = List_Triang[i].x_;
+        List_Triang[i].x_ = List_Triang[j].x_;
+        List_Triang[j].x_ = t.x_;
 
-        t.y = List_Triang[i].y;
-        List_Triang[i].y = List_Triang[j].y;
-        List_Triang[j].y = t.y;
+        t.y_ = List_Triang[i].y_;
+        List_Triang[i].y_ = List_Triang[j].y_;
+        List_Triang[j].y_ = t.y_;
 
-        t.s1 = List_Triang[i].s1;
-        List_Triang[i].s1 = List_Triang[j].s1;
-        List_Triang[j].s1 = t.s1;
+        t.s1_ = List_Triang[i].s1_;
+        List_Triang[i].s1_ = List_Triang[j].s1_;
+        List_Triang[j].s1_ = t.s1_;
 
-        t.s2 = List_Triang[i].s2;
-        List_Triang[i].s2 = List_Triang[j].s2;
-        List_Triang[j].s2 = t.s2;
+        t.s2_ = List_Triang[i].s2_;
+        List_Triang[i].s2_ = List_Triang[j].s2_;
+        List_Triang[j].s2_ = t.s2_;
 
-        t.s3 = List_Triang[i].s3;
-        List_Triang[i].s3 = List_Triang[j].s3;
-        List_Triang[j].s3 = t.s3;
+        t.s3_ = List_Triang[i].s3_;
+        List_Triang[i].s3_ = List_Triang[j].s3_;
+        List_Triang[j].s3_ = t.s3_;
         }
 
-        t.x = List_Triang[i].x;
-        List_Triang[i].x = List_Triang[r].x;
-        List_Triang[r].x = t.x;
+        t.x_ = List_Triang[i].x_;
+        List_Triang[i].x_ = List_Triang[r].x_;
+        List_Triang[r].x_ = t.x_;
 
-        t.y = List_Triang[i].y;
-        List_Triang[i].y = List_Triang[r].y;
-        List_Triang[r].y = t.y;
+        t.y_ = List_Triang[i].y_;
+        List_Triang[i].y_ = List_Triang[r].y_;
+        List_Triang[r].y_ = t.y_;
 
-        t.s1= List_Triang[i].s1;
-        List_Triang[i].s1 = List_Triang[r].s1;
-        List_Triang[r].s1 = t.s1;
+        t.s1_= List_Triang[i].s1_;
+        List_Triang[i].s1_ = List_Triang[r].s1_;
+        List_Triang[r].s1_ = t.s1_;
 
-        t.s2 = List_Triang[i].s2;
-        List_Triang[i].s2 = List_Triang[r].s2;
-        List_Triang[r].s2 = t.s2;
+        t.s2_ = List_Triang[i].s2_;
+        List_Triang[i].s2_ = List_Triang[r].s2_;
+        List_Triang[r].s2_ = t.s2_;
 
-        t.s3 = List_Triang[i].s3;
-        List_Triang[i].s3 = List_Triang[r].s3;
-        List_Triang[r].s3 = t.s3;
+        t.s3_ = List_Triang[i].s3_;
+        List_Triang[i].s3_ = List_Triang[r].s3_;
+        List_Triang[r].s3_ = t.s3_;
 
-        sortTriangles(&List_Triang, l, i-1);
-        sortTriangles(&List_Triang, i+1, r);
+        SortTriangles(&List_Triang, l, i-1);
+        SortTriangles(&List_Triang, i+1, r);
     }
 }
 
-void binSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last)
+void BinSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last)
 {
     std::vector<Triangle> &List_triang = *List_triang_;
     int ntriang = List_triang.size();
@@ -218,11 +218,11 @@ void binSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *fir
 
     while ((!found) && (max - min > 1)) {
         middle  = (min + max ) / 2;
-        if (fabs(List_triang[middle].x - key) < tolerance)
+        if (fabs(List_triang[middle].x_ - key) < tolerance)
         found = 1;
-        else if ( key < ( List_triang[middle ].x - tolerance))
+        else if ( key < ( List_triang[middle ].x_ - tolerance))
         max = middle ;
-        else if ( key > (List_triang[middle ].x + tolerance))
+        else if ( key > (List_triang[middle ].x_ + tolerance))
         min = middle;
     }
 
@@ -234,20 +234,20 @@ void binSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *fir
     }
 
     for (i = middle; i > 0; i--) {
-        if (fabs (List_triang[i].x - key) > tolerance)
+        if (fabs (List_triang[i].x_ - key) > tolerance)
         break;
     }
     *first = i;
 
     for (i = middle; i < ntriang-1; i++) {
-        if (fabs (List_triang[i].x - key) > tolerance)
+        if (fabs (List_triang[i].x_ - key) > tolerance)
         break;
     }
     *last = i;
 
 }
 
-void checkTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_, int first, int last, int Table_match[])
+void CheckTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_, int first, int last, int Table_match[])
 {
     std::vector<Triangle> &List_triangB = *List_triangB_;
     float tolerance = TOL;
@@ -256,28 +256,28 @@ void checkTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *Lis
     int	i, h1, h2;
 
     for (i = first ; i <= last; i++) {
-        temp2 = (List_triangA.y - List_triangB[i].y);
+        temp2 = (List_triangA.y_ - List_triangB[i].y_);
         if (temp2 < tolerance) {
-            temp1 = (List_triangA.x - List_triangB[i].x);
+            temp1 = (List_triangA.x_ - List_triangB[i].x_);
             distance = temp1 * temp1 + temp2 * temp2;
             if (distance < tolerance2) {
-                h1 = List_triangA.s1;
-                h2 = List_triangB[i].s1;
+                h1 = List_triangA.s1_;
+                h2 = List_triangB[i].s1_;
                 Table_match[h1*nobjs+h2]++;
 
-                h1 = List_triangA.s2;
-                h2 = List_triangB[i].s2;
+                h1 = List_triangA.s2_;
+                h2 = List_triangB[i].s2_;
                 Table_match[h1*nobjs+h2]++;
 
-                h1 = List_triangA.s3;
-                h2 = List_triangB[i].s3;
+                h1 = List_triangA.s3_;
+                h2 = List_triangB[i].s3_;
                 Table_match[h1*nobjs+h2]++;
             }
         }
     }
 }
 
-std::vector<std::vector<float> > findTransform(std::vector<std::vector<int> > matches, int m, std::vector<Star> List1, std::vector<Star> List2)
+std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > matches, int m, std::vector<Star> List1, std::vector<Star> List2)
 {
     //float	xfrm[2][3];
     std::vector<std::vector<float> > xfrm(2, std::vector<float>(3,0));
@@ -298,11 +298,11 @@ std::vector<std::vector<float> > findTransform(std::vector<std::vector<int> > ma
     /* Compute the initial transformation with the 12 best matches. */
     j = (m < 12) ? m : 12;
     for (i=0; i<j; i++) {
-        a[0][i] = List1[matches[0][i]].getX();
-        a[1][i] = List1[matches[0][i]].getY();
+        a[0][i] = List1[matches[0][i]].GetX();
+        a[1][i] = List1[matches[0][i]].GetY();
         a[2][i] = 1.;
-        b[0][i] = List2[matches[1][i]].getX();
-        b[1][i] = List2[matches[1][i]].getY();
+        b[0][i] = List2[matches[1][i]].GetX();
+        b[1][i] = List2[matches[1][i]].GetY();
     }
 
     hfti_(a, &mda, &j, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g, ip);
@@ -317,12 +317,12 @@ std::vector<std::vector<float> > findTransform(std::vector<std::vector<int> > ma
         for (i=0; i<m; i++) {
         i1 = matches[0][i];
         i2 = matches[1][i];
-        r2 = List1[i1].getX();
-        y = List1[i1].getY();
+        r2 = List1[i1].GetX();
+        y = List1[i1].GetY();
         x = xfrm[0][0] * r2 + xfrm[0][1] * y + xfrm[0][2];
         y = xfrm[1][0] * r2 + xfrm[1][1] * y + xfrm[1][2];
-        x -= List2[i2].getX();
-        y -= List2[i2].getY();
+        x -= List2[i2].GetX();
+        y -= List2[i2].GetY();
         r2 = x * x + y * y;
         for (j=i; j>0 && r2<a[1][j-1]; j--)
             a[1][j] = a[1][j-1];
@@ -347,11 +347,11 @@ std::vector<std::vector<float> > findTransform(std::vector<std::vector<int> > ma
             i2 = matches[1][i];
             matches[0][j] = i1;
             matches[1][j] = i2;
-            a[0][j] = List1[i1].getX();
-            a[1][j] = List1[i1].getY();
+            a[0][j] = List1[i1].GetX();
+            a[1][j] = List1[i1].GetY();
             a[2][j] = 1.;
-            b[0][j] = List2[i2].getX();
-            b[1][j] = List2[i2].getY();
+            b[0][j] = List2[i2].GetX();
+            b[1][j] = List2[i2].GetY();
             j++;
         }
         }

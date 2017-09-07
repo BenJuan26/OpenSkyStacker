@@ -13,7 +13,7 @@ public:
         @param y_ The y coordinate of the Star.
         @param value_ The intensity of the Star.
     */
-    Star(int x_, int y_, float value_);
+    Star(int x, int y, float value);
 
     //! Destructor.
     ~Star();
@@ -22,32 +22,32 @@ public:
     bool operator>(const Star& other) const;
     bool operator<(const Star& other) const;
 
-    int getX() const;
-    void setX(int value);
+    int GetX() const;
+    void SetX(int value_);
 
-    int getY() const;
-    void setY(int value);
+    int GetY() const;
+    void SetY(int value_);
 
-    float getPeak() const;
-    void setPeak(float value);
+    float GetPeak() const;
+    void SetPeak(float value_);
 
-    float getRadius() const;
-    void setRadius(float value);
+    float GetRadius() const;
+    void SetRadius(float value_);
 
-    int getArea() const;
-    void setArea(int value);
+    int GetArea() const;
+    void SetArea(int value_);
 
-    float getValue() const;
-    void setValue(float newValue);
+    float GetValue() const;
+    void SetValue(float value);
 
 private:
-    int x;
-    int y;
-    int area;
+    int x_;
+    int y_;
+    int area_;
 
-    float peak;
-    float radius;
-    float value;
+    float peak_;
+    float radius_;
+    float value_;
 };
 
 #endif // STAR_H

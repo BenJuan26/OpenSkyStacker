@@ -12,7 +12,7 @@ public:
     ImageRecord();
 
     //! Describes the type of frame (e.g. Light, Dark, etc.).
-    enum FRAME_TYPE {
+    enum FrameType {
         LIGHT,     /*!< Light frame. */
         DARK,      /*!< Dark frame. */
         DARK_FLAT, /*!< Dark flat frame. */
@@ -20,43 +20,43 @@ public:
         BIAS       /*!< Bias/offset frame. */
     };
 
-    QString getFilename() const;
-    void setFilename(const QString &value);
+    QString GetFilename() const;
+    void SetFilename(const QString &value);
 
-    FRAME_TYPE getType() const;
-    void setType(const FRAME_TYPE &value);
+    FrameType GetType() const;
+    void SetType(const FrameType &value);
 
     float getShutter() const;
     void setShutter(float value);
 
-    float getIso() const;
-    void setIso(float value);
+    float GetIso() const;
+    void SetIso(float value);
 
-    bool isReference() const;
-    void setReference(bool value);
+    bool IsReference() const;
+    void SetReference(bool value);
 
-    time_t getTimestamp() const;
-    void setTimestamp(const time_t &value);
+    time_t GetTimestamp() const;
+    void SetTimestamp(const time_t &value);
 
-    bool isChecked() const;
-    void setChecked(bool value);
+    bool IsChecked() const;
+    void SetChecked(bool value);
 
-    int getWidth() const;
-    void setWidth(int value);
+    int GetWidth() const;
+    void SetWidth(int value);
 
-    int getHeight() const;
-    void setHeight(int value);
+    int GetHeight() const;
+    void SetHeight(int value);
 
 private:
-    QString filename;
-    FRAME_TYPE type;
-    float shutter;
-    float iso;
-    time_t timestamp;
-    bool reference;
-    bool checked;
-    int width;
-    int height;
+    QString filename_;
+    FrameType type_;
+    float shutter_;
+    float iso_;
+    time_t timestamp_;
+    bool reference_;
+    bool checked_;
+    int width_;
+    int height_;
 };
 
 #endif // IMAGERECORD_H

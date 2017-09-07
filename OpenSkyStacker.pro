@@ -111,8 +111,8 @@ macx {
     LIBS += -L/usr/local/lib
 
     # OpenCV
-    # INCLUDEPATH += $$PWD/3rdparty/opencv/include
-    # INCLUDEPATH += $$PWD/3rdparty/opencv/build
+    INCLUDEPATH += $$PWD/3rdparty/opencv/include
+    INCLUDEPATH += $$PWD/3rdparty/opencv/build
     LIBS += \
         -lopencv_core \
         -lopencv_highgui \

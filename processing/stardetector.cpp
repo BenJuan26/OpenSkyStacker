@@ -25,12 +25,12 @@ StarDetector::~StarDetector()
 
 }
 
-std::vector<Star> StarDetector::getStars(cv::Mat image)
+std::vector<Star> StarDetector::GetStars(cv::Mat image)
 {
     cv::Mat imageGray(image.rows, image.cols, CV_32FC1);
     cvtColor(image, imageGray, CV_BGR2GRAY);
 
-    cv::Mat skyImage = generateSkyBackground(imageGray);
+    cv::Mat skyImage = GenerateSkyBackground(imageGray);
 
     cv::Mat stars = imageGray - skyImage;
     cv::Rect bounds(stars.cols / 20, stars.rows / 20, stars.cols * 0.9, stars.rows * 0.9);
@@ -42,18 +42,18 @@ std::vector<Star> StarDetector::getStars(cv::Mat image)
     float threshold = stdDev[0] * THRESHOLD_COEFF * 1.5;
     float minPeak = stdDev[0] * THRESHOLD_COEFF * 2.0;
 
-    std::vector<AdjoiningPixel> apList = getAdjoiningPixels(stars, threshold, minPeak);
+    std::vector<AdjoiningPixel> apList = GetAdjoiningPixels(stars, threshold, minPeak);
     qDebug() << "Total adjoining pixels:" << apList.size();
 
     std::vector<Star> allStars;
     for (ulong i = 0; i < apList.size(); i++) {
         AdjoiningPixel ap = apList.at(i);
 
-        std::vector<AdjoiningPixel> deblendedApList = ap.deblend(threshold);
+        std::vector<AdjoiningPixel> deblendedApList = ap.Deblend(threshold);
 
         for (ulong j = 0; j < deblendedApList.size(); j++) {
             AdjoiningPixel dap = deblendedApList.at(j);
-            Star star = dap.createStar();
+            Star star = dap.CreateStar();
             allStars.push_back(star);
         }
     }
@@ -63,7 +63,7 @@ std::vector<Star> StarDetector::getStars(cv::Mat image)
 }
 
 // TODO: ASSUMING GRAYSCALE 32 BIT FOR NOW
-cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
+cv::Mat StarDetector::GenerateSkyBackground(cv::Mat image) {
     cv::Mat result = image.clone();
 
     cv::resize(result, result, cv::Size(result.cols/8, result.rows/8));
@@ -77,11 +77,11 @@ cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
     for (int y = 0; y < result.rows; y++) {
         float val = 0.0;
         for (int x = - (filter_size - 1) / 2 - 1 ; x < filter_size / 2 ; x++)
-            val += getExtendedPixelValue(result, x, y);
+            val += GetExtendedPixelValue(result, x, y);
 
         for (int x = 0 ; x < result.cols ; x++) {
-            val -= getExtendedPixelValue(result, x - (filter_size - 1) / 2 - 1, y);
-            val += getExtendedPixelValue(result, x + filter_size / 2, y);
+            val -= GetExtendedPixelValue(result, x - (filter_size - 1) / 2 - 1, y);
+            val += GetExtendedPixelValue(result, x + filter_size / 2, y);
 
             buffer[x] = val / (float)filter_size;
         }
@@ -97,11 +97,11 @@ cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
     for (int x = 0 ; x < result.cols ; x++) {
         float val = 0.0;
         for (int y = - (filter_size - 1) / 2 - 1 ; y < filter_size / 2 ; y++)
-            val += getExtendedPixelValue(result, x, y);
+            val += GetExtendedPixelValue(result, x, y);
 
         for (int y = 0 ; y < result.rows ; y++) {
-            val -= getExtendedPixelValue(result, x, y - (filter_size - 1) / 2 - 1);
-            val += getExtendedPixelValue(result, x, y + filter_size / 2);
+            val -= GetExtendedPixelValue(result, x, y - (filter_size - 1) / 2 - 1);
+            val += GetExtendedPixelValue(result, x, y + filter_size / 2);
 
             buffer[y] = val / (float)filter_size;
         }
@@ -115,7 +115,7 @@ cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
     return result;
 }
 
-void StarDetector::drawDetectedStars(const std::string& path, uint width, uint height, int limit, std::vector<Star> stars)
+void StarDetector::DrawDetectedStars(const std::string& path, uint width, uint height, int limit, std::vector<Star> stars)
 {
     if (limit < 0) limit = stars.size();
 
@@ -123,13 +123,13 @@ void StarDetector::drawDetectedStars(const std::string& path, uint width, uint h
     const int maxRadius = 30;
 
     std::sort(stars.begin(), stars.end(), std::greater<Star>());
-    float maxValue = stars.at(0).getValue();
+    float maxValue = stars.at(0).GetValue();
     for (int i = 0; i < stars.size() && i < limit; i++) {
         Star star = stars.at(i);
-        float ratio = star.getValue() / maxValue;
+        float ratio = star.GetValue() / maxValue;
         int radius = maxRadius * ratio;
 
-        cv::circle(output, cv::Point(star.getX(),star.getY()),radius,cv::Scalar(255,255,255),-1);
+        cv::circle(output, cv::Point(star.GetX(),star.GetY()),radius,cv::Scalar(255,255,255),-1);
     }
 
     cv::imwrite(path, output);
@@ -187,11 +187,11 @@ void StarDetector::test()
     for (i=0; i<j; i++) {
         matches[0][i] = i;
         matches[1][i] = i;
-        a[0][i] = List1[matches[0][i]].getX();
-        a[1][i] = List1[matches[0][i]].getY();
+        a[0][i] = List1[matches[0][i]].GetX();
+        a[1][i] = List1[matches[0][i]].GetY();
         a[2][i] = 1.;
-        b[0][i] = List2[matches[1][i]].getX();
-        b[1][i] = List2[matches[1][i]].getY();
+        b[0][i] = List2[matches[1][i]].GetX();
+        b[1][i] = List2[matches[1][i]].GetY();
     }
 
     hfti_(a, &mda, &j, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g, ip);
@@ -206,12 +206,12 @@ void StarDetector::test()
         for (i=0; i<m; i++) {
         i1 = matches[0][i];
         i2 = matches[1][i];
-        r2 = List1[i1].getX();
-        y = List1[i1].getY();
+        r2 = List1[i1].GetX();
+        y = List1[i1].GetY();
         x = xfrm[0][0] * r2 + xfrm[0][1] * y + xfrm[0][2];
         y = xfrm[1][0] * r2 + xfrm[1][1] * y + xfrm[1][2];
-        x -= List2[i2].getX();
-        y -= List2[i2].getY();
+        x -= List2[i2].GetX();
+        y -= List2[i2].GetY();
         r2 = x * x + y * y;
         for (j=i; j>0 && r2<a[1][j-1]; j--)
             a[1][j] = a[1][j-1];
@@ -236,11 +236,11 @@ void StarDetector::test()
             i2 = matches[1][i];
             matches[0][j] = i1;
             matches[1][j] = i2;
-            a[0][j] = List1[i1].getX();
-            a[1][j] = List1[i1].getY();
+            a[0][j] = List1[i1].GetX();
+            a[1][j] = List1[i1].GetY();
             a[2][j] = 1.;
-            b[0][j] = List2[i2].getX();
-            b[1][j] = List2[i2].getY();
+            b[0][j] = List2[i2].GetX();
+            b[1][j] = List2[i2].GetY();
             j++;
         }
         }
@@ -265,16 +265,16 @@ void StarDetector::test()
     printf ("Number of matches = %d, RMS of fit = %8.2f\n", m, rms);
 }
 
-std::vector<AdjoiningPixel> StarDetector::getAdjoiningPixels(cv::Mat image, float threshold, float minPeak)
+std::vector<AdjoiningPixel> StarDetector::GetAdjoiningPixels(cv::Mat image, float threshold, float minPeak)
 {
     std::vector<AdjoiningPixel> list;
 
     for (int y = 0; y < image.rows; y++) {
         for (int x = 0; x < image.cols; x++) {
             if (image.at<float>(y,x) > threshold) {
-                AdjoiningPixel ap = detectAdjoiningPixel(image, x, y, threshold);
+                AdjoiningPixel ap = DetectAdjoiningPixel(image, x, y, threshold);
 
-                if (ap.getPeakValue() > minPeak){
+                if (ap.GetPeakValue() > minPeak){
                     list.push_back(ap);
                 }
 
@@ -285,7 +285,7 @@ std::vector<AdjoiningPixel> StarDetector::getAdjoiningPixels(cv::Mat image, floa
     return list;
 }
 
-AdjoiningPixel StarDetector::detectAdjoiningPixel(cv::Mat image, int x, int y, float threshold)
+AdjoiningPixel StarDetector::DetectAdjoiningPixel(cv::Mat image, int x, int y, float threshold)
 {
     AdjoiningPixel ap;
     std::stack<Pixel> stack;
@@ -294,11 +294,11 @@ AdjoiningPixel StarDetector::detectAdjoiningPixel(cv::Mat image, int x, int y, f
     while (stack.empty() == false) {
         Pixel pixel = stack.top(); stack.pop();
 
-        x = pixel.getX();
-        y = pixel.getY();
+        x = pixel.GetX();
+        y = pixel.GetY();
 
         if (image.at<float>(y, x) > threshold) {
-            ap.addPixel(pixel);
+            ap.AddPixel(pixel);
 
             // The pixel value is cleared.
             image.at<float>(y, x) = threshold - 1;
@@ -321,7 +321,7 @@ AdjoiningPixel StarDetector::detectAdjoiningPixel(cv::Mat image, int x, int y, f
     return ap;
 }
 
-float StarDetector::getExtendedPixelValue(cv::Mat image, int x, int y) {
+float StarDetector::GetExtendedPixelValue(cv::Mat image, int x, int y) {
     //qDebug() << "getting pixel" << x << y;
     if (x < 0) x = 0;
     if (x >= image.cols) x = image.cols - 1;

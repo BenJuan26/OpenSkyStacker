@@ -5,9 +5,9 @@ Triangle::Triangle()
 
 }
 
-Triangle::Triangle(int s1_, int s2_, int s3_)
+Triangle::Triangle(int s1, int s2, int s3)
 {
-    s1 = s1_;
-    s2 = s2_;
-    s3 = s3_;
+    s1_ = s1;
+    s2_ = s2;
+    s3_ = s3;
 }
