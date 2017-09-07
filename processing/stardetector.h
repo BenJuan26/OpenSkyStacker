@@ -7,6 +7,7 @@
 #include "model/adjoiningpixel.h"
 #include <stack>
 #include <QDebug>
+#include <QSettings>
 #include <string>
 #include <string.h>
 

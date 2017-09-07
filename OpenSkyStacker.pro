@@ -50,7 +50,8 @@ SOURCES += main.cpp\
     ui/stackergraphicsview.cpp \
     model/triangle.cpp \
     model/imagerecord.cpp \
-    model/imagetablemodel.cpp
+    model/imagetablemodel.cpp \
+    ui/optionsdialog.cpp
 
 HEADERS  += ui/mainwindow.h \
     processing/imagestacker.h \
@@ -64,10 +65,12 @@ HEADERS  += ui/mainwindow.h \
     processing/hfti.h \
     model/triangle.h \
     model/imagerecord.h \
-    model/imagetablemodel.h
+    model/imagetablemodel.h \
+    ui/optionsdialog.h
 
 FORMS    += ui/mainwindow.ui \
-    ui/processingdialog.ui
+    ui/processingdialog.ui \
+    ui/optionsdialog.ui
 
 test {
     QT += testlib

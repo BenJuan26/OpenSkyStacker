@@ -12,6 +12,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/video/video.hpp>
 #include <QDesktopWidget>
+#include <QSettings>
 #include <stdexcept>
 #ifdef WIN32
 #include <QtWinExtras/QWinTaskbarButton>
@@ -24,10 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui_->setupUi(this);
 
-    // Centre window on startup
-    QRect desktopRect = QApplication::desktop()->availableGeometry(this);
-    QPoint center = desktopRect.center();
-    this->move(center.x() - this->width()*0.5, center.y() - this->height()*0.5);
+    positionAndResizeWindow();
 
     // cv::Mat can't be passed through a signal without this declaration
     qRegisterMetaType<cv::Mat>("cv::Mat");
@@ -39,7 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
     stacker_->moveToThread(worker_thread_);
     worker_thread_->start();
 
-    image_file_filter_ << tr("All files (*)") << tr("Image files (*.jpg *.jpeg *.png *.tif)");
+    image_file_filter_ << tr("All files (*)") << tr("Image files "
+            "(*.jpg *.jpeg *.png *.tif)");
     image_file_filter_ << tr("Raw image files (*.NEF *.CR2 *.DNG *.RAW)");
 
     selected_dir_ = QDir::home();
@@ -57,27 +56,44 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Right-click support for the image list
     table->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(table,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(showTableContextMenu(QPoint)));
+    connect(table,SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(showTableContextMenu(QPoint)));
 
     QItemSelectionModel *selection = table->selectionModel();
-    connect(selection, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(imageSelectionChanged()));
+    connect(selection, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SLOT(imageSelectionChanged()));
 
     // Signals / slots for buttons
-    connect(ui_->buttonSelectLightFrames, SIGNAL (released()), this, SLOT (handleButtonLightFrames()));
-    connect(ui_->buttonSelectDarkFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFrames()));
-    connect(ui_->buttonSelectDarkFlatFrames, SIGNAL (released()), this, SLOT (handleButtonDarkFlatFrames()));
-    connect(ui_->buttonSelectFlatFrames, SIGNAL (released()), this, SLOT (handleButtonFlatFrames()));
-    connect(ui_->buttonSelectBiasFrames, SIGNAL (released()), this, SLOT (handleButtonBiasFrames()));
-    connect(ui_->buttonStack, SIGNAL (released()), this, SLOT (handleButtonStack()));
+    connect(ui_->buttonSelectLightFrames, SIGNAL(released()), this,
+            SLOT(handleButtonLightFrames()));
+    connect(ui_->buttonSelectDarkFrames, SIGNAL(released()), this,
+            SLOT(handleButtonDarkFrames()));
+    connect(ui_->buttonSelectDarkFlatFrames, SIGNAL(released()), this,
+            SLOT(handleButtonDarkFlatFrames()));
+    connect(ui_->buttonSelectFlatFrames, SIGNAL(released()), this,
+            SLOT(handleButtonFlatFrames()));
+    connect(ui_->buttonSelectBiasFrames, SIGNAL(released()), this,
+            SLOT(handleButtonBiasFrames()));
+    connect(ui_->buttonStack, SIGNAL(released()), this,
+            SLOT(handleButtonStack()));
+    connect(ui_->buttonOptions, SIGNAL(released()), this,
+            SLOT(handleButtonOptions()));
 
     // Signals / slots for stacker
-    connect(this, SIGNAL (stackImages()), stacker_, SLOT(Process()));
-    connect(this, SIGNAL(readQImage(QString)), stacker_, SLOT(ReadQImage(QString)));
-    connect(stacker_, SIGNAL(Finished(cv::Mat)), this, SLOT(finishedStacking(cv::Mat)));
-    connect(stacker_, SIGNAL(FinishedDialog(QString)), this, SLOT(clearProgress(QString)));
-    connect(stacker_, SIGNAL(ProcessingError(QString)), this, SLOT(processingError(QString)));
-    connect(stacker_, SIGNAL(UpdateProgress(QString,int)), this, SLOT(updateProgress(QString,int)));
-    connect(stacker_, SIGNAL(QImageReady(QImage)), this, SLOT(setImage(QImage)));
+    connect(this, SIGNAL (stackImages()), stacker_,
+            SLOT(Process()));
+    connect(this, SIGNAL(readQImage(QString)), stacker_,
+            SLOT(ReadQImage(QString)));
+    connect(stacker_, SIGNAL(Finished(cv::Mat)), this,
+            SLOT(finishedStacking(cv::Mat)));
+    connect(stacker_, SIGNAL(FinishedDialog(QString)), this,
+            SLOT(clearProgress(QString)));
+    connect(stacker_, SIGNAL(ProcessingError(QString)), this,
+            SLOT(processingError(QString)));
+    connect(stacker_, SIGNAL(UpdateProgress(QString,int)), this,
+            SLOT(updateProgress(QString,int)));
+    connect(stacker_, SIGNAL(QImageReady(QImage)), this,
+            SLOT(setImage(QImage)));
 
 }
 
@@ -88,7 +104,8 @@ void MainWindow::finishedStacking(cv::Mat image) {
     }
     catch (std::exception) {
         QMessageBox errorBox;
-        errorBox.setText(tr("Couldn't write file to disk. Make sure the extension is valid."));
+        errorBox.setText(tr("Couldn't write file to disk. Make sure the "
+                "extension is valid."));
         errorBox.exec();
         return;
     }
@@ -98,8 +115,8 @@ void MainWindow::finishedStacking(cv::Mat image) {
     qDebug() << "Done stacking";
 }
 
-// For the main window this is only used to update the progress indicator in the taskbar
-//  i.e. green bar in Windows
+// For the main window this is only used to update the progress indicator
+// in the taskbar, i.e. green bar in Windows
 void MainWindow::updateProgress(QString message, int percentComplete)
 {
     Q_UNUSED(message);
@@ -133,19 +150,23 @@ void MainWindow::showTableContextMenu(QPoint pos)
     QTableView *table = ui_->imageListView;
 
     QAction *setAsReferenceAction = new QAction(tr("Set As Reference"), this);
-    connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,SLOT(setFrameAsReference()));
+    connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,
+            SLOT(setFrameAsReference()));
     menu->addAction(setAsReferenceAction);
 
     QAction *removeImageAction = new QAction(tr("Remove"), this);
-    connect(removeImageAction, SIGNAL(triggered(bool)), this, SLOT(removeSelectedImages()));
+    connect(removeImageAction, SIGNAL(triggered(bool)), this,
+            SLOT(removeSelectedImages()));
     menu->addAction(removeImageAction);
 
     QAction *checkImageAction = new QAction(tr("Check"), this);
-    connect(checkImageAction, SIGNAL(triggered(bool)), this, SLOT(checkImages()));
+    connect(checkImageAction, SIGNAL(triggered(bool)), this,
+            SLOT(checkImages()));
     menu->addAction(checkImageAction);
 
     QAction *uncheckImageAction = new QAction(tr("Uncheck"), this);
-    connect(uncheckImageAction, SIGNAL(triggered(bool)), this, SLOT(uncheckImages()));
+    connect(uncheckImageAction, SIGNAL(triggered(bool)), this,
+            SLOT(uncheckImages()));
     menu->addAction(uncheckImageAction);
 
     // Show menu where the user clicked
@@ -160,7 +181,8 @@ void MainWindow::setFrameAsReference()
 
     if (rows.count() > 1) {
         QMessageBox msg;
-        msg.setText(tr("Cannot set more than one frame as the reference frame."));
+        msg.setText(tr("Cannot set more than one frame as "
+                "the reference frame."));
         msg.exec();
         return;
     }
@@ -248,8 +270,9 @@ void MainWindow::processingError(QString message)
 void MainWindow::handleButtonStack() {
     has_failed_ = false;
 
-    QString saveFilePath = QFileDialog::getSaveFileName(
-                this, tr("Select Output Image"), selected_dir_.absolutePath(), tr("TIFF Image (*.tif)"));
+    QString saveFilePath = QFileDialog::getSaveFileName(this,
+            tr("Select Output Image"), selected_dir_.absolutePath(),
+            tr("TIFF Image (*.tif)"));
 
     if (saveFilePath.isEmpty()) {
         qDebug() << "No output file selected. Cancelling.";
@@ -262,8 +285,10 @@ void MainWindow::handleButtonStack() {
     loadImagesIntoStacker();
 
     processing_dialog_ = new ProcessingDialog(this);
-    connect(stacker_, SIGNAL(UpdateProgress(QString,int)), processing_dialog_, SLOT(updateProgress(QString,int)));
-    connect(stacker_, SIGNAL(FinishedDialog(QString)), processing_dialog_, SLOT(complete(QString)));
+    connect(stacker_, SIGNAL(UpdateProgress(QString,int)), processing_dialog_,
+            SLOT(updateProgress(QString,int)));
+    connect(stacker_, SIGNAL(FinishedDialog(QString)), processing_dialog_,
+            SLOT(complete(QString)));
 
     // Asynchronously trigger the processing
     emit stackImages();
@@ -293,7 +318,8 @@ void MainWindow::handleButtonLightFrames() {
     QStringList targetImageFileNames = dialog.selectedFiles();
 
     for (int i = 0; i < targetImageFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(targetImageFileNames.at(i));
+        ImageRecord *record = stacker_->GetImageRecord(
+                targetImageFileNames.at(i));
         record->SetType(ImageRecord::LIGHT);
         table_model_.Append(record);
     }
@@ -317,7 +343,8 @@ void MainWindow::handleButtonDarkFrames() {
     QStringList darkFrameFileNames = dialog.selectedFiles();
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(darkFrameFileNames.at(i));
+        ImageRecord *record = stacker_->GetImageRecord(
+                darkFrameFileNames.at(i));
         record->SetType(ImageRecord::DARK);
         table_model_.Append(record);
     }
@@ -334,7 +361,8 @@ void MainWindow::handleButtonDarkFlatFrames() {
     QStringList darkFlatFrameFileNames = dialog.selectedFiles();
 
     for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(darkFlatFrameFileNames.at(i));
+        ImageRecord *record = stacker_->GetImageRecord(
+                darkFlatFrameFileNames.at(i));
         record->SetType(ImageRecord::DARK_FLAT);
         table_model_.Append(record);
     }
@@ -351,7 +379,8 @@ void MainWindow::handleButtonFlatFrames() {
     QStringList flatFrameFileNames = dialog.selectedFiles();
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(flatFrameFileNames.at(i));
+        ImageRecord *record = stacker_->GetImageRecord(
+                flatFrameFileNames.at(i));
         record->SetType(ImageRecord::FLAT);
         table_model_.Append(record);
     }
@@ -369,10 +398,25 @@ void MainWindow::handleButtonBiasFrames()
     QStringList biasFrameFileNames = dialog.selectedFiles();
 
     for (int i = 0; i < biasFrameFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(biasFrameFileNames.at(i));
+        ImageRecord *record = stacker_->GetImageRecord(
+                biasFrameFileNames.at(i));
         record->SetType(ImageRecord::BIAS);
         table_model_.Append(record);
     }
+}
+
+void MainWindow::handleButtonOptions()
+{
+    OptionsDialog *dialog = new OptionsDialog(this);
+
+//    if (dialog->exec()) {
+//        int thresh = dialog->GetThresh();
+//    } else {
+
+//    }
+    dialog->exec();
+
+    delete dialog;
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src) {
@@ -383,7 +427,8 @@ QImage MainWindow::Mat2QImage(const cv::Mat &src) {
             for(int x = 0; x < src.cols; x++) {
                 for(int y = 0; y < src.rows; y++) {
 
-                    cv::Vec<unsigned short,3> pixel = src.at< cv::Vec<unsigned short,3> >(y,x);
+                    cv::Vec<unsigned short,3> pixel =
+                            src.at< cv::Vec<unsigned short,3> >(y,x);
                     b = pixel.val[0]/256;
                     g = pixel.val[1]/256;
                     r = pixel.val[2]/256;
@@ -406,11 +451,34 @@ QImage MainWindow::Mat2QImage(const cv::Mat &src) {
         return dest;
 }
 
+void MainWindow::positionAndResizeWindow()
+{
+    QSize defaultSize = this->size();
+
+    QRect desktopRect = QApplication::desktop()->availableGeometry(this);
+    QPoint center = desktopRect.center();
+    this->move(center.x() - this->width()*0.5, center.y() - this->height()*0.5);
+
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    this->resize(settings.value("MainWindow/size", defaultSize).toSize());
+    this->move(settings.value("MainWindow/pos", QPoint(center.x()
+            - this->width()*0.5, center.y() - this->height()*0.5)).toPoint());
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    settings.setValue("MainWindow/size", this->size());
+    settings.setValue("MainWindow/pos", this->pos());
+
+    Q_UNUSED(event);
+}
+
 void MainWindow::setFileImage(QString filename) {
 
     QGraphicsScene* scene = new QGraphicsScene(this);
     cv::Mat image = stacker_->ReadImage(filename);
-    QGraphicsPixmapItem *p = scene->addPixmap(QPixmap::fromImage(Mat2QImage(image)));
+    QGraphicsPixmapItem *p = scene->addPixmap(
+            QPixmap::fromImage(Mat2QImage(image)));
     ui_->imageHolder->setScene(scene);
     ui_->imageHolder->fitInView(p, Qt::KeepAspectRatio);
 }

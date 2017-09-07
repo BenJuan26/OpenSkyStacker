@@ -39,8 +39,12 @@ std::vector<Star> StarDetector::GetStars(cv::Mat image)
 
     cv::Scalar mean, stdDev;
     cv::meanStdDev(thresholdImage, mean, stdDev);
-    float threshold = stdDev[0] * THRESHOLD_COEFF * 1.5;
-    float minPeak = stdDev[0] * THRESHOLD_COEFF * 2.0;
+
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    float thresholdCoeff = settings.value("StarDetector/thresholdCoeff", THRESHOLD_COEFF).toFloat();
+
+    float threshold = stdDev[0] * thresholdCoeff * 1.5;
+    float minPeak = stdDev[0] * thresholdCoeff * 2.0;
 
     std::vector<AdjoiningPixel> apList = GetAdjoiningPixels(stars, threshold, minPeak);
     qDebug() << "Total adjoining pixels:" << apList.size();

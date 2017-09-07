@@ -8,6 +8,7 @@
 #include <QThread>
 #include "model/imagetablemodel.h"
 #include "ui/processingdialog.h"
+#include "ui/optionsdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -78,14 +79,16 @@ public slots:
     /*! @param message The error message describing what went wrong. */
     void processingError(QString message);
 
+    void closeEvent(QCloseEvent *event);
+
 private slots:
-    //void handleButtonRefImage();
     void handleButtonLightFrames();
     void handleButtonStack();
     void handleButtonDarkFrames();
     void handleButtonDarkFlatFrames();
     void handleButtonFlatFrames();
     void handleButtonBiasFrames();
+    void handleButtonOptions();
 
 private:
     void setFileImage(QString filename);
@@ -94,6 +97,8 @@ private:
     void setDefaultReferenceImage();
     void loadImagesIntoStacker();
     QImage Mat2QImage(const cv::Mat &src);
+
+    void positionAndResizeWindow();
 
     Ui::MainWindow *ui_;
     QThread *worker_thread_;

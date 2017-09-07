@@ -34,7 +34,7 @@ ImageRecord* ImageStacker::GetImageRecord(QString filename)
     ImageRecord *record = new ImageRecord();
     record->SetFilename(filename);
     record->SetIso(other.iso_speed);
-    record->setShutter(other.shutter);
+    record->SetShutter(other.shutter);
     record->SetTimestamp(other.timestamp);
     record->SetWidth(processor.imgdata.sizes.width);
     record->SetHeight(processor.imgdata.sizes.height);
