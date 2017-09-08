@@ -20,3 +20,5 @@ doc
 3rdparty/libraw/*/*.lo
 3rdparty/libraw/*/*.la
 3rdparty/libraw/*/.libs
+
+*/*.autosave

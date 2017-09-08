@@ -26,12 +26,12 @@ void ImageRecord::SetType(const FrameType &value)
     type_ = value;
 }
 
-float ImageRecord::getShutter() const
+float ImageRecord::GetShutter() const
 {
     return shutter_;
 }
 
-void ImageRecord::setShutter(float value)
+void ImageRecord::SetShutter(float value)
 {
     shutter_ = value;
 }

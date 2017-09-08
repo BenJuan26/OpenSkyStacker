@@ -36,6 +36,8 @@ void StackerGraphicsView::scalingTime(qreal x)
 {
     qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
     scale(factor, factor);
+
+    Q_UNUSED(x);
 }
 
 void StackerGraphicsView::animFinished()
@@ -52,7 +54,6 @@ void StackerGraphicsView::mousePressEvent(QMouseEvent * event) {
 
     if (event->button() == Qt::LeftButton)
     {
-        qDebug() << "Start Drag";
         this->setDragMode(QGraphicsView::ScrollHandDrag);
         startX = event->x();
         startY = event->y();
@@ -66,7 +67,6 @@ void StackerGraphicsView::mousePressEvent(QMouseEvent * event) {
 void StackerGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton)
     {
-        qDebug() << "End Drag";
         this->setDragMode(QGraphicsView::NoDrag);
         this->setInteractive(false);
         event->accept();

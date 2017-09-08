@@ -68,7 +68,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             case ImageRecord::BIAS: return tr("Bias");
             }
             break;
-        case 3: return QString::number(image->getShutter()) + " s";
+        case 3: return QString::number(image->GetShutter()) + " s";
         case 4: return image->GetIso();
         case 5: {
             std::time_t time = image->GetTimestamp();

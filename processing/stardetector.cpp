@@ -39,11 +39,14 @@ std::vector<Star> StarDetector::GetStars(cv::Mat image)
 
     cv::Scalar mean, stdDev;
     cv::meanStdDev(thresholdImage, mean, stdDev);
-    float threshold = stdDev[0] * THRESHOLD_COEFF * 1.5;
-    float minPeak = stdDev[0] * THRESHOLD_COEFF * 2.0;
+
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    float thresholdCoeff = settings.value("StarDetector/thresholdCoeff", THRESHOLD_COEFF).toFloat();
+
+    float threshold = stdDev[0] * thresholdCoeff * 1.5;
+    float minPeak = stdDev[0] * thresholdCoeff * 2.0;
 
     std::vector<AdjoiningPixel> apList = GetAdjoiningPixels(stars, threshold, minPeak);
-    qDebug() << "Total adjoining pixels:" << apList.size();
 
     std::vector<Star> allStars;
     for (ulong i = 0; i < apList.size(); i++) {
@@ -57,8 +60,7 @@ std::vector<Star> StarDetector::GetStars(cv::Mat image)
             allStars.push_back(star);
         }
     }
-    //QString name = "/home/ben/Desktop/stars" + QString::number(QTime::currentTime().msec()) + ".tif";
-    //drawDetectedStars(name.toUtf8().constData(), image.cols, image.rows, -1, allStars);
+
     return allStars;
 }
 
@@ -115,16 +117,15 @@ cv::Mat StarDetector::GenerateSkyBackground(cv::Mat image) {
     return result;
 }
 
-void StarDetector::DrawDetectedStars(const std::string& path, uint width, uint height, int limit, std::vector<Star> stars)
+void StarDetector::DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars)
 {
-    if (limit < 0) limit = stars.size();
-
     cv::Mat output = cv::Mat::zeros(height, width, CV_8UC3);
     const int maxRadius = 30;
 
     std::sort(stars.begin(), stars.end(), std::greater<Star>());
     float maxValue = stars.at(0).GetValue();
-    for (int i = 0; i < stars.size() && i < limit; i++) {
+
+    for (size_type i = 0; i < stars.size() && i < limit; i++) {
         Star star = stars.at(i);
         float ratio = star.GetValue() / maxValue;
         int radius = maxRadius * ratio;
@@ -259,9 +260,6 @@ void StarDetector::test()
             xfrm[i][j] = b[i][j];
     }
 
-    qDebug() << xfrm[0][0] << xfrm[0][1] << xfrm[0][2];
-    qDebug() << xfrm[1][0] << xfrm[1][1] << xfrm[1][2];
-
     printf ("Number of matches = %d, RMS of fit = %8.2f\n", m, rms);
 }
 
@@ -322,7 +320,6 @@ AdjoiningPixel StarDetector::DetectAdjoiningPixel(cv::Mat image, int x, int y, f
 }
 
 float StarDetector::GetExtendedPixelValue(cv::Mat image, int x, int y) {
-    //qDebug() << "getting pixel" << x << y;
     if (x < 0) x = 0;
     if (x >= image.cols) x = image.cols - 1;
     if (y < 0) y = 0;

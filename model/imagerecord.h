@@ -26,8 +26,8 @@ public:
     FrameType GetType() const;
     void SetType(const FrameType &value);
 
-    float getShutter() const;
-    void setShutter(float value);
+    float GetShutter() const;
+    void SetShutter(float value);
 
     float GetIso() const;
     void SetIso(float value);
