@@ -87,11 +87,11 @@ test {
 win32 {
     RC_ICONS = $$PWD/OpenSkyStacker.ico
 
-    INCLUDEPATH += $$PWD/3rdparty/opencv/include
-    INCLUDEPATH += $$PWD/3rdparty/libraw/win64/include
+    INCLUDEPATH += $$PWD/3rdparty/opencv/build/include
+    INCLUDEPATH += $$PWD/3rdparty/libraw
     LIBS += -lucrt
     LIBS += -lucrtd
-    LIBS += -L$$PWD/3rdparty/opencv/win64/lib
+    LIBS += -L$$PWD/3rdparty/opencv/build/lib/Release
     LIBS += -lopencv_core320
     LIBS += -lopencv_highgui320
     LIBS += -lopencv_imgcodecs320
@@ -102,8 +102,8 @@ win32 {
     LIBS += $$PWD/3rdparty/focas/win64/hfti.o
     LIBS += $$PWD/3rdparty/focas/win64/h12.o
     LIBS += $$PWD/3rdparty/focas/win64/diff.o
-    LIBS += -L$$PWD/3rdparty/libraw/win64/lib
-    LIBS += -lraw
+    LIBS += -L$$PWD/3rdparty/libraw/lib
+    LIBS += -llibraw
     LIBS += -lWS2_32
 }
 
