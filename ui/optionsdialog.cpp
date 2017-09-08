@@ -14,6 +14,10 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
             SLOT(valuesChanged(int)));
     connect(ui->spinboxThreshold, SIGNAL(valueChanged(int)), this,
             SLOT(valuesChanged(int)));
+
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    int thresh = settings.value("StarDetector/thresholdCoeff", 20).toInt();
+    valuesChanged(thresh);
 }
 
 OptionsDialog::~OptionsDialog()
@@ -28,7 +32,7 @@ void OptionsDialog::valuesChanged(int thresh)
     ui->sliderThreshold->setValue(thresh);
     ui->spinboxThreshold->setValue(thresh);
     ui->sliderThreshold->blockSignals(false);
-    ui->sliderThreshold->blockSignals(false);
+    ui->spinboxThreshold->blockSignals(false);
 
     SetThresh(thresh);
 }

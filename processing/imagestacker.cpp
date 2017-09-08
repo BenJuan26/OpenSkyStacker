@@ -66,7 +66,8 @@ void ImageStacker::Process() {
     if (use_flats_)     StackFlats();
 
 
-    emit UpdateProgress(tr("Reading light frame 1 of %n", "", target_image_file_names_.length() + 1), 0);
+    emit UpdateProgress(tr("Reading light frame 1 of %n", "", target_image_file_names_.length() + 1), 100*current_operation_/total_operations_);
+    current_operation_++;
 
     ref_image_ = ReadImage(ref_image_file_name_);
 
@@ -82,7 +83,7 @@ void ImageStacker::Process() {
     for (int k = 0; k < target_image_file_names_.length() && !cancel_; k++) {
         // ---------------- LOAD -----------------
         message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
+        qInfo() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         cv::Mat targetImage = ReadImage(target_image_file_names_.at(k));
@@ -90,7 +91,7 @@ void ImageStacker::Process() {
 
         // ------------- CALIBRATION --------------
         message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
+        qInfo() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         if (use_bias_)  targetImage -= master_bias_;
@@ -109,7 +110,7 @@ void ImageStacker::Process() {
 
         // -------------- STACKING ---------------
         message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -200,18 +201,57 @@ cv::Mat ImageStacker::AverageImages(cv::Mat img1, cv::Mat img2) {
 
 int ImageStacker::ValidateImageSizes()
 {
-    cv::Mat ref = ReadImage(ref_image_file_name_);
-    int width = ref.cols;
-    int height = ref.rows;
+//    cv::Mat ref = ReadImage(ref_image_file_name_);
+//    int width = ref.cols;
+//    int height = ref.rows;
 
-    qDebug() << "refImage:" << width << height;
+    LibRaw processor;
+
+    // params for raw processing
+    processor.imgdata.params.use_auto_wb = 0;
+    processor.imgdata.params.use_camera_wb = 1;
+    processor.imgdata.params.no_auto_bright = 1;
+    processor.imgdata.params.output_bps = 16;
+
+    QFileInfo info(ref_image_file_name_);
+    QString ext = info.completeSuffix();
+
+    int refWidth;
+    int refHeight;
+
+    if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+        processor.open_file(ref_image_file_name_.toUtf8().constData());
+        refWidth = processor.imgdata.sizes.width;
+        refHeight = processor.imgdata.sizes.height;
+        processor.free_image();
+    } else {
+        cv::Mat ref = ReadImage(ref_image_file_name_);
+        refWidth = ref.cols;
+        refHeight = ref.rows;
+    }
+
+    qDebug() << "refImage:" << refWidth << refHeight;
 
     for (int i = 0; i < target_image_file_names_.length(); i++) {
         QString filename = target_image_file_names_.at(i);
 
-        cv::Mat image = ReadImage(filename);
+        int width;
+        int height;
 
-        if (image.cols != width ||  image.rows != height) {
+        if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+            processor.open_file(filename.toUtf8().constData());
+            width = processor.imgdata.sizes.width;
+            height = processor.imgdata.sizes.height;
+            processor.free_image();
+        } else {
+            cv::Mat ref = ReadImage(filename);
+            width = ref.cols;
+            height = ref.rows;
+        }
+
+        qDebug() << "target" << i << ":" << width << height;
+
+        if (width != refWidth ||  height != refHeight) {
             return -1;
         }
     }
@@ -220,9 +260,23 @@ int ImageStacker::ValidateImageSizes()
         for (int i = 0; i < bias_frame_file_names_.length(); i++) {
             QString filename = bias_frame_file_names_.at(i);
 
-            cv::Mat image = ReadImage(filename);
+            int width;
+            int height;
 
-            if (image.cols != width ||  image.rows != height) {
+            if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+                processor.open_file(filename.toUtf8().constData());
+                width = processor.imgdata.sizes.width;
+                height = processor.imgdata.sizes.height;
+                processor.free_image();
+            } else {
+                cv::Mat ref = ReadImage(filename);
+                width = ref.cols;
+                height = ref.rows;
+            }
+
+            qDebug() << "bias" << i << ":" << width << height;
+
+            if (width != refWidth ||  height != refHeight) {
                 return -1;
             }
         }
@@ -232,9 +286,23 @@ int ImageStacker::ValidateImageSizes()
         for (int i = 0; i < dark_frame_file_names_.length(); i++) {
             QString filename = dark_frame_file_names_.at(i);
 
-            cv::Mat image = ReadImage(filename);
+            int width;
+            int height;
 
-            if (image.cols != width ||  image.rows != height) {
+            if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+                processor.open_file(filename.toUtf8().constData());
+                width = processor.imgdata.sizes.width;
+                height = processor.imgdata.sizes.height;
+                processor.free_image();
+            } else {
+                cv::Mat ref = ReadImage(filename);
+                width = ref.cols;
+                height = ref.rows;
+            }
+
+            qDebug() << "dark" << i << ":" << width << height;
+
+            if (width != refWidth ||  height != refHeight) {
                 return -1;
             }
         }
@@ -244,9 +312,23 @@ int ImageStacker::ValidateImageSizes()
         for (int i = 0; i < dark_flat_frame_file_names_.length(); i++) {
             QString filename = dark_flat_frame_file_names_.at(i);
 
-            cv::Mat image = ReadImage(filename);
+            int width;
+            int height;
 
-            if (image.cols != width ||  image.rows != height) {
+            if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+                processor.open_file(filename.toUtf8().constData());
+                width = processor.imgdata.sizes.width;
+                height = processor.imgdata.sizes.height;
+                processor.free_image();
+            } else {
+                cv::Mat ref = ReadImage(filename);
+                width = ref.cols;
+                height = ref.rows;
+            }
+
+            qDebug() << "dark flat" << i << ":" << width << height;
+
+            if (width != refWidth ||  height != refHeight) {
                 return -1;
             }
         }
@@ -256,9 +338,23 @@ int ImageStacker::ValidateImageSizes()
         for (int i = 0; i < flat_frame_file_names_.length(); i++) {
             QString filename = flat_frame_file_names_.at(i);
 
-            cv::Mat image = ReadImage(filename);
+            int width;
+            int height;
 
-            if (image.cols != width ||  image.rows != height) {
+            if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+                processor.open_file(filename.toUtf8().constData());
+                width = processor.imgdata.sizes.width;
+                height = processor.imgdata.sizes.height;
+                processor.free_image();
+            } else {
+                cv::Mat ref = ReadImage(filename);
+                width = ref.cols;
+                height = ref.rows;
+            }
+
+            qDebug() << "flat" << i << ":" << width << height;
+
+            if (width != refWidth ||  height != refHeight) {
                 return -1;
             }
         }
@@ -312,7 +408,7 @@ void ImageStacker::StackDarks()
         cv::Mat dark = ReadImage(dark_frame_file_names_.at(i));
 
         message = tr("Stacking dark frame %1 of %2").arg(QString::number(i+1), QString::number(dark_frame_file_names_.length()));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -338,7 +434,7 @@ void ImageStacker::StackDarkFlats()
         cv::Mat dark = ReadImage(dark_flat_frame_file_names_.at(i));
 
         message = tr("Stacking dark flat frame %1 of %2").arg(QString::number(i+1), QString::number(dark_flat_frame_file_names_.length()));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -366,7 +462,7 @@ void ImageStacker::StackFlats()
         cv::Mat flat = ReadImage(flat_frame_file_names_.at(i));
 
         message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flat_frame_file_names_.length()));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -383,7 +479,6 @@ void ImageStacker::StackFlats()
     cv::Scalar meanScalar = cv::mean(result);
     float avg = (meanScalar.val[0] + meanScalar.val[1] + meanScalar.val[2])/3;
 
-    qDebug() << "Average: " << avg;
     if (bits_per_channel_ == BITS_16)
         result.convertTo(master_flat_, CV_32F, 1.0/avg);
     else if (bits_per_channel_ == BITS_32)
@@ -401,7 +496,7 @@ void ImageStacker::StackBias()
         cv::Mat bias = ReadImage(bias_frame_file_names_.at(i));
 
         message = tr("Stacking bias frame %1 of %2").arg(QString::number(i+1), QString::number(bias_frame_file_names_.length()));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 

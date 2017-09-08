@@ -104,7 +104,6 @@ private:
     QThread *worker_thread_;
     ImageStacker *stacker_;
     ProcessingDialog *processing_dialog_;
-    QDir selected_dir_;
     QStringList image_file_filter_;
     ImageTableModel table_model_;
     bool has_failed_ = false;

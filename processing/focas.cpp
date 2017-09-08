@@ -99,9 +99,9 @@ std::vector<std::vector<int> > FindMatches(int nobjs, int *k_, std::vector<Trian
     SortTriangles(&List_triangB, 0, List_triangB.size() - 1);
 
     /* Find objects within tolerance distance in triangle space. */
-    for (i = 0; i < List_triangA.size(); i++) {
-        BinSearchTriangles(List_triangA[i].x_, &List_triangB, &first, &last);
-        CheckTolerance(nobjs, List_triangA[i], &List_triangB, first, last, Table_match);
+    for (Triangle tri : List_triangA) {
+        BinSearchTriangles(tri.x_, &List_triangB, &first, &last);
+        CheckTolerance(nobjs, tri, &List_triangB, first, last, Table_match);
     }
 
     /* Find the nobjs points with the most matches. */
@@ -369,9 +369,6 @@ std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > ma
         for (j=0; j<3; j++)
             xfrm[i][j] = b[i][j];
     }
-
-    qDebug() << xfrm[0][0] << xfrm[0][1] << xfrm[0][2];
-    qDebug() << xfrm[1][0] << xfrm[1][1] << xfrm[1][2];
 
     return xfrm;
 }

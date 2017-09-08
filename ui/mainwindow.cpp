@@ -41,8 +41,6 @@ MainWindow::MainWindow(QWidget *parent) :
             "(*.jpg *.jpeg *.png *.tif)");
     image_file_filter_ << tr("Raw image files (*.NEF *.CR2 *.DNG *.RAW)");
 
-    selected_dir_ = QDir::home();
-
     QTableView *table = ui_->imageListView;
     table->setModel(&table_model_);
     table->setColumnWidth(0,25);  // checked
@@ -112,7 +110,7 @@ void MainWindow::finishedStacking(cv::Mat image) {
 
     setMemImage(Mat2QImage(image));
 
-    qDebug() << "Done stacking";
+    qInfo() << "Done stacking";
 }
 
 // For the main window this is only used to update the progress indicator
@@ -199,7 +197,6 @@ void MainWindow::setFrameAsReference()
 
     clearReferenceFrame();
 
-    qDebug() << "Set reference frame, row" << i;
     record->SetReference(true);
 }
 
@@ -288,16 +285,19 @@ void MainWindow::processingError(QString message)
 
 void MainWindow::handleButtonStack() {
     has_failed_ = false;
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QString path = settings.value("files/savePath", QDir::homePath()).toString();
 
     QString saveFilePath = QFileDialog::getSaveFileName(this,
-            tr("Select Output Image"), selected_dir_.absolutePath(),
+            tr("Select Output Image"), path,
             tr("TIFF Image (*.tif)"));
 
     if (saveFilePath.isEmpty()) {
-        qDebug() << "No output file selected. Cancelling.";
         return;
     }
 
+    QFileInfo info(saveFilePath);
+    settings.setValue("files/savePath", info.absoluteFilePath());
     stacker_->SetSaveFilePath(saveFilePath);
 
     setDefaultReferenceImage();
@@ -313,7 +313,7 @@ void MainWindow::handleButtonStack() {
     emit stackImages();
 
     if (!processing_dialog_->exec()) {
-        qDebug() << "Cancelling...";
+        qInfo() << "Cancelling...";
         stacker_->cancel_ = true;
     }
 
@@ -327,8 +327,12 @@ void MainWindow::handleButtonStack() {
 }
 
 void MainWindow::handleButtonLightFrames() {
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QDir dir = QDir(settings.value("files/lightFramesDir",
+            QDir::homePath()).toString());
+
     QFileDialog dialog(this);
-    dialog.setDirectory(selected_dir_);
+    dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
@@ -344,7 +348,7 @@ void MainWindow::handleButtonLightFrames() {
     }
 
     QFileInfo info(targetImageFileNames.at(0));
-    selected_dir_ = QDir(info.absoluteFilePath());
+    settings.setValue("files/lightFramesDir", info.absoluteFilePath());
 
     emit readQImage(targetImageFileNames.at(0));
 
@@ -352,8 +356,12 @@ void MainWindow::handleButtonLightFrames() {
 }
 
 void MainWindow::handleButtonDarkFrames() {
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QDir dir = QDir(settings.value("files/darkFramesDir",
+            QDir::homePath()).toString());
+
     QFileDialog dialog(this);
-    dialog.setDirectory(selected_dir_);
+    dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
@@ -367,11 +375,18 @@ void MainWindow::handleButtonDarkFrames() {
         record->SetType(ImageRecord::DARK);
         table_model_.Append(record);
     }
+
+    QFileInfo info(darkFrameFileNames.at(0));
+    settings.setValue("files/darkFramesDir", info.absoluteFilePath());
 }
 
 void MainWindow::handleButtonDarkFlatFrames() {
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QDir dir = QDir(settings.value("files/darkFlatFramesDir",
+            QDir::homePath()).toString());
+
     QFileDialog dialog(this);
-    dialog.setDirectory(selected_dir_);
+    dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
@@ -385,11 +400,18 @@ void MainWindow::handleButtonDarkFlatFrames() {
         record->SetType(ImageRecord::DARK_FLAT);
         table_model_.Append(record);
     }
+
+    QFileInfo info(darkFlatFrameFileNames.at(0));
+    settings.setValue("files/darkFlatFramesDir", info.absoluteFilePath());
 }
 
 void MainWindow::handleButtonFlatFrames() {
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QDir dir = QDir(settings.value("files/flatFramesDir",
+            QDir::homePath()).toString());
+
     QFileDialog dialog(this);
-    dialog.setDirectory(selected_dir_);
+    dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
@@ -403,12 +425,19 @@ void MainWindow::handleButtonFlatFrames() {
         record->SetType(ImageRecord::FLAT);
         table_model_.Append(record);
     }
+
+    QFileInfo info(flatFrameFileNames.at(0));
+    settings.setValue("files/flatFramesDir", info.absoluteFilePath());
 }
 
 void MainWindow::handleButtonBiasFrames()
 {
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QDir dir = QDir(settings.value("files/biasFramesDir",
+            QDir::homePath()).toString());
+
     QFileDialog dialog(this);
-    dialog.setDirectory(selected_dir_);
+    dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
@@ -422,6 +451,9 @@ void MainWindow::handleButtonBiasFrames()
         record->SetType(ImageRecord::BIAS);
         table_model_.Append(record);
     }
+
+    QFileInfo info(biasFrameFileNames.at(0));
+    settings.setValue("files/biasFramesDir", info.absoluteFilePath());
 }
 
 void MainWindow::handleButtonOptions()
@@ -430,9 +462,8 @@ void MainWindow::handleButtonOptions()
 
     if (dialog->exec()) {
         int thresh = dialog->GetThresh();
-        qDebug() << "Thresh:" << thresh;
-    } else {
-        qDebug() << "Options dialog cancelled";
+        QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+        settings.setValue("StarDetector/thresholdCoeff", thresh);
     }
 
     delete dialog;
