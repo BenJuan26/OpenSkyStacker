@@ -19,7 +19,7 @@ public:
     void SetThresh(int value);
 
 private slots:
-    void valuesChanged();
+    void valuesChanged(int thresh);
 
 private:
     Ui::OptionsDialog *ui;

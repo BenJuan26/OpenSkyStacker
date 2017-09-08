@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>94</height>
+    <width>442</width>
+    <height>97</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,7 @@
          <height>16777215</height>
         </size>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
         <property name="leftMargin">
          <number>0</number>
         </property>
@@ -79,21 +79,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="labelThreshold">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+         <widget class="QSpinBox" name="spinboxThreshold">
+          <property name="maximum">
+           <number>100</number>
           </property>
-          <property name="minimumSize">
-           <size>
-            <width>30</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>20</string>
+          <property name="value">
+           <number>20</number>
           </property>
          </widget>
         </item>

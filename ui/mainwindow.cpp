@@ -211,6 +211,10 @@ void MainWindow::removeSelectedImages()
     for (int i = 0; i < rows.count(); i++) {
         table_model_.RemoveAt(rows.at(i).row() - i);
     }
+
+    if (table_model_.rowCount() == 0) {
+        ui_->buttonStack->setEnabled(false);
+    }
 }
 
 void MainWindow::imageSelectionChanged()
@@ -245,6 +249,10 @@ void MainWindow::checkImages()
         ImageRecord *record = table_model_.At(rows.at(i).row());
         record->SetChecked(true);
     }
+
+    if (rows.count() > 0) {
+        ui_->buttonStack->setEnabled(true);
+    }
 }
 
 void MainWindow::uncheckImages()
@@ -255,6 +263,17 @@ void MainWindow::uncheckImages()
     for (int i = 0; i < rows.count(); i++) {
         ImageRecord *record = table_model_.At(rows.at(i).row());
         record->SetChecked(false);
+    }
+
+    bool hasChecked = false;
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        if (table_model_.At(i)->IsChecked()) {
+            hasChecked = true;
+        }
+    }
+
+    if (!hasChecked) {
+        ui_->buttonStack->setEnabled(false);
     }
 }
 
@@ -409,12 +428,12 @@ void MainWindow::handleButtonOptions()
 {
     OptionsDialog *dialog = new OptionsDialog(this);
 
-//    if (dialog->exec()) {
-//        int thresh = dialog->GetThresh();
-//    } else {
-
-//    }
-    dialog->exec();
+    if (dialog->exec()) {
+        int thresh = dialog->GetThresh();
+        qDebug() << "Thresh:" << thresh;
+    } else {
+        qDebug() << "Options dialog cancelled";
+    }
 
     delete dialog;
 }

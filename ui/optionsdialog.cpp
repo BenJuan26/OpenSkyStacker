@@ -11,9 +11,9 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
     connect(ui->sliderThreshold, SIGNAL(valueChanged(int)), this,
-            SLOT(valuesChanged()));
-    connect(ui->sliderThreshold, SIGNAL(valueChanged(int)), ui->labelThreshold,
-            SLOT(setNum(int)));
+            SLOT(valuesChanged(int)));
+    connect(ui->spinboxThreshold, SIGNAL(valueChanged(int)), this,
+            SLOT(valuesChanged(int)));
 }
 
 OptionsDialog::~OptionsDialog()
@@ -21,9 +21,15 @@ OptionsDialog::~OptionsDialog()
     delete ui;
 }
 
-void OptionsDialog::valuesChanged()
+void OptionsDialog::valuesChanged(int thresh)
 {
-    int thresh = ui->sliderThreshold->value();
+    ui->sliderThreshold->blockSignals(true);
+    ui->spinboxThreshold->blockSignals(true);
+    ui->sliderThreshold->setValue(thresh);
+    ui->spinboxThreshold->setValue(thresh);
+    ui->sliderThreshold->blockSignals(false);
+    ui->sliderThreshold->blockSignals(false);
+
     SetThresh(thresh);
 }
 
