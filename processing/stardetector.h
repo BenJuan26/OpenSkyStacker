@@ -44,6 +44,7 @@ public:
     */
     cv::Mat GenerateSkyBackground(cv::Mat image);
 
+    using size_type = std::vector<Star>::size_type;
     //! Draw a white-on-black plot of the provided stars.
     /*! This started as a debugging tool but ended up being really cool and potentially useful.
         @param path Filename for the output image.
@@ -52,7 +53,7 @@ public:
         @param limit Draw only the brightest N stars, or all of the stars if a negative value is given.
         @param stars The list of stars to draw.
     */
-    void DrawDetectedStars(const std::string& path, uint width, uint height, int limit, std::vector<Star> stars);
+    void DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars);
 
     void test();
 

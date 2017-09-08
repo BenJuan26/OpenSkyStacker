@@ -119,16 +119,15 @@ cv::Mat StarDetector::GenerateSkyBackground(cv::Mat image) {
     return result;
 }
 
-void StarDetector::DrawDetectedStars(const std::string& path, uint width, uint height, int limit, std::vector<Star> stars)
+void StarDetector::DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars)
 {
-    if (limit < 0) limit = stars.size();
-
     cv::Mat output = cv::Mat::zeros(height, width, CV_8UC3);
     const int maxRadius = 30;
 
     std::sort(stars.begin(), stars.end(), std::greater<Star>());
     float maxValue = stars.at(0).GetValue();
-    for (int i = 0; i < stars.size() && i < limit; i++) {
+
+    for (size_type i = 0; i < stars.size() && i < limit; i++) {
         Star star = stars.at(i);
         float ratio = star.GetValue() / maxValue;
         int radius = maxRadius * ratio;
