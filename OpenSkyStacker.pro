@@ -19,12 +19,7 @@ TEMPLATE = app
 
 CONFIG += c++11
 
-# The following define makes your compiler emit warnings if you use
-# any feature of Qt which as been marked as deprecated (the exact warnings
-# depend on your compiler). Please consult the documentation of the
-# deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
-
 
 DESTDIR = $$PWD/build
 
@@ -32,11 +27,6 @@ OBJECTS_DIR = $$DESTDIR/obj
 MOC_DIR = $$DESTDIR/moc
 RCC_DIR = $$DESTDIR/qrc
 UI_DIR = $$DESTDIR/ui
-
-# You can also make your code fail to compile if you use deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += main.cpp\
     ui/mainwindow.cpp \
@@ -88,7 +78,7 @@ win32 {
     RC_ICONS = $$PWD/OpenSkyStacker.ico
 
     INCLUDEPATH += $$PWD/3rdparty/opencv/build/include
-    INCLUDEPATH += $$PWD/3rdparty/libraw
+    INCLUDEPATH += $$PWD/3rdparty/libraw/libraw
     LIBS += -lucrt
     LIBS += -lucrtd
     LIBS += -L$$PWD/3rdparty/opencv/build/lib/Release
@@ -110,45 +100,9 @@ win32 {
 macx {
     ICON = $$PWD/OpenSkyStacker.icns
 
-    INCLUDEPATH += /usr/local/include
-    LIBS += -L/usr/local/lib
-
     # OpenCV
-    INCLUDEPATH += $$PWD/3rdparty/opencv/include
-    INCLUDEPATH += $$PWD/3rdparty/opencv/build
-    LIBS += \
-        -lopencv_core \
-        -lopencv_highgui \
-        -lopencv_imgcodecs \
-        -lopencv_imgproc \
-        -lopencv_features2d \
-        -lopencv_calib3d \
-        -lopencv_video
-
-    opencv.target = /usr/local/lib/libopencv_core.dylib
-    opencv.commands = source ~/.bash_profile;\
-        cd $$PWD/3rdparty/opencv/build;\
-        /Applications/CMake.app/Contents/bin/cmake -DBUILD_SHARED_LIBS=ON -DBUILD_TESTS=OFF \
-            -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_1394=OFF -DWITH_FFMPEG=OFF ..;\
-        make;\
-        make install
-
-    QMAKE_EXTRA_TARGETS += opencv
-    PRE_TARGETDEPS += /usr/local/lib/libopencv_core.dylib
-
-
-    # LibRaw
-    # INCLUDEPATH += $$PWD/3rdparty/libraw
-    LIBS += \
-        -lraw \
-        -lraw_r
-
-    libraw.target = /usr/local/lib/libraw.dylib
-    # sourcing .bash_profile is for includes and paths
-    libraw.commands = source ~/.bash_profile; cd $$PWD/3rdparty/libraw; ./configure; make; make install
-
-    QMAKE_EXTRA_TARGETS += libraw
-    PRE_TARGETDEPS += /usr/local/lib/libraw.dylib
+    CONFIG += link_pkgconfig
+    PKGCONFIG += opencv libraw
 
     # FOCAS
     LIBS += $$PWD/3rdparty/focas/macx/hfti.o
@@ -158,20 +112,12 @@ macx {
 }
 
 linux {
-    #INCLUDEPATH += $$PWD/3rdparty/opencv/include
-    #INCLUDEPATH += $$PWD/3rdparty/libraw/unix/include
-    #INCLUDEPATH += $$(QTDIR)/include/QtWidgets
+
     INCLUDE += /usr/include /usr/local/include /usr/include/x86_64-linux-gnu
-    #LIBS += -L$$PWD/3rdparty/opencv/unix/lib \
-    #    -L$$PWD/3rdparty/libraw/unix/lib \
-    LIBS += -L/usr/lib/x86_64-linux-gnu \
-        -lopencv_core \
-        -lopencv_highgui \
-        -lopencv_imgproc \
-        -lopencv_features2d \
-        -lopencv_calib3d \
-        -lopencv_video \
-        -lraw
+
+    CONFIG += link_pkgconfig
+    PKGCONFIG += opencv libraw
+
     LIBS += $$PWD/3rdparty/focas/unix/hfti.o
     LIBS += $$PWD/3rdparty/focas/unix/h12.o
     LIBS += $$PWD/3rdparty/focas/unix/diff.o

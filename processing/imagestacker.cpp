@@ -10,7 +10,7 @@
 #ifdef WIN32
 #define LIBRAW_NODLL
 #endif
-#include <libraw/libraw.h>
+#include <libraw.h>
 
 const std::vector<QString> ImageStacker::RAW_EXTENSIONS = {"3fr", "ari", "arw", "bay", "crw", "cr2",
         "cap", "data", "dcs", "dcr", "dng", "drf", "eip", "erf", "fff", "gpr", "iiq", "k25", "kdc",
@@ -83,7 +83,7 @@ void ImageStacker::Process() {
     for (int k = 0; k < target_image_file_names_.length() && !cancel_; k++) {
         // ---------------- LOAD -----------------
         message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qInfo() << message;
+        qDebug() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         cv::Mat targetImage = ReadImage(target_image_file_names_.at(k));
@@ -91,7 +91,7 @@ void ImageStacker::Process() {
 
         // ------------- CALIBRATION --------------
         message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qInfo() << message;
+        qDebug() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         if (use_bias_)  targetImage -= master_bias_;
@@ -110,7 +110,7 @@ void ImageStacker::Process() {
 
         // -------------- STACKING ---------------
         message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -408,7 +408,7 @@ void ImageStacker::StackDarks()
         cv::Mat dark = ReadImage(dark_frame_file_names_.at(i));
 
         message = tr("Stacking dark frame %1 of %2").arg(QString::number(i+1), QString::number(dark_frame_file_names_.length()));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -434,7 +434,7 @@ void ImageStacker::StackDarkFlats()
         cv::Mat dark = ReadImage(dark_flat_frame_file_names_.at(i));
 
         message = tr("Stacking dark flat frame %1 of %2").arg(QString::number(i+1), QString::number(dark_flat_frame_file_names_.length()));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -462,7 +462,7 @@ void ImageStacker::StackFlats()
         cv::Mat flat = ReadImage(flat_frame_file_names_.at(i));
 
         message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flat_frame_file_names_.length()));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -496,7 +496,7 @@ void ImageStacker::StackBias()
         cv::Mat bias = ReadImage(bias_frame_file_names_.at(i));
 
         message = tr("Stacking bias frame %1 of %2").arg(QString::number(i+1), QString::number(bias_frame_file_names_.length()));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
