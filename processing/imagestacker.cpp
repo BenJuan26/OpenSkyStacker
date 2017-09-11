@@ -551,7 +551,7 @@ cv::Mat ImageStacker::ConvertAndScaleImage(cv::Mat image)
             image.convertTo(result, CV_32F, 1/65535.0);
             break;
         case CV_32S:
-            image.convertTo(result, CV_32F, 1.0/(2^31 - 1), 1.0);
+            image.convertTo(result, CV_32F, 1.0/2147483647.0, 1.0);
             break;
         case CV_32F:
             result = image.clone();

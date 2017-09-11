@@ -157,30 +157,30 @@ void SortTriangles(std::vector<Triangle> *List_Triang_, int l, int r)
         j = r;
 
         for(;;) {
-        while(List_Triang[++i].x_ < v.x_ );
-        while((j > 1) && (List_Triang[--j].x_ > v.x_));
-        if(i >= j)
-            break;
+            while(List_Triang[++i].x_ < v.x_ );
+            while((j > 1) && (List_Triang[--j].x_ > v.x_));
+            if(i >= j)
+                break;
 
-        t.x_ = List_Triang[i].x_;
-        List_Triang[i].x_ = List_Triang[j].x_;
-        List_Triang[j].x_ = t.x_;
+            t.x_ = List_Triang[i].x_;
+            List_Triang[i].x_ = List_Triang[j].x_;
+            List_Triang[j].x_ = t.x_;
 
-        t.y_ = List_Triang[i].y_;
-        List_Triang[i].y_ = List_Triang[j].y_;
-        List_Triang[j].y_ = t.y_;
+            t.y_ = List_Triang[i].y_;
+            List_Triang[i].y_ = List_Triang[j].y_;
+            List_Triang[j].y_ = t.y_;
 
-        t.s1_ = List_Triang[i].s1_;
-        List_Triang[i].s1_ = List_Triang[j].s1_;
-        List_Triang[j].s1_ = t.s1_;
+            t.s1_ = List_Triang[i].s1_;
+            List_Triang[i].s1_ = List_Triang[j].s1_;
+            List_Triang[j].s1_ = t.s1_;
 
-        t.s2_ = List_Triang[i].s2_;
-        List_Triang[i].s2_ = List_Triang[j].s2_;
-        List_Triang[j].s2_ = t.s2_;
+            t.s2_ = List_Triang[i].s2_;
+            List_Triang[i].s2_ = List_Triang[j].s2_;
+            List_Triang[j].s2_ = t.s2_;
 
-        t.s3_ = List_Triang[i].s3_;
-        List_Triang[i].s3_ = List_Triang[j].s3_;
-        List_Triang[j].s3_ = t.s3_;
+            t.s3_ = List_Triang[i].s3_;
+            List_Triang[i].s3_ = List_Triang[j].s3_;
+            List_Triang[j].s3_ = t.s3_;
         }
 
         t.x_ = List_Triang[i].x_;
@@ -315,28 +315,28 @@ std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > ma
     for (;;) {
         sum = 0.;
         for (i=0; i<m; i++) {
-        i1 = matches[0][i];
-        i2 = matches[1][i];
-        r2 = List1[i1].GetX();
-        y = List1[i1].GetY();
-        x = xfrm[0][0] * r2 + xfrm[0][1] * y + xfrm[0][2];
-        y = xfrm[1][0] * r2 + xfrm[1][1] * y + xfrm[1][2];
-        x -= List2[i2].GetX();
-        y -= List2[i2].GetY();
-        r2 = x * x + y * y;
-        for (j=i; j>0 && r2<a[1][j-1]; j--)
-            a[1][j] = a[1][j-1];
-        a[0][i] = r2;
-        a[1][j] = r2;
-        sum += r2;
+            i1 = matches[0][i];
+            i2 = matches[1][i];
+            r2 = List1[i1].GetX();
+            y = List1[i1].GetY();
+            x = xfrm[0][0] * r2 + xfrm[0][1] * y + xfrm[0][2];
+            y = xfrm[1][0] * r2 + xfrm[1][1] * y + xfrm[1][2];
+            x -= List2[i2].GetX();
+            y -= List2[i2].GetY();
+            r2 = x * x + y * y;
+            for (j=i; j>0 && r2<a[1][j-1]; j--)
+                a[1][j] = a[1][j-1];
+            a[0][i] = r2;
+            a[1][j] = r2;
+            sum += r2;
         }
 
         /* Set clipping limit and quit when no points are clipped. */
         i = 0.6 * m;
         r2 = CLIP * a[1][i];
         if (r2 >= a[1][m-1]) {
-        rms = sqrt(sum / m);
-        break;
+            rms = sqrt(sum / m);
+            break;
         }
 
         /* Clip outliers and redo the fit. */
@@ -357,17 +357,16 @@ std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > ma
         }
         m = j;
 
-//	    if (m < MIN_MATCH) {
-//		printf (
-//		    "Match not found: use more objects or larger tolerance\n");
-//		exit (0);
-//	    }
+        if (m < MIN_MATCH) {
+            qDebug("Match not found: use more objects or larger tolerance\n");
+            exit (0);
+        }
 
         hfti_(a, &mda, &m, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g,ip);
 
         for (i=0; i<2; i++)
-        for (j=0; j<3; j++)
-            xfrm[i][j] = b[i][j];
+            for (j=0; j<3; j++)
+                xfrm[i][j] = b[i][j];
     }
 
     return xfrm;
