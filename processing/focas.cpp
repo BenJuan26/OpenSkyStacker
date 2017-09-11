@@ -277,7 +277,8 @@ void CheckTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *Lis
     }
 }
 
-std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > matches, int m, std::vector<Star> List1, std::vector<Star> List2)
+std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > matches,
+        int m, std::vector<Star> List1, std::vector<Star> List2, int *ok)
 {
     //float	xfrm[2][3];
     std::vector<std::vector<float> > xfrm(2, std::vector<float>(3,0));
@@ -291,8 +292,10 @@ std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > ma
 
     /* Require a minimum number of points. */
     if (m < MIN_MATCH) {
-        printf ("Match not found: use more objects or larger tolerance\n");
-        exit (0);
+        qDebug("Match not found: use more objects or larger tolerance\n");
+        if (ok)
+            *ok = -1;
+        return xfrm;
     }
 
     /* Compute the initial transformation with the 12 best matches. */
@@ -359,7 +362,9 @@ std::vector<std::vector<float> > FindTransform(std::vector<std::vector<int> > ma
 
         if (m < MIN_MATCH) {
             qDebug("Match not found: use more objects or larger tolerance\n");
-            exit (0);
+            if (ok)
+                *ok = -1;
+            return xfrm;
         }
 
         hfti_(a, &mda, &m, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g,ip);

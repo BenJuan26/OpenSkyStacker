@@ -55,18 +55,20 @@ void ImageStacker::Process() {
     current_operation_ = 0;
     total_operations_ = target_image_file_names_.length() * 2 + 1;
 
-    if (use_bias_)      total_operations_ += bias_frame_file_names_.length();
-    if (use_darks_)     total_operations_ += dark_frame_file_names_.length();
+    if (use_bias_)       total_operations_ += bias_frame_file_names_.length();
+    if (use_darks_)      total_operations_ += dark_frame_file_names_.length();
     if (use_dark_flats_) total_operations_ += dark_flat_frame_file_names_.length();
-    if (use_flats_)     total_operations_ += flat_frame_file_names_.length();
+    if (use_flats_)      total_operations_ += flat_frame_file_names_.length();
 
-    if (use_bias_)      StackBias();
-    if (use_darks_)     StackDarks();
+    if (use_bias_)       StackBias();
+    if (use_darks_)      StackDarks();
     if (use_dark_flats_) StackDarkFlats();
-    if (use_flats_)     StackFlats();
+    if (use_flats_)      StackFlats();
 
 
-    emit UpdateProgress(tr("Reading light frame 1 of %n", "", target_image_file_names_.length() + 1), 100*current_operation_/total_operations_);
+    emit UpdateProgress(tr("Reading light frame 1 of %n", "",
+            target_image_file_names_.length() + 1),
+            100*current_operation_/total_operations_);
     current_operation_++;
 
     ref_image_ = ReadImage(ref_image_file_name_);
@@ -79,6 +81,7 @@ void ImageStacker::Process() {
     ref_image_.convertTo(working_image_, CV_32F);
 
     QString message;
+    int totalValidImages = 1;
 
     for (int k = 0; k < target_image_file_names_.length() && !cancel_; k++) {
         // ---------------- LOAD -----------------
@@ -104,9 +107,13 @@ void ImageStacker::Process() {
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
-        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage);
+        int ok = 0;
+        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage, &ok);
 
         if (cancel_) return;
+
+        if (ok != 0)
+            continue;
 
         // -------------- STACKING ---------------
         message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
@@ -115,11 +122,16 @@ void ImageStacker::Process() {
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         cv::add(working_image_, targetAligned, working_image_, cv::noArray(), CV_32F);
+        totalValidImages++;
     }
 
     if (cancel_) return;
+    if (totalValidImages < 2) {
+        emit ProcessingError(tr("No images could be aligned to the reference image. Try using a lower tolerance."));
+        return;
+    }
 
-    working_image_ /= target_image_file_names_.length() + 1;
+    working_image_ /= totalValidImages;
 
     // only need to change the bit depth, no scaling
     if (bits_per_channel_ == BITS_16) {
@@ -619,7 +631,7 @@ cv::Mat ImageStacker::ReadImage(QString filename)
 }
 
 // derived from FOCAS mktransform.c
-cv::Mat ImageStacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target) {
+cv::Mat ImageStacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok) {
     StarDetector sd;
     std::vector<Star> List1 = sd.GetStars(ref);
     std::vector<Star> List2 = sd.GetStars(target);
@@ -631,7 +643,10 @@ cv::Mat ImageStacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target) {
 
     int k = 0;
     std::vector< std::vector<int> > matches = FindMatches(nobjs, &k, List_triangA, List_triangB);
-    std::vector< std::vector<float> > transformVec = FindTransform(matches, k, List1, List2);
+    std::vector< std::vector<float> > transformVec = FindTransform(matches, k, List1, List2, ok);
+
+    if (ok && *ok != 0)
+        return target;
 
     cv::Mat matTransform(2,3,CV_32F);
     for(int i = 0; i < 2; i++)

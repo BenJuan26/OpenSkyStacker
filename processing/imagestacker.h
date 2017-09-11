@@ -127,7 +127,7 @@ public slots:
     void ReadQImage(QString filename);
 
 private:
-    cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target);
+    cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok = 0);
     cv::Mat AverageImages(cv::Mat img1, cv::Mat img2);
 
     int ValidateImageSizes();

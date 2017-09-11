@@ -78,7 +78,7 @@ QPushButton {
     color: white;
     background-color: #222;
     border-radius: 5px;
-    padding: 4px;
+    padding: 4px 12px;
 }
 
 QPushButton:hover {
@@ -167,7 +167,7 @@ QPushButton {
     color: white;
     background-color: #222;
     border-radius: 5px;
-    padding: 4px;
+    padding: 4px 12px;
 }
 
 QPushButton:hover {
