@@ -100,24 +100,20 @@ win32 {
 macx {
     ICON = $$PWD/OpenSkyStacker.icns
 
-    # OpenCV
     CONFIG += link_pkgconfig
     PKGCONFIG += libraw
 
+    # Not using pkg-config for OpenCV because we only want a few libs
+    QMAKE_CXXFLAGS += $$system(pkg-config --cflags opencv)
     LIBS += $$system(pkg-config --libs-only-L opencv)
     LIBS += -lopencv_core
-    LIBS += -lopencv_highgui
     LIBS += -lopencv_imgcodecs
     LIBS += -lopencv_imgproc
-    LIBS += -lopencv_features2d
-    LIBS += -lopencv_calib3d
-    LIBS += -lopencv_video
 
     # FOCAS
     LIBS += $$PWD/3rdparty/focas/macx/hfti.o
     LIBS += $$PWD/3rdparty/focas/macx/h12.o
     LIBS += $$PWD/3rdparty/focas/macx/diff.o
-
 }
 
 linux {
