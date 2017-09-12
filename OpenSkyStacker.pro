@@ -102,7 +102,16 @@ macx {
 
     # OpenCV
     CONFIG += link_pkgconfig
-    PKGCONFIG += opencv libraw
+    PKGCONFIG += libraw
+
+    LIBS += $$system(pkg-config --libs-only-L opencv)
+    LIBS += -lopencv_core
+    LIBS += -lopencv_highgui
+    LIBS += -lopencv_imgcodecs
+    LIBS += -lopencv_imgproc
+    LIBS += -lopencv_features2d
+    LIBS += -lopencv_calib3d
+    LIBS += -lopencv_video
 
     # FOCAS
     LIBS += $$PWD/3rdparty/focas/macx/hfti.o
