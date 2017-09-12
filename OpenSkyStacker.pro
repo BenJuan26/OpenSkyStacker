@@ -121,7 +121,14 @@ linux {
     INCLUDE += /usr/include /usr/local/include /usr/include/x86_64-linux-gnu
 
     CONFIG += link_pkgconfig
-    PKGCONFIG += opencv libraw
+    PKGCONFIG += libraw
+
+    # Not using pkg-config for OpenCV because we only want a few libs
+    QMAKE_CXXFLAGS += $$system(pkg-config --cflags opencv)
+    LIBS += $$system(pkg-config --libs-only-L opencv)
+    LIBS += -lopencv_core
+    LIBS += -lopencv_highgui
+    LIBS += -lopencv_imgproc
 
     LIBS += $$PWD/3rdparty/focas/unix/hfti.o
     LIBS += $$PWD/3rdparty/focas/unix/h12.o
