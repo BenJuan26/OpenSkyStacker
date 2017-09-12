@@ -82,14 +82,14 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(Process()));
     connect(this, SIGNAL(readQImage(QString)), stacker_,
             SLOT(ReadQImage(QString)));
-    connect(stacker_, SIGNAL(Finished(cv::Mat)), this,
+    connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), this,
             SLOT(finishedStacking(cv::Mat)));
-    connect(stacker_, SIGNAL(FinishedDialog(QString)), this,
+    connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), this,
             SLOT(clearProgress(QString)));
     connect(stacker_, SIGNAL(ProcessingError(QString)), this,
             SLOT(processingError(QString)));
-    connect(stacker_, SIGNAL(UpdateProgress(QString,int)), this,
-            SLOT(updateProgress(QString,int)));
+    connect(stacker_, SIGNAL(UpdateProgress(QString, int)), this,
+            SLOT(updateProgress(QString, int)));
     connect(stacker_, SIGNAL(QImageReady(QImage)), this,
             SLOT(setImage(QImage)));
 
@@ -130,8 +130,9 @@ void MainWindow::updateProgress(QString message, int percentComplete)
 }
 
 // Taskbar progress should clear on completion
-void MainWindow::clearProgress(QString message)
+void MainWindow::clearProgress(cv::Mat image, QString message)
 {
+    Q_UNUSED(image);
     Q_UNUSED(message);
 #ifdef WIN32
     QWinTaskbarButton *button = new QWinTaskbarButton(this);
@@ -305,10 +306,10 @@ void MainWindow::handleButtonStack() {
     loadImagesIntoStacker();
 
     processing_dialog_ = new ProcessingDialog(this);
-    connect(stacker_, SIGNAL(UpdateProgress(QString,int)), processing_dialog_,
-            SLOT(updateProgress(QString,int)));
-    connect(stacker_, SIGNAL(FinishedDialog(QString)), processing_dialog_,
-            SLOT(complete(QString)));
+    connect(stacker_, SIGNAL(UpdateProgress(QString, int)), processing_dialog_,
+            SLOT(updateProgress(QString, int)));
+    connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), processing_dialog_,
+            SLOT(complete(cv::Mat, QString)));
 
     // Asynchronously trigger the processing
     emit stackImages();

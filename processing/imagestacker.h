@@ -92,17 +92,12 @@ public:
     void SetUseBias(bool value);
 
 signals:
-    //! Provides the final image when the processing is finished.
+    //! Provides the final image and a message when processing is finished.
     /*!
         @param image The final processed image.
-    */
-    void Finished(cv::Mat image);
-
-    //! Provides a message when processing is finished, and marks the processing as complete.
-    /*!
         @param message The message to accompany the process completion.
     */
-    void FinishedDialog(QString message);
+    void Finished(cv::Mat image, QString message);
 
     //! Provides a percentage of completion and a description of what's happening.
     /*!

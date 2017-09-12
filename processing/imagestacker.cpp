@@ -138,8 +138,7 @@ void ImageStacker::ProcessNonRaw() {
         working_image_.convertTo(working_image_, CV_16U);
     }
 
-    emit FinishedDialog(tr("Stacking completed"));
-    emit Finished(working_image_);
+    emit Finished(working_image_, tr("Stacking completed"));
 }
 
 bool ImageStacker::FileHasRawExtension(QString filename)
@@ -709,7 +708,6 @@ cv::Mat ImageStacker::RawToMat(QString filename)
     processor.imgdata.params.use_camera_wb = 1;
     processor.imgdata.params.no_auto_bright = 1;
     processor.imgdata.params.output_bps = 16;
-    //processor.imgdata.params.no_auto_scale = 1;
 
     processor.open_file(filename.toUtf8().constData());
     processor.unpack();

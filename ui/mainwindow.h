@@ -49,7 +49,7 @@ public slots:
 
     //! Clears any progress bars.
     /*! @param message A message describing the update (unused). */
-    void clearProgress(QString message);
+    void clearProgress(cv::Mat image, QString message);
 
     //! Shows the right-click menu at the given position.
     /*! @param pos The position of the click. */
