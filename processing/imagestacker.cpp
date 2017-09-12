@@ -266,8 +266,7 @@ void ImageStacker::ProcessRaw() {
         working_image_.convertTo(working_image_, CV_16U);
     }
 
-    emit FinishedDialog(tr("Stacking completed"));
-    emit Finished(working_image_);
+    emit Finished(working_image_, tr("Stacking completed"));
 }
 
 void ImageStacker::ReadQImage(QString filename)
