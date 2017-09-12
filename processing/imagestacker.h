@@ -130,6 +130,10 @@ private:
     cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok = 0);
     cv::Mat AverageImages(cv::Mat img1, cv::Mat img2);
 
+    void ProcessRaw();
+    void ProcessNonRaw();
+    bool FileHasRawExtension(QString filename);
+
     int ValidateImageSizes();
 
     QImage Mat2QImage(const cv::Mat &src);
