@@ -286,7 +286,8 @@ void MainWindow::processingError(QString message)
 void MainWindow::handleButtonStack() {
     has_failed_ = false;
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QString path = settings.value("files/savePath", QDir::homePath()).toString();
+    QString path = settings.value("files/savePath", settings.value(
+            "files/lightFramesDir", QDir::homePath())).toString();
 
     QString saveFilePath = QFileDialog::getSaveFileName(this,
             tr("Select Output Image"), path,
@@ -348,7 +349,7 @@ void MainWindow::handleButtonLightFrames() {
     }
 
     QFileInfo info(targetImageFileNames.at(0));
-    settings.setValue("files/lightFramesDir", info.absoluteFilePath());
+    settings.setValue("files/lightFramesDir", info.absolutePath());
 
     emit readQImage(targetImageFileNames.at(0));
 
@@ -358,7 +359,7 @@ void MainWindow::handleButtonLightFrames() {
 void MainWindow::handleButtonDarkFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     QDir dir = QDir(settings.value("files/darkFramesDir",
-            QDir::homePath()).toString());
+            settings.value("files/lightFramesDir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
@@ -377,13 +378,13 @@ void MainWindow::handleButtonDarkFrames() {
     }
 
     QFileInfo info(darkFrameFileNames.at(0));
-    settings.setValue("files/darkFramesDir", info.absoluteFilePath());
+    settings.setValue("files/darkFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonDarkFlatFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     QDir dir = QDir(settings.value("files/darkFlatFramesDir",
-            QDir::homePath()).toString());
+            settings.value("files/lightFramesDir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
@@ -402,13 +403,13 @@ void MainWindow::handleButtonDarkFlatFrames() {
     }
 
     QFileInfo info(darkFlatFrameFileNames.at(0));
-    settings.setValue("files/darkFlatFramesDir", info.absoluteFilePath());
+    settings.setValue("files/darkFlatFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonFlatFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     QDir dir = QDir(settings.value("files/flatFramesDir",
-            QDir::homePath()).toString());
+            settings.value("files/lightFramesDir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
@@ -427,14 +428,14 @@ void MainWindow::handleButtonFlatFrames() {
     }
 
     QFileInfo info(flatFrameFileNames.at(0));
-    settings.setValue("files/flatFramesDir", info.absoluteFilePath());
+    settings.setValue("files/flatFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonBiasFrames()
 {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     QDir dir = QDir(settings.value("files/biasFramesDir",
-            QDir::homePath()).toString());
+            settings.value("files/lightFramesDir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
@@ -453,7 +454,7 @@ void MainWindow::handleButtonBiasFrames()
     }
 
     QFileInfo info(biasFrameFileNames.at(0));
-    settings.setValue("files/biasFramesDir", info.absoluteFilePath());
+    settings.setValue("files/biasFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonOptions()
