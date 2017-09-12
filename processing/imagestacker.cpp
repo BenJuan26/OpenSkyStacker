@@ -195,7 +195,6 @@ void ImageStacker::ProcessRaw() {
     if (use_dark_flats_) StackDarkFlats();
     if (use_flats_)      StackFlats();
 
-
     emit UpdateProgress(tr("Reading light frame 1 of %n", "",
             target_image_file_names_.length() + 1),
             100*current_operation_/total_operations_);
@@ -216,7 +215,7 @@ void ImageStacker::ProcessRaw() {
     for (int k = 0; k < target_image_file_names_.length() && !cancel_; k++) {
         // ---------------- LOAD -----------------
         message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
+        qInfo() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         cv::Mat targetImage = ReadImage(target_image_file_names_.at(k));
@@ -224,7 +223,7 @@ void ImageStacker::ProcessRaw() {
 
         // ------------- CALIBRATION --------------
         message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
+        qInfo() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         if (use_bias_)  targetImage -= master_bias_;
@@ -247,7 +246,7 @@ void ImageStacker::ProcessRaw() {
 
         // -------------- STACKING ---------------
         message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -343,10 +342,6 @@ cv::Mat ImageStacker::AverageImages(cv::Mat img1, cv::Mat img2) {
 
 int ImageStacker::ValidateImageSizes()
 {
-//    cv::Mat ref = ReadImage(ref_image_file_name_);
-//    int width = ref.cols;
-//    int height = ref.rows;
-
     LibRaw processor;
 
     // params for raw processing
@@ -357,7 +352,6 @@ int ImageStacker::ValidateImageSizes()
 
     QFileInfo info(ref_image_file_name_);
     QString ext = info.completeSuffix();
-
     int refWidth;
     int refHeight;
 
@@ -550,7 +544,7 @@ void ImageStacker::StackDarks()
         cv::Mat dark = ReadImage(dark_frame_file_names_.at(i));
 
         message = tr("Stacking dark frame %1 of %2").arg(QString::number(i+1), QString::number(dark_frame_file_names_.length()));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -576,7 +570,7 @@ void ImageStacker::StackDarkFlats()
         cv::Mat dark = ReadImage(dark_flat_frame_file_names_.at(i));
 
         message = tr("Stacking dark flat frame %1 of %2").arg(QString::number(i+1), QString::number(dark_flat_frame_file_names_.length()));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -604,7 +598,7 @@ void ImageStacker::StackFlats()
         cv::Mat flat = ReadImage(flat_frame_file_names_.at(i));
 
         message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flat_frame_file_names_.length()));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -638,7 +632,7 @@ void ImageStacker::StackBias()
         cv::Mat bias = ReadImage(bias_frame_file_names_.at(i));
 
         message = tr("Stacking bias frame %1 of %2").arg(QString::number(i+1), QString::number(bias_frame_file_names_.length()));
-        qDebug() << message;
+        qInfo() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 

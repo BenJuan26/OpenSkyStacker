@@ -110,7 +110,7 @@ void MainWindow::finishedStacking(cv::Mat image) {
 
     setMemImage(Mat2QImage(image));
 
-    qDebug() << "Done stacking";
+    qInfo() << "Done stacking";
 }
 
 // For the main window this is only used to update the progress indicator
@@ -314,7 +314,7 @@ void MainWindow::handleButtonStack() {
     emit stackImages();
 
     if (!processing_dialog_->exec()) {
-        qDebug() << "Cancelling...";
+        qInfo() << "Cancelling...";
         stacker_->cancel_ = true;
     }
 
