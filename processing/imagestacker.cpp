@@ -138,8 +138,7 @@ void ImageStacker::ProcessNonRaw() {
         working_image_.convertTo(working_image_, CV_16U);
     }
 
-    emit FinishedDialog(tr("Stacking completed"));
-    emit Finished(working_image_);
+    emit Finished(working_image_, tr("Stacking completed"));
 }
 
 bool ImageStacker::FileHasRawExtension(QString filename)
@@ -215,7 +214,7 @@ void ImageStacker::ProcessRaw() {
     for (int k = 0; k < target_image_file_names_.length() && !cancel_; k++) {
         // ---------------- LOAD -----------------
         message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qInfo() << message;
+        qDebug() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         cv::Mat targetImage = ReadImage(target_image_file_names_.at(k));
@@ -223,7 +222,7 @@ void ImageStacker::ProcessRaw() {
 
         // ------------- CALIBRATION --------------
         message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qInfo() << message;
+        qDebug() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         if (use_bias_)  targetImage -= master_bias_;
@@ -246,7 +245,7 @@ void ImageStacker::ProcessRaw() {
 
         // -------------- STACKING ---------------
         message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -267,8 +266,7 @@ void ImageStacker::ProcessRaw() {
         working_image_.convertTo(working_image_, CV_16U);
     }
 
-    emit FinishedDialog(tr("Stacking completed"));
-    emit Finished(working_image_);
+    emit Finished(working_image_, tr("Stacking completed"));
 }
 
 void ImageStacker::ReadQImage(QString filename)
@@ -544,7 +542,7 @@ void ImageStacker::StackDarks()
         cv::Mat dark = ReadImage(dark_frame_file_names_.at(i));
 
         message = tr("Stacking dark frame %1 of %2").arg(QString::number(i+1), QString::number(dark_frame_file_names_.length()));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -570,7 +568,7 @@ void ImageStacker::StackDarkFlats()
         cv::Mat dark = ReadImage(dark_flat_frame_file_names_.at(i));
 
         message = tr("Stacking dark flat frame %1 of %2").arg(QString::number(i+1), QString::number(dark_flat_frame_file_names_.length()));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -598,7 +596,7 @@ void ImageStacker::StackFlats()
         cv::Mat flat = ReadImage(flat_frame_file_names_.at(i));
 
         message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flat_frame_file_names_.length()));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -632,7 +630,7 @@ void ImageStacker::StackBias()
         cv::Mat bias = ReadImage(bias_frame_file_names_.at(i));
 
         message = tr("Stacking bias frame %1 of %2").arg(QString::number(i+1), QString::number(bias_frame_file_names_.length()));
-        qInfo() << message;
+        qDebug() << message;
         current_operation_++;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
@@ -709,7 +707,6 @@ cv::Mat ImageStacker::RawToMat(QString filename)
     processor.imgdata.params.use_camera_wb = 1;
     processor.imgdata.params.no_auto_bright = 1;
     processor.imgdata.params.output_bps = 16;
-    //processor.imgdata.params.no_auto_scale = 1;
 
     processor.open_file(filename.toUtf8().constData());
     processor.unpack();

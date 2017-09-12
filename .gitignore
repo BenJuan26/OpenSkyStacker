@@ -5,6 +5,10 @@
 .DS_Store
 Makefile
 Makefile.*
+<<<<<<< HEAD
+=======
+*.dmg
+>>>>>>> 808b31086e3f2f2a32044913425a386543fee7fc
 
 # Snapcraft
 *.snap

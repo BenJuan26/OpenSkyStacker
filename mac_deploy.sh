@@ -70,44 +70,34 @@ if [ "$deploy_bin" = "" ]; then
 fi
 
 echo "Running macdeployqt..."
-$deploy_bin $APP_PATH -libpath=3rdparty/opencv/build/lib || error_exit "Error running macdeployqt"
+OPENCV_LIBPATH=$(pkg-config --libs-only-L opencv | awk -v ORS=" " '{
+    gsub("-L","");
+    for(i=1; i<=NF; i++){
+        print "-libpath="$i;
+    }
+}')
+LIBRAW_LIBPATH=$(pkg-config --libs-only-L libraw | awk -v ORS=" " '{
+    gsub("-L","");
+    for(i=1; i<=NF; i++){
+        print "-libpath="$i;
+    }
+}')
+$deploy_bin $APP_PATH $OPENCV_LIBPATH $LIBRAW_LIBPATH || error_exit "Error running macdeployqt"
 echo "Done"
 echo ""
 
-cp 3rdparty/opencv/build/lib/libopencv_calib3d.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_core.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_features2d.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_flann.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_highgui.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_imgcodecs.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_imgproc.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_ml.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_video.3.2.dylib $BASE_LIB_PATH/
-cp 3rdparty/opencv/build/lib/libopencv_videoio.3.2.dylib $BASE_LIB_PATH/
+fix_lib libIexMath-2_2.12.dylib libIex-2_2.12.dylib
+fix_lib libIlmThread-2_2.12.dylib libIex-2_2.12.dylib
+fix_lib libImath-2_2.12.dylib libIex-2_2.12.dylib
+fix_lib libavcodec.57.dylib libswresample.2.dylib
+fix_lib libavcodec.57.dylib libavutil.55.dylib
+fix_lib libswresample.2.dylib libavutil.55.dylib
+fix_lib libavformat.57.dylib libavcodec.57.dylib
+fix_lib libavformat.57.dylib libswresample.2.dylib
+fix_lib libavformat.57.dylib libavutil.55.dylib
+fix_lib libswscale.4.dylib libavutil.55.dylib
+fix_lib libavresample.3.dylib libavutil.55.dylib
 
-echo "Copied opencv libs"
-
-cp 3rdparty/libraw/lib/.libs/libraw.16.dylib $BASE_LIB_PATH/
-cp 3rdparty/libraw/lib/.libs/libraw_r.16.dylib $BASE_LIB_PATH/
-
-echo "Copied libraw libs"
-
-# fix_lib libIexMath-2_2.12.dylib libIex-2_2.12.dylib
-# fix_lib libIlmThread-2_2.12.dylib libIex-2_2.12.dylib
-# fix_lib libImath-2_2.12.dylib libIex-2_2.12.dylib
-
-fix_rpath libopencv_calib3d.3.2.dylib
-fix_rpath libopencv_features2d.3.2.dylib
-fix_rpath libopencv_flann.3.2.dylib
-fix_rpath libopencv_highgui.3.2.dylib
-fix_rpath libopencv_imgcodecs.3.2.dylib
-fix_rpath libopencv_imgproc.3.2.dylib
-fix_rpath libopencv_ml.3.2.dylib
-fix_rpath libopencv_video.3.2.dylib
-fix_rpath libopencv_ml.3.2.dylib
-fix_rpath libopencv_video.3.2.dylib
-fix_rpath libopencv_videoio.3.2.dylib
-
-fix_id libopencv_flann.3.2.dylib
-fix_id libopencv_ml.3.2.dylib
-fix_id libopencv_videoio.3.2.dylib
+# fix_id libopencv_flann.3.3.dylib
+# fix_id libopencv_ml.3.3.dylib
+# fix_id libopencv_videoio.3.3.dylib
