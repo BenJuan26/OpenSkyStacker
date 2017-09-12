@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1002</width>
-    <height>800</height>
+    <width>1024</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -78,7 +78,7 @@ QPushButton {
     color: white;
     background-color: #222;
     border-radius: 5px;
-    padding: 4px;
+    padding: 4px 12px;
 }
 
 QPushButton:hover {
@@ -167,7 +167,7 @@ QPushButton {
     color: white;
     background-color: #222;
     border-radius: 5px;
-    padding: 4px;
+    padding: 4px 12px;
 }
 
 QPushButton:hover {
@@ -225,7 +225,7 @@ QPushButton:disabled {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1002</width>
+     <width>1024</width>
      <height>22</height>
     </rect>
    </property>

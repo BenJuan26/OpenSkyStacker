@@ -92,17 +92,12 @@ public:
     void SetUseBias(bool value);
 
 signals:
-    //! Provides the final image when the processing is finished.
+    //! Provides the final image and a message when processing is finished.
     /*!
         @param image The final processed image.
-    */
-    void Finished(cv::Mat image);
-
-    //! Provides a message when processing is finished, and marks the processing as complete.
-    /*!
         @param message The message to accompany the process completion.
     */
-    void FinishedDialog(QString message);
+    void Finished(cv::Mat image, QString message);
 
     //! Provides a percentage of completion and a description of what's happening.
     /*!
@@ -127,8 +122,12 @@ public slots:
     void ReadQImage(QString filename);
 
 private:
-    cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target);
+    cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok = 0);
     cv::Mat AverageImages(cv::Mat img1, cv::Mat img2);
+
+    void ProcessRaw();
+    void ProcessNonRaw();
+    bool FileHasRawExtension(QString filename);
 
     int ValidateImageSizes();
 

@@ -82,14 +82,14 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(Process()));
     connect(this, SIGNAL(readQImage(QString)), stacker_,
             SLOT(ReadQImage(QString)));
-    connect(stacker_, SIGNAL(Finished(cv::Mat)), this,
+    connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), this,
             SLOT(finishedStacking(cv::Mat)));
-    connect(stacker_, SIGNAL(FinishedDialog(QString)), this,
+    connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), this,
             SLOT(clearProgress(QString)));
     connect(stacker_, SIGNAL(ProcessingError(QString)), this,
             SLOT(processingError(QString)));
-    connect(stacker_, SIGNAL(UpdateProgress(QString,int)), this,
-            SLOT(updateProgress(QString,int)));
+    connect(stacker_, SIGNAL(UpdateProgress(QString, int)), this,
+            SLOT(updateProgress(QString, int)));
     connect(stacker_, SIGNAL(QImageReady(QImage)), this,
             SLOT(setImage(QImage)));
 
@@ -110,7 +110,7 @@ void MainWindow::finishedStacking(cv::Mat image) {
 
     setMemImage(Mat2QImage(image));
 
-    qInfo() << "Done stacking";
+    qDebug() << "Done stacking";
 }
 
 // For the main window this is only used to update the progress indicator
@@ -130,8 +130,9 @@ void MainWindow::updateProgress(QString message, int percentComplete)
 }
 
 // Taskbar progress should clear on completion
-void MainWindow::clearProgress(QString message)
+void MainWindow::clearProgress(cv::Mat image, QString message)
 {
+    Q_UNUSED(image);
     Q_UNUSED(message);
 #ifdef WIN32
     QWinTaskbarButton *button = new QWinTaskbarButton(this);
@@ -286,7 +287,8 @@ void MainWindow::processingError(QString message)
 void MainWindow::handleButtonStack() {
     has_failed_ = false;
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QString path = settings.value("files/savePath", QDir::homePath()).toString();
+    QString path = settings.value("files/savePath", settings.value(
+            "files/lightFramesDir", QDir::homePath())).toString();
 
     QString saveFilePath = QFileDialog::getSaveFileName(this,
             tr("Select Output Image"), path,
@@ -304,16 +306,16 @@ void MainWindow::handleButtonStack() {
     loadImagesIntoStacker();
 
     processing_dialog_ = new ProcessingDialog(this);
-    connect(stacker_, SIGNAL(UpdateProgress(QString,int)), processing_dialog_,
-            SLOT(updateProgress(QString,int)));
-    connect(stacker_, SIGNAL(FinishedDialog(QString)), processing_dialog_,
-            SLOT(complete(QString)));
+    connect(stacker_, SIGNAL(UpdateProgress(QString, int)), processing_dialog_,
+            SLOT(updateProgress(QString, int)));
+    connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), processing_dialog_,
+            SLOT(complete(cv::Mat, QString)));
 
     // Asynchronously trigger the processing
     emit stackImages();
 
     if (!processing_dialog_->exec()) {
-        qInfo() << "Cancelling...";
+        qDebug() << "Cancelling...";
         stacker_->cancel_ = true;
     }
 
@@ -348,7 +350,7 @@ void MainWindow::handleButtonLightFrames() {
     }
 
     QFileInfo info(targetImageFileNames.at(0));
-    settings.setValue("files/lightFramesDir", info.absoluteFilePath());
+    settings.setValue("files/lightFramesDir", info.absolutePath());
 
     emit readQImage(targetImageFileNames.at(0));
 
@@ -358,7 +360,7 @@ void MainWindow::handleButtonLightFrames() {
 void MainWindow::handleButtonDarkFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     QDir dir = QDir(settings.value("files/darkFramesDir",
-            QDir::homePath()).toString());
+            settings.value("files/lightFramesDir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
@@ -377,13 +379,13 @@ void MainWindow::handleButtonDarkFrames() {
     }
 
     QFileInfo info(darkFrameFileNames.at(0));
-    settings.setValue("files/darkFramesDir", info.absoluteFilePath());
+    settings.setValue("files/darkFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonDarkFlatFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     QDir dir = QDir(settings.value("files/darkFlatFramesDir",
-            QDir::homePath()).toString());
+            settings.value("files/lightFramesDir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
@@ -402,13 +404,13 @@ void MainWindow::handleButtonDarkFlatFrames() {
     }
 
     QFileInfo info(darkFlatFrameFileNames.at(0));
-    settings.setValue("files/darkFlatFramesDir", info.absoluteFilePath());
+    settings.setValue("files/darkFlatFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonFlatFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     QDir dir = QDir(settings.value("files/flatFramesDir",
-            QDir::homePath()).toString());
+            settings.value("files/lightFramesDir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
@@ -427,14 +429,14 @@ void MainWindow::handleButtonFlatFrames() {
     }
 
     QFileInfo info(flatFrameFileNames.at(0));
-    settings.setValue("files/flatFramesDir", info.absoluteFilePath());
+    settings.setValue("files/flatFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonBiasFrames()
 {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     QDir dir = QDir(settings.value("files/biasFramesDir",
-            QDir::homePath()).toString());
+            settings.value("files/lightFramesDir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
@@ -453,7 +455,7 @@ void MainWindow::handleButtonBiasFrames()
     }
 
     QFileInfo info(biasFrameFileNames.at(0));
-    settings.setValue("files/biasFramesDir", info.absoluteFilePath());
+    settings.setValue("files/biasFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonOptions()

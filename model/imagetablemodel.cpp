@@ -54,9 +54,6 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 
         switch (index.column()) {
         case 1: {
-            // Strip off the path
-    //        QFileInfo info(image.getFilename());
-    //        return info.fileName();
             return image->GetFilename();
         }
         case 2:

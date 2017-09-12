@@ -22,7 +22,9 @@ void ProcessingDialog::updateProgress(QString message, int percentComplete) {
     ui->progressBar->setValue(percentComplete);
 }
 
-void ProcessingDialog::complete(QString message) {
+void ProcessingDialog::complete(cv::Mat image, QString message) {
+    Q_UNUSED(image);
+
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
     ui->label->setText(message);
     ui->progressBar->setValue(100);

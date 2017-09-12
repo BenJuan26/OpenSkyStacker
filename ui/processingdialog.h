@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QString>
+#include <opencv2/core/core.hpp>
 
 namespace Ui {
 class ProcessingDialog;
@@ -29,7 +30,7 @@ public slots:
 
     //! Marks the process as complete and updates the displayed message.
     /*! @param message Description of the stacking result. */
-    void complete(QString message);
+    void complete(cv::Mat image, QString message);
 
 signals:
     //! Asynchronously cancel the stacking process.
