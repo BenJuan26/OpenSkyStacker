@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEFAULT_APP_PATH=build/OpenSkyStacker.app
+DEFAULT_APP_PATH=../bin/OpenSkyStacker.app
 APP_PATH=$1
 
 if [ "$1" = "" ]; then

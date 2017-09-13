@@ -13,7 +13,7 @@ fi
 APP_NAME="OpenSkyStacker"
 VERSION="v0.1.1-alpha"
 DMG_BACKGROUND_IMG="dng-background.png"
-APP_PATH="build"
+APP_PATH="../bin"
 
 # you should not need to change these
 APP_EXE="${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
