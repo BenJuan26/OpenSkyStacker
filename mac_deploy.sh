@@ -89,15 +89,3 @@ echo ""
 fix_lib libIexMath-2_2.12.dylib libIex-2_2.12.dylib
 fix_lib libIlmThread-2_2.12.dylib libIex-2_2.12.dylib
 fix_lib libImath-2_2.12.dylib libIex-2_2.12.dylib
-fix_lib libavcodec.57.dylib libswresample.2.dylib
-fix_lib libavcodec.57.dylib libavutil.55.dylib
-fix_lib libswresample.2.dylib libavutil.55.dylib
-fix_lib libavformat.57.dylib libavcodec.57.dylib
-fix_lib libavformat.57.dylib libswresample.2.dylib
-fix_lib libavformat.57.dylib libavutil.55.dylib
-fix_lib libswscale.4.dylib libavutil.55.dylib
-fix_lib libavresample.3.dylib libavutil.55.dylib
-
-# fix_id libopencv_flann.3.3.dylib
-# fix_id libopencv_ml.3.3.dylib
-# fix_id libopencv_videoio.3.3.dylib

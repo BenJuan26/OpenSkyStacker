@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), this,
             SLOT(finishedStacking(cv::Mat)));
     connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), this,
-            SLOT(clearProgress(QString)));
+            SLOT(clearProgress(cv::Mat, QString)));
     connect(stacker_, SIGNAL(ProcessingError(QString)), this,
             SLOT(processingError(QString)));
     connect(stacker_, SIGNAL(UpdateProgress(QString, int)), this,
