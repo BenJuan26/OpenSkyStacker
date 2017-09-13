@@ -1,1 +1,0 @@
-../../modules/stitching/include/opencv2/stitching.hpp

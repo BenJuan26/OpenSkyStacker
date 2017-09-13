@@ -4,26 +4,55 @@ Multi-platform astroimaging stacker.
 
 [![Build Status](https://travis-ci.org/BenJuan26/OpenSkyStacker.svg?branch=master)](https://travis-ci.org/BenJuan26/OpenSkyStacker) [![Documentation](https://codedocs.xyz/BenJuan26/OpenSkyStacker.svg)](https://codedocs.xyz/BenJuan26/OpenSkyStacker/)
 
-## Setup
+OpenSkyStacker assists in the processing of deep-sky images. "Stacking" in this context means averaging several near-identical images to reduce the noise and boost the signal-to-noise ratio. This is especially helpful in the field of astrophotography because many objects of interest are so dim that, without processing, they might be indistinguishable from noise.
 
-Qt5 is required for this project. In order to prevent some relatively severe memory issues, building for 64-bit is required.
+OpenSkyStacker is not unique in what it accomplishes, as there is other stacking software out there, but it is unique in that it is free, open-source, and available for nearly any operating system.
 
-OpenCV and LibRaw should also be installed. These can be easily sourced for most operating systems, but for the time being they've been included in the `3rdparty` directory so they can be built from source.
+## Download
 
-## Building
+For Windows and Mac, OpenSkyStacker can be downloaded from the [releases page](https://github.com/BenJuan26/OpenSkyStacker/releases) of this repo. Releasing software for Linux is not a simple process, so for the time being Linux users must [compile from source](#build).
 
-### qmake
+## Build
 
-With Qt installed, building is as simple as:
+### Dependencies
+
+This software depends on Qt5, OpenCV, and LibRaw. On Debian-like Linux distros, these can be installed by:
 
 ```
-qmake
+sudo apt-get install qt5-default libopencv-dev libraw-dev
+```
+
+On Mac, these can be installed using Homebrew:
+
+```
+brew install qt opencv libraw
+```
+
+### Building
+
+Use `qmake` to generate the `Makefile`:
+
+```
+qmake qt=qt5
+```
+
+Then use `make` to build OpenSkyStacker:
+
+```
 make
 ```
 
-### Qt Creator
+This will compile the program to the `bin/` directory.
 
-Optionally, Qt Creator can be used to build OpenSkyStacker. Open `OpenSkyStacker.pro`, configure your kit as prompted, and build the project.
+### Releasing for Mac
+
+Qt provides the somewhat-helpful `macdeployqt` program to deploy Qt apps for Mac. However, it's not perfect: in my experience it doesn't correctly change the absolute paths of some libraries. For that reason, two scripts are provided for deploying on Mac: [mac_deploy.sh](src/mac_deploy.sh) and [create_dmg.sh](src/create_dmg.sh). The former will run `macdeployqt` fix anything it may have missed, and the latter will create a pretty DMG image ready for release.
+
+```
+cd src
+./mac_deploy.sh
+./create_dmg.sh
+```
 
 ## Testing
 
@@ -34,4 +63,4 @@ qmake CONFIG+=test
 make
 ```
 
-The tests can then be run by executing `build/testoss` or `build/testoss.exe`.
+The tests can then be run by executing `bin/testoss` or `bin/testoss.exe`.

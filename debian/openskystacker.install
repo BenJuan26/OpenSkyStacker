@@ -1,0 +1,3 @@
+bin/openskystacker usr/bin
+openskystacker.desktop usr/share/applications
+src/OpenSkyStacker.ico usr/share/pixmaps
