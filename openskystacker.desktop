@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name=OpenSkyStacker
+Exec=/usr/bin/openskystacker
+Comment=Astroimaging stacker
+Icon=/usr/share/pixmaps/OpenSkyStacker.ico
+StartupNotify=false
+Encoding=UTF-8
+Categories=Development;

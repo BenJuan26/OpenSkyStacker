@@ -1,35 +1,22 @@
-*.pro.user
-*.pro.user*
-*_resource.rc
-*.lnk
-.DS_Store
+*/*.pro.user
+*/*.pro.user*
+src/*_resource.rc
+src/*.lnk
+*/.DS_Store
 Makefile
 Makefile.*
-*.dmg
+src/*.dmg
 
 # Snapcraft
-*.snap
-parts
-stage
-prime
+src/*.snap
+src/parts
+src/stage
+src/prime
 
 build
+bin
 .vscode
 .qmake.stash
 doc
-
-3rdparty/libraw/bin
-3rdparty/libraw/Backup
-3rdparty/libraw/.vs
-3rdparty/libraw/*/*.o
-3rdparty/libraw/*/*.lo
-3rdparty/libraw/*/*.la
-3rdparty/libraw/*/*.a
-3rdparty/libraw/*/.libs
-3rdparty/libraw/*/*.lib
-3rdparty/libraw/*/*.obj
-3rdparty/libraw/*/*.exp
-3rdparty/libraw/*.db
-3rdparty/libraw/*.htm
 
 */*.autosave
