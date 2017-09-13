@@ -46,7 +46,7 @@ This will compile the program to the `bin/` directory.
 
 ### Releasing for Mac
 
-Qt provides the somewhat-helpful `macdeployqt` program to deploy Qt apps for Mac. However, it's not perfect: in my experience it doesn't correctly change the absolute paths of some libraries. For that reason, two scripts are provided for deploying on Mac: [mac_deploy.sh](src/mac_deploy.sh) and [create_dmg.sh](src/create_dmg.sh). The former will run `macdeployqt` fix anything it may have missed, and the latter will create a pretty DMG image ready for release.
+Qt provides the somewhat-helpful `macdeployqt` program to deploy Qt apps for Mac. However, it's not perfect: in my experience it doesn't correctly change the absolute paths of some libraries. For that reason, two scripts are provided for deploying on Mac: [mac_deploy.sh](src/mac_deploy.sh) and [create_dmg.sh](src/create_dmg.sh). The former will run `macdeployqt` and fix anything it may have missed, and the latter will create a pretty DMG image ready for release.
 
 ```
 cd src
