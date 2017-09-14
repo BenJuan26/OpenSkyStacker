@@ -8,12 +8,18 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QGraphicsPixmapItem>
+#include <QDesktopWidget>
+#include <QSettings>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/video/video.hpp>
-#include <QDesktopWidget>
-#include <QSettings>
+
 #include <stdexcept>
+
 #ifdef WIN32
 #include <QtWinExtras/QWinTaskbarButton>
 #include <QtWinExtras/QWinTaskbarProgress>
@@ -76,6 +82,8 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(handleButtonStack()));
     connect(ui_->buttonOptions, SIGNAL(released()), this,
             SLOT(handleButtonOptions()));
+    connect(ui_->buttonSaveList, SIGNAL(released()), this,
+            SLOT(handleButtonSaveList()));
 
     // Signals / slots for stacker
     connect(this, SIGNAL (stackImages()), stacker_,
@@ -469,6 +477,51 @@ void MainWindow::handleButtonOptions()
     }
 
     delete dialog;
+}
+
+void MainWindow::handleButtonCheckAll()
+{
+
+}
+
+void MainWindow::handleButtonUncheckAll()
+{
+
+}
+
+void MainWindow::handleButtonSaveList()
+{
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save File"),
+            settings.value("files/LightFramesDir", QDir::homePath()).toString(),
+            "JSON document (*.json)");
+    if (filename.isEmpty())
+        return;
+
+    QJsonArray images;
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        ImageRecord *record = table_model_.At(i);
+        QJsonObject image;
+        image.insert("filename", record->GetFilename());
+        QString types[5] = {"light","dark","darkflat","flat","bias"};
+        image.insert("type", types[record->GetType()]);
+        image.insert("checked", record->IsChecked());
+
+        images.insert(images.size(), image);
+    }
+
+    QJsonDocument doc(images);
+    QByteArray fileContents = doc.toJson();
+    QFile file(filename);
+    if (file.open(QIODevice::ReadWrite)) {
+        QTextStream stream(&file);
+        stream << fileContents;
+    }
+}
+
+void MainWindow::handleButtonLoadList()
+{
+
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src) {
