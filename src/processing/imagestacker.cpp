@@ -229,19 +229,13 @@ cv::Mat ImageStacker::GetCalibratedImage(QString filename) {
     libraw.dcraw_process();
 
     libraw_processed_image_t *proc = libraw.dcraw_make_mem_image();
-    cv::Mat tmp = cv::Mat(cv::Size(imgdata->sizes.width, imgdata->sizes.height),
+    cv::Mat image = cv::Mat(cv::Size(imgdata->sizes.width, imgdata->sizes.height),
                     CV_16UC3, proc->data);
-
-    cv::Mat image = cv::Mat(imgdata->sizes.width, imgdata->sizes.height, CV_16UC3);
-    cvtColor(tmp, image, CV_RGB2BGR);
 
     if (bits_per_channel_ == BITS_32)
         image.convertTo(image, CV_32F, 1/65535.0);
 
-    // free the memory that otherwise wouldn't have been handled by OpenCV
-    libraw.recycle();
-
-    return image;
+    return image.clone();
 }
 
 void ImageStacker::ProcessRaw() {
@@ -314,10 +308,12 @@ void ImageStacker::ProcessRaw() {
 
     working_image_ /= totalValidImages;
 
-    // only need to change the bit depth, no scaling
     if (bits_per_channel_ == BITS_16) {
         working_image_.convertTo(working_image_, CV_16U);
     }
+
+    // LibRaw works in RGB while OpenCV works in BGR
+    cv::cvtColor(working_image_, working_image_, CV_RGB2BGR);
 
     emit Finished(working_image_, tr("Stacking completed"));
 }
