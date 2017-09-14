@@ -131,7 +131,7 @@ macx {
 
 linux {
 
-    INCLUDE += /usr/include /usr/local/include /usr/include/x86_64-linux-gnu
+    INCLUDEPATH += /usr/include /usr/local/include /usr/include/x86_64-linux-gnu
 
     CONFIG += link_pkgconfig
     PKGCONFIG += libraw

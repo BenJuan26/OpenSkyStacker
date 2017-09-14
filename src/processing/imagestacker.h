@@ -128,6 +128,7 @@ private:
     void ProcessRaw();
     void ProcessNonRaw();
     bool FileHasRawExtension(QString filename);
+    int GetTotalOperations();
 
     int ValidateImageSizes();
 
@@ -135,6 +136,8 @@ private:
 
     cv::Mat ConvertAndScaleImage(cv::Mat image);
     cv::Mat RawToMat(QString filename);
+    cv::Mat GetCalibratedImage(QString filename);
+    cv::Mat GetBayerMatrix(QString filename);
     cv::Mat GenerateAlignedImageOld(cv::Mat ref, cv::Mat target);
 
     void StackDarks();
