@@ -82,8 +82,14 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(handleButtonStack()));
     connect(ui_->buttonOptions, SIGNAL(released()), this,
             SLOT(handleButtonOptions()));
+    connect(ui_->buttonCheckAll, SIGNAL(released()), this,
+            SLOT(handleButtonCheckAll()));
+    connect(ui_->buttonUncheckAll, SIGNAL(released()), this,
+            SLOT(handleButtonUncheckAll()));
     connect(ui_->buttonSaveList, SIGNAL(released()), this,
             SLOT(handleButtonSaveList()));
+    connect(ui_->buttonLoadList, SIGNAL(released()), this,
+            SLOT(handleButtonLoadList()));
 
     // Signals / slots for stacker
     connect(this, SIGNAL (stackImages()), stacker_,
@@ -492,8 +498,9 @@ void MainWindow::handleButtonUncheckAll()
 void MainWindow::handleButtonSaveList()
 {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save File"),
-            settings.value("files/LightFramesDir", QDir::homePath()).toString(),
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save List"),
+            settings.value("files/listDir", settings.value(
+            "files/LightFramesDir", QDir::homePath())).toString(),
             "JSON document (*.json)");
     if (filename.isEmpty())
         return;
@@ -503,8 +510,7 @@ void MainWindow::handleButtonSaveList()
         ImageRecord *record = table_model_.At(i);
         QJsonObject image;
         image.insert("filename", record->GetFilename());
-        QString types[5] = {"light","dark","darkflat","flat","bias"};
-        image.insert("type", types[record->GetType()]);
+        image.insert("type", record->GetType());
         image.insert("checked", record->IsChecked());
 
         images.insert(images.size(), image);
@@ -517,11 +523,82 @@ void MainWindow::handleButtonSaveList()
         QTextStream stream(&file);
         stream << fileContents;
     }
+
+    QFileInfo info(file);
+    QString dir = info.absolutePath();
+    settings.setValue("files/listDir", dir);
 }
 
 void MainWindow::handleButtonLoadList()
 {
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QString dir = settings.value("files/listDir", settings.value(
+            "files/LightFramesDir", QDir::homePath())).toString();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Load List"), dir, "JSON file (*.json)");
+    if (filename.isEmpty()) {
+        return;
+    }
 
+    QFile file(filename);
+    QString contents;
+    if (file.open(QIODevice::ReadOnly)) {
+        QTextStream in(&file);
+        contents = in.readAll();
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(contents.toUtf8());
+    if (!doc.isArray()) {
+        QMessageBox::information(this, tr("Error loading list"),
+                tr("Couldn't read the list file. Top level object is not an array."));
+        return;
+    }
+
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        table_model_.RemoveAt(0);
+    }
+
+    QJsonArray list = doc.array();
+    for (int i = 0; i < list.size(); i++) {
+        QJsonValue val = list.at(i);
+        QJsonObject img = val.toObject();
+        if (img.isEmpty()) {
+            QMessageBox::information(this, tr("Error loading list"),
+                    tr("Couldn't read the list file. Object at index %1 is not a JSON object.").arg(i));
+            return;
+        }
+
+        QString imageFileName = img.value("filename").toString();
+        if (imageFileName.isNull()) {
+            QMessageBox::information(this, tr("Error loading list"),
+                    tr("Couldn't read the list file. Object at index %1 has no valid filename.").arg(i));
+            return;
+        }
+
+        int type = img.value("type").toInt(-1);
+        if (type < 0) {
+            QMessageBox::information(this, tr("Error loading list"),
+                    tr("Couldn't read the list file. Object at index %1 has no valid type.").arg(i));
+            return;
+        }
+
+        bool checked = img.value("checked").toBool();
+        ImageRecord *record = stacker_->GetImageRecord(imageFileName);
+        record->SetType(static_cast<ImageRecord::FrameType>(type));
+        record->SetChecked(checked);
+
+        table_model_.Append(record);
+    }
+
+    bool hasChecked = false;
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        if (table_model_.At(i)->IsChecked()) {
+            hasChecked = true;
+        }
+    }
+
+    if (!hasChecked) {
+        ui_->buttonStack->setEnabled(false);
+    }
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src) {
