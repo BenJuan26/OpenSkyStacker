@@ -4,13 +4,13 @@ Multi-platform astroimaging stacker.
 
 [![Build Status](https://travis-ci.org/BenJuan26/OpenSkyStacker.svg?branch=master)](https://travis-ci.org/BenJuan26/OpenSkyStacker) [![Documentation](https://codedocs.xyz/BenJuan26/OpenSkyStacker.svg)](https://codedocs.xyz/BenJuan26/OpenSkyStacker/)
 
-OpenSkyStacker assists in the processing of deep-sky images. "Stacking" in this context means averaging several near-identical images to reduce the noise and boost the signal-to-noise ratio. This is especially helpful in the field of astrophotography because many objects of interest are so dim that, without processing, they might be indistinguishable from noise.
+OpenSkyStacker assists in the processing of deep-sky images. *Stacking* in this context means taking the average of several exposures of the same object to reduce the noise and boost the signal-to-noise ratio. This is especially helpful in the field of astrophotography because many objects of interest are so dim that, without processing, they might be indistinguishable from noise.
 
 OpenSkyStacker is not unique in what it accomplishes, as there is other stacking software out there, but it is unique in that it is free, open-source, and available for nearly any operating system.
 
 ## Download
 
-For Windows and Mac, OpenSkyStacker can be downloaded from the [releases page](https://github.com/BenJuan26/OpenSkyStacker/releases) of this repo. Releasing software for Linux is not a simple process, so for the time being Linux users must [compile from source](#build).
+For Windows, Mac, and Ubuntu, OpenSkyStacker can be downloaded from the [releases page](https://github.com/BenJuan26/OpenSkyStacker/releases) of this repo. Releasing software for all the many Linux distros is not a simple process, so users on other distros can [compile from source](#build).
 
 ## Build
 
@@ -46,7 +46,7 @@ This will compile the program to the `bin/` directory.
 
 ### Releasing for Mac
 
-Qt provides the somewhat-helpful `macdeployqt` program to deploy Qt apps for Mac. However, it's not perfect: in my experience it doesn't correctly change the absolute paths of some libraries. For that reason, two scripts are provided for deploying on Mac: [mac_deploy.sh](src/mac_deploy.sh) and [create_dmg.sh](src/create_dmg.sh). The former will run `macdeployqt` and fix anything it may have missed, and the latter will create a pretty DMG image ready for release.
+Qt provides the somewhat-helpful `macdeployqt` program to deploy Qt apps for Mac. However, it's not perfect: in my experience it doesn't correctly change the absolute paths of some libraries. For that reason, two scripts are provided for deploying on Mac: [mac_deploy.sh](src/scripts/mac_deploy.sh) and [create_dmg.sh](src/scripts/create_dmg.sh). The former will run `macdeployqt` and fix anything it may have missed, and the latter will create a pretty DMG image ready for release.
 
 ```
 cd src

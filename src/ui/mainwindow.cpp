@@ -49,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QTableView *table = ui_->imageListView;
     table->setModel(&table_model_);
+    connect(&table_model_, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this,
+            SLOT(checkTableData()));
     table->setColumnWidth(0,25);  // checked
     table->setColumnWidth(1,260); // filename
     table->setColumnWidth(2,80);  // type
@@ -223,10 +225,6 @@ void MainWindow::removeSelectedImages()
     for (int i = 0; i < rows.count(); i++) {
         table_model_.RemoveAt(rows.at(i).row() - i);
     }
-
-    if (table_model_.rowCount() == 0) {
-        ui_->buttonStack->setEnabled(false);
-    }
 }
 
 void MainWindow::imageSelectionChanged()
@@ -261,10 +259,6 @@ void MainWindow::checkImages()
         ImageRecord *record = table_model_.At(rows.at(i).row());
         record->SetChecked(true);
     }
-
-    if (rows.count() > 0) {
-        ui_->buttonStack->setEnabled(true);
-    }
 }
 
 void MainWindow::uncheckImages()
@@ -277,16 +271,7 @@ void MainWindow::uncheckImages()
         record->SetChecked(false);
     }
 
-    bool hasChecked = false;
-    for (int i = 0; i < table_model_.rowCount(); i++) {
-        if (table_model_.At(i)->IsChecked()) {
-            hasChecked = true;
-        }
-    }
-
-    if (!hasChecked) {
-        ui_->buttonStack->setEnabled(false);
-    }
+    checkTableData();
 }
 
 void MainWindow::processingError(QString message)
@@ -367,8 +352,6 @@ void MainWindow::handleButtonLightFrames() {
     settings.setValue("files/lightFramesDir", info.absolutePath());
 
     emit readQImage(targetImageFileNames.at(0));
-
-    ui_->buttonStack->setEnabled(true);
 }
 
 void MainWindow::handleButtonDarkFrames() {
@@ -588,17 +571,6 @@ void MainWindow::handleButtonLoadList()
 
         table_model_.Append(record);
     }
-
-    bool hasChecked = false;
-    for (int i = 0; i < table_model_.rowCount(); i++) {
-        if (table_model_.At(i)->IsChecked()) {
-            hasChecked = true;
-        }
-    }
-
-    if (!hasChecked) {
-        ui_->buttonStack->setEnabled(false);
-    }
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src) {
@@ -653,6 +625,22 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     settings.setValue("MainWindow/pos", this->pos());
 
     Q_UNUSED(event);
+}
+
+void MainWindow::checkTableData()
+{
+    int lightsChecked = 0;
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        if (table_model_.At(i)->IsChecked() && table_model_.At(i)->GetType() == ImageRecord::LIGHT) {
+            lightsChecked++;
+        }
+    }
+
+    if (lightsChecked < 2) {
+        ui_->buttonStack->setEnabled(false);
+    } else {
+        ui_->buttonStack->setEnabled(true);
+    }
 }
 
 void MainWindow::setFileImage(QString filename) {

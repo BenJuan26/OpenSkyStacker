@@ -7,7 +7,7 @@
 
 QT       += core gui
 
-TRANSLATIONS += openskystacker_es.ts
+TRANSLATIONS += translations/openskystacker_es.ts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -78,7 +78,7 @@ test {
 }
 
 win32 {
-    RC_ICONS = $$PWD/OpenSkyStacker.ico
+    RC_ICONS = $$PWD/images/OpenSkyStacker.ico
 
     OPENCV_DIR = $$(OPENCV_DIR)
     OPENCV_VER = $$(OPENCV_VER)
@@ -111,7 +111,7 @@ win32 {
 }
 
 macx {
-    ICON = $$PWD/OpenSkyStacker.icns
+    ICON = $$PWD/images/OpenSkyStacker.icns
 
     CONFIG += link_pkgconfig
     PKGCONFIG += libraw

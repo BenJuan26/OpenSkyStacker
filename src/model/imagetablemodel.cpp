@@ -104,6 +104,8 @@ void ImageTableModel::Append(ImageRecord *record)
     beginInsertRows({}, list.count(), list.count());
     list.append(record);
     endInsertRows();
+
+    emit dataChanged({},{});
 }
 
 ImageRecord *ImageTableModel::At(int i)
@@ -116,6 +118,8 @@ void ImageTableModel::RemoveAt(int i)
     beginRemoveRows({}, i, i);
     list.removeAt(i);
     endRemoveRows();
+
+    emit dataChanged({},{});
 }
 
 bool ImageTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -129,6 +133,8 @@ bool ImageTableModel::setData(const QModelIndex &index, const QVariant &value, i
         ImageRecord *record = list.at(index.row());
         record->SetChecked(checked);
     }
+
+    emit dataChanged({},{});
 
     return true;
 }

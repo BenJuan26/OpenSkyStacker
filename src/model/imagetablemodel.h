@@ -64,7 +64,6 @@ public:
     /*! @param i The index of the ImageRecord to be removed. */
     void RemoveAt(int i);
 
-
 private:
     QList<ImageRecord*> list;
 };

@@ -81,6 +81,8 @@ public slots:
 
     void closeEvent(QCloseEvent *event);
 
+    void checkTableData();
+
 private slots:
     void handleButtonLightFrames();
     void handleButtonStack();
