@@ -1,11 +1,11 @@
-*/*.pro.user
-*/*.pro.user*
+*.pro.user
+*.pro.user*
 src/*_resource.rc
-src/*.lnk
-*/.DS_Store
+*.lnk
+.DS_Store
 Makefile
 Makefile.*
-src/*.dmg
+*.dmg
 
 # Snapcraft
 src/*.snap
@@ -19,4 +19,4 @@ bin
 .qmake.stash
 doc
 
-*/*.autosave
+*.autosave

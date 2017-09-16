@@ -81,6 +81,8 @@ public slots:
 
     void closeEvent(QCloseEvent *event);
 
+    void checkTableData();
+
 private slots:
     void handleButtonLightFrames();
     void handleButtonStack();
@@ -89,6 +91,8 @@ private slots:
     void handleButtonFlatFrames();
     void handleButtonBiasFrames();
     void handleButtonOptions();
+    void handleButtonSaveList();
+    void handleButtonLoadList();
 
 private:
     void setFileImage(QString filename);

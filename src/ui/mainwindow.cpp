@@ -8,12 +8,18 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QGraphicsPixmapItem>
+#include <QDesktopWidget>
+#include <QSettings>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/video/video.hpp>
-#include <QDesktopWidget>
-#include <QSettings>
+
 #include <stdexcept>
+
 #ifdef WIN32
 #include <QtWinExtras/QWinTaskbarButton>
 #include <QtWinExtras/QWinTaskbarProgress>
@@ -43,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QTableView *table = ui_->imageListView;
     table->setModel(&table_model_);
+    connect(&table_model_, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this,
+            SLOT(checkTableData()));
     table->setColumnWidth(0,25);  // checked
     table->setColumnWidth(1,260); // filename
     table->setColumnWidth(2,80);  // type
@@ -76,6 +84,10 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(handleButtonStack()));
     connect(ui_->buttonOptions, SIGNAL(released()), this,
             SLOT(handleButtonOptions()));
+    connect(ui_->buttonSaveList, SIGNAL(released()), this,
+            SLOT(handleButtonSaveList()));
+    connect(ui_->buttonLoadList, SIGNAL(released()), this,
+            SLOT(handleButtonLoadList()));
 
     // Signals / slots for stacker
     connect(this, SIGNAL (stackImages()), stacker_,
@@ -118,7 +130,6 @@ void MainWindow::finishedStacking(cv::Mat image) {
 void MainWindow::updateProgress(QString message, int percentComplete)
 {
     Q_UNUSED(message);
-    Q_UNUSED(percentComplete);
 #ifdef WIN32
     QWinTaskbarButton *button = new QWinTaskbarButton(this);
     button->setWindow(this->windowHandle());
@@ -148,16 +159,6 @@ void MainWindow::showTableContextMenu(QPoint pos)
     QMenu *menu = new QMenu(this);
     QTableView *table = ui_->imageListView;
 
-    QAction *setAsReferenceAction = new QAction(tr("Set As Reference"), this);
-    connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,
-            SLOT(setFrameAsReference()));
-    menu->addAction(setAsReferenceAction);
-
-    QAction *removeImageAction = new QAction(tr("Remove"), this);
-    connect(removeImageAction, SIGNAL(triggered(bool)), this,
-            SLOT(removeSelectedImages()));
-    menu->addAction(removeImageAction);
-
     QAction *checkImageAction = new QAction(tr("Check"), this);
     connect(checkImageAction, SIGNAL(triggered(bool)), this,
             SLOT(checkImages()));
@@ -167,6 +168,16 @@ void MainWindow::showTableContextMenu(QPoint pos)
     connect(uncheckImageAction, SIGNAL(triggered(bool)), this,
             SLOT(uncheckImages()));
     menu->addAction(uncheckImageAction);
+
+    QAction *setAsReferenceAction = new QAction(tr("Set As Reference"), this);
+    connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,
+            SLOT(setFrameAsReference()));
+    menu->addAction(setAsReferenceAction);
+
+    QAction *removeImageAction = new QAction(tr("Remove"), this);
+    connect(removeImageAction, SIGNAL(triggered(bool)), this,
+            SLOT(removeSelectedImages()));
+    menu->addAction(removeImageAction);
 
     // Show menu where the user clicked
     menu->popup(table->viewport()->mapToGlobal(pos));
@@ -209,10 +220,6 @@ void MainWindow::removeSelectedImages()
     for (int i = 0; i < rows.count(); i++) {
         table_model_.RemoveAt(rows.at(i).row() - i);
     }
-
-    if (table_model_.rowCount() == 0) {
-        ui_->buttonStack->setEnabled(false);
-    }
 }
 
 void MainWindow::imageSelectionChanged()
@@ -247,10 +254,6 @@ void MainWindow::checkImages()
         ImageRecord *record = table_model_.At(rows.at(i).row());
         record->SetChecked(true);
     }
-
-    if (rows.count() > 0) {
-        ui_->buttonStack->setEnabled(true);
-    }
 }
 
 void MainWindow::uncheckImages()
@@ -263,16 +266,7 @@ void MainWindow::uncheckImages()
         record->SetChecked(false);
     }
 
-    bool hasChecked = false;
-    for (int i = 0; i < table_model_.rowCount(); i++) {
-        if (table_model_.At(i)->IsChecked()) {
-            hasChecked = true;
-        }
-    }
-
-    if (!hasChecked) {
-        ui_->buttonStack->setEnabled(false);
-    }
+    checkTableData();
 }
 
 void MainWindow::processingError(QString message)
@@ -296,6 +290,13 @@ void MainWindow::handleButtonStack() {
 
     if (saveFilePath.isEmpty()) {
         return;
+    }
+
+    // Linux doesn't force the proper extension unlike Windows and Mac
+    QRegularExpression regex(".tif$");
+    if (!regex.match(saveFilePath).hasMatch()) {
+        qDebug() << "Filename was missing extension, adding it";
+        saveFilePath += ".tif";
     }
 
     QFileInfo info(saveFilePath);
@@ -330,17 +331,28 @@ void MainWindow::handleButtonStack() {
 
 void MainWindow::handleButtonLightFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/lightFramesDir",
+    QDir dir = QDir(settings.value("files/lights/dir",
             QDir::homePath()).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Light Frames"));
 
-    if (!dialog.exec()) return;
+    QString filter = settings.value("files/lights/filter", QString()).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
+
+    if (!dialog.exec())
+        return;
 
     QStringList targetImageFileNames = dialog.selectedFiles();
+    QFileInfo info(targetImageFileNames.at(0));
+    settings.setValue("files/lights/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/lights/filter", newFilter);
 
     for (int i = 0; i < targetImageFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -349,27 +361,33 @@ void MainWindow::handleButtonLightFrames() {
         table_model_.Append(record);
     }
 
-    QFileInfo info(targetImageFileNames.at(0));
-    settings.setValue("files/lightFramesDir", info.absolutePath());
-
     emit readQImage(targetImageFileNames.at(0));
-
-    ui_->buttonStack->setEnabled(true);
 }
 
 void MainWindow::handleButtonDarkFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/darkFramesDir",
-            settings.value("files/lightFramesDir", QDir::homePath())).toString());
+    QDir dir = QDir(settings.value("files/darks/dir",
+            settings.value("files/lights/dir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Dark Frames"));
+
+    QString filter = settings.value("files/darks/filter",
+            settings.value("files/lights/filter",QString())).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
 
     if (!dialog.exec()) return;
 
     QStringList darkFrameFileNames = dialog.selectedFiles();
+    QFileInfo info(darkFrameFileNames.at(0));
+    settings.setValue("files/darks/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/darks/filter", newFilter);
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -377,24 +395,32 @@ void MainWindow::handleButtonDarkFrames() {
         record->SetType(ImageRecord::DARK);
         table_model_.Append(record);
     }
-
-    QFileInfo info(darkFrameFileNames.at(0));
-    settings.setValue("files/darkFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonDarkFlatFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/darkFlatFramesDir",
-            settings.value("files/lightFramesDir", QDir::homePath())).toString());
+    QDir dir = QDir(settings.value("files/darkflats/dir",
+            settings.value("files/lights/dir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Dark Flat Frames"));
+
+    QString filter = settings.value("files/darkflats/filter",
+            settings.value("files/lights/filter",QString())).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
 
     if (!dialog.exec()) return;
 
     QStringList darkFlatFrameFileNames = dialog.selectedFiles();
+    QFileInfo info(darkFlatFrameFileNames.at(0));
+    settings.setValue("files/darkflats/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/darkflats/filter", newFilter);
 
     for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -402,24 +428,32 @@ void MainWindow::handleButtonDarkFlatFrames() {
         record->SetType(ImageRecord::DARK_FLAT);
         table_model_.Append(record);
     }
-
-    QFileInfo info(darkFlatFrameFileNames.at(0));
-    settings.setValue("files/darkFlatFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonFlatFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/flatFramesDir",
-            settings.value("files/lightFramesDir", QDir::homePath())).toString());
+    QDir dir = QDir(settings.value("files/flats/dir",
+            settings.value("files/lights/dir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Flat Frames"));
+
+    QString filter = settings.value("files/flats/filter",
+            settings.value("files/lights/filter",QString())).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
 
     if (!dialog.exec()) return;
 
     QStringList flatFrameFileNames = dialog.selectedFiles();
+    QFileInfo info(flatFrameFileNames.at(0));
+    settings.setValue("files/flats/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/flats/filter", newFilter);
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -427,25 +461,33 @@ void MainWindow::handleButtonFlatFrames() {
         record->SetType(ImageRecord::FLAT);
         table_model_.Append(record);
     }
-
-    QFileInfo info(flatFrameFileNames.at(0));
-    settings.setValue("files/flatFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonBiasFrames()
 {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/biasFramesDir",
-            settings.value("files/lightFramesDir", QDir::homePath())).toString());
+    QDir dir = QDir(settings.value("files/bias/dir",
+            settings.value("files/lights/dir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Bias Frames"));
+
+    QString filter = settings.value("files/bias/filter",
+            settings.value("files/lights/filter",QString())).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
 
     if (!dialog.exec()) return;
 
     QStringList biasFrameFileNames = dialog.selectedFiles();
+    QFileInfo info(biasFrameFileNames.at(0));
+    settings.setValue("files/bias/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/bias/filter", newFilter);
 
     for (int i = 0; i < biasFrameFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -453,9 +495,6 @@ void MainWindow::handleButtonBiasFrames()
         record->SetType(ImageRecord::BIAS);
         table_model_.Append(record);
     }
-
-    QFileInfo info(biasFrameFileNames.at(0));
-    settings.setValue("files/biasFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonOptions()
@@ -469,6 +508,108 @@ void MainWindow::handleButtonOptions()
     }
 
     delete dialog;
+}
+
+void MainWindow::handleButtonSaveList()
+{
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save List"),
+            settings.value("files/listDir", settings.value(
+            "files/LightFramesDir", QDir::homePath())).toString(),
+            "JSON document (*.json)");
+    if (filename.isEmpty())
+        return;
+
+    // Linux doesn't force the proper extension unlike Windows and Mac
+    QRegularExpression regex(".json$");
+    if (!regex.match(filename).hasMatch()) {
+        qDebug() << "Filename was missing extension, adding it";
+        filename += ".json";
+    }
+
+    QJsonArray images;
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        ImageRecord *record = table_model_.At(i);
+        QJsonObject image;
+        image.insert("filename", record->GetFilename());
+        image.insert("type", record->GetType());
+        image.insert("checked", record->IsChecked());
+
+        images.insert(images.size(), image);
+    }
+
+    QJsonDocument doc(images);
+    QByteArray fileContents = doc.toJson();
+    QFile file(filename);
+    if (file.open(QIODevice::ReadWrite)) {
+        QTextStream stream(&file);
+        stream << fileContents;
+    }
+
+    QFileInfo info(file);
+    QString dir = info.absolutePath();
+    settings.setValue("files/listDir", dir);
+}
+
+void MainWindow::handleButtonLoadList()
+{
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QString dir = settings.value("files/listDir", settings.value(
+            "files/LightFramesDir", QDir::homePath())).toString();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Load List"), dir, "JSON file (*.json)");
+    if (filename.isEmpty()) {
+        return;
+    }
+
+    QFile file(filename);
+    QString contents;
+    if (file.open(QIODevice::ReadOnly)) {
+        QTextStream in(&file);
+        contents = in.readAll();
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(contents.toUtf8());
+    if (!doc.isArray()) {
+        QMessageBox::information(this, tr("Error loading list"),
+                tr("Couldn't read the list file. Top level object is not an array."));
+        return;
+    }
+
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        table_model_.RemoveAt(0);
+    }
+
+    QJsonArray list = doc.array();
+    for (int i = 0; i < list.size(); i++) {
+        QJsonValue val = list.at(i);
+        QJsonObject img = val.toObject();
+        if (img.isEmpty()) {
+            QMessageBox::information(this, tr("Error loading list"),
+                    tr("Couldn't read the list file. Object at index %1 is not a JSON object.").arg(i));
+            return;
+        }
+
+        QString imageFileName = img.value("filename").toString();
+        if (imageFileName.isNull()) {
+            QMessageBox::information(this, tr("Error loading list"),
+                    tr("Couldn't read the list file. Object at index %1 has no valid filename.").arg(i));
+            return;
+        }
+
+        int type = img.value("type").toInt(-1);
+        if (type < 0) {
+            QMessageBox::information(this, tr("Error loading list"),
+                    tr("Couldn't read the list file. Object at index %1 has no valid type.").arg(i));
+            return;
+        }
+
+        bool checked = img.value("checked").toBool();
+        ImageRecord *record = stacker_->GetImageRecord(imageFileName);
+        record->SetType(static_cast<ImageRecord::FrameType>(type));
+        record->SetChecked(checked);
+
+        table_model_.Append(record);
+    }
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src) {
@@ -523,6 +664,22 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     settings.setValue("MainWindow/pos", this->pos());
 
     Q_UNUSED(event);
+}
+
+void MainWindow::checkTableData()
+{
+    int lightsChecked = 0;
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        if (table_model_.At(i)->IsChecked() && table_model_.At(i)->GetType() == ImageRecord::LIGHT) {
+            lightsChecked++;
+        }
+    }
+
+    if (lightsChecked < 2) {
+        ui_->buttonStack->setEnabled(false);
+    } else {
+        ui_->buttonStack->setEnabled(true);
+    }
 }
 
 void MainWindow::setFileImage(QString filename) {
