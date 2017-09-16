@@ -432,8 +432,6 @@ int ImageStacker::ValidateImageSizes()
             height = ref.rows;
         }
 
-        qDebug() << "target" << i << ":" << width << height;
-
         if (width != refWidth ||  height != refHeight) {
             return -1;
         }

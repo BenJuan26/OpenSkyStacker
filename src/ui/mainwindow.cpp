@@ -159,16 +159,6 @@ void MainWindow::showTableContextMenu(QPoint pos)
     QMenu *menu = new QMenu(this);
     QTableView *table = ui_->imageListView;
 
-    QAction *setAsReferenceAction = new QAction(tr("Set As Reference"), this);
-    connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,
-            SLOT(setFrameAsReference()));
-    menu->addAction(setAsReferenceAction);
-
-    QAction *removeImageAction = new QAction(tr("Remove"), this);
-    connect(removeImageAction, SIGNAL(triggered(bool)), this,
-            SLOT(removeSelectedImages()));
-    menu->addAction(removeImageAction);
-
     QAction *checkImageAction = new QAction(tr("Check"), this);
     connect(checkImageAction, SIGNAL(triggered(bool)), this,
             SLOT(checkImages()));
@@ -178,6 +168,16 @@ void MainWindow::showTableContextMenu(QPoint pos)
     connect(uncheckImageAction, SIGNAL(triggered(bool)), this,
             SLOT(uncheckImages()));
     menu->addAction(uncheckImageAction);
+
+    QAction *setAsReferenceAction = new QAction(tr("Set As Reference"), this);
+    connect(setAsReferenceAction, SIGNAL(triggered(bool)), this,
+            SLOT(setFrameAsReference()));
+    menu->addAction(setAsReferenceAction);
+
+    QAction *removeImageAction = new QAction(tr("Remove"), this);
+    connect(removeImageAction, SIGNAL(triggered(bool)), this,
+            SLOT(removeSelectedImages()));
+    menu->addAction(removeImageAction);
 
     // Show menu where the user clicked
     menu->popup(table->viewport()->mapToGlobal(pos));
@@ -338,6 +338,7 @@ void MainWindow::handleButtonLightFrames() {
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Light Frames"));
 
     QString filter = settings.value("files/lights/filter", QString()).toString();
     if (!filter.isNull()) {
@@ -372,6 +373,7 @@ void MainWindow::handleButtonDarkFrames() {
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Dark Frames"));
 
     QString filter = settings.value("files/darks/filter",
             settings.value("files/lights/filter",QString())).toString();
@@ -404,6 +406,7 @@ void MainWindow::handleButtonDarkFlatFrames() {
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Dark Flat Frames"));
 
     QString filter = settings.value("files/darkflats/filter",
             settings.value("files/lights/filter",QString())).toString();
@@ -436,6 +439,7 @@ void MainWindow::handleButtonFlatFrames() {
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Flat Frames"));
 
     QString filter = settings.value("files/flats/filter",
             settings.value("files/lights/filter",QString())).toString();
@@ -469,6 +473,7 @@ void MainWindow::handleButtonBiasFrames()
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
+    dialog.setWindowTitle(tr("Select Bias Frames"));
 
     QString filter = settings.value("files/bias/filter",
             settings.value("files/lights/filter",QString())).toString();
