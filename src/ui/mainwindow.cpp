@@ -84,10 +84,6 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(handleButtonStack()));
     connect(ui_->buttonOptions, SIGNAL(released()), this,
             SLOT(handleButtonOptions()));
-    connect(ui_->buttonCheckAll, SIGNAL(released()), this,
-            SLOT(handleButtonCheckAll()));
-    connect(ui_->buttonUncheckAll, SIGNAL(released()), this,
-            SLOT(handleButtonUncheckAll()));
     connect(ui_->buttonSaveList, SIGNAL(released()), this,
             SLOT(handleButtonSaveList()));
     connect(ui_->buttonLoadList, SIGNAL(released()), this,
@@ -134,7 +130,6 @@ void MainWindow::finishedStacking(cv::Mat image) {
 void MainWindow::updateProgress(QString message, int percentComplete)
 {
     Q_UNUSED(message);
-    Q_UNUSED(percentComplete);
 #ifdef WIN32
     QWinTaskbarButton *button = new QWinTaskbarButton(this);
     button->setWindow(this->windowHandle());
@@ -297,6 +292,13 @@ void MainWindow::handleButtonStack() {
         return;
     }
 
+    // Linux doesn't force the proper extension unlike Windows and Mac
+    QRegularExpression regex(".tif$");
+    if (!regex.match(saveFilePath).hasMatch()) {
+        qDebug() << "Filename was missing extension, adding it";
+        saveFilePath += ".tif";
+    }
+
     QFileInfo info(saveFilePath);
     settings.setValue("files/savePath", info.absoluteFilePath());
     stacker_->SetSaveFilePath(saveFilePath);
@@ -329,7 +331,7 @@ void MainWindow::handleButtonStack() {
 
 void MainWindow::handleButtonLightFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/lightFramesDir",
+    QDir dir = QDir(settings.value("files/lights/dir",
             QDir::homePath()).toString());
 
     QFileDialog dialog(this);
@@ -337,9 +339,19 @@ void MainWindow::handleButtonLightFrames() {
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
-    if (!dialog.exec()) return;
+    QString filter = settings.value("files/lights/filter", QString()).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
+
+    if (!dialog.exec())
+        return;
 
     QStringList targetImageFileNames = dialog.selectedFiles();
+    QFileInfo info(targetImageFileNames.at(0));
+    settings.setValue("files/lights/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/lights/filter", newFilter);
 
     for (int i = 0; i < targetImageFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -348,25 +360,32 @@ void MainWindow::handleButtonLightFrames() {
         table_model_.Append(record);
     }
 
-    QFileInfo info(targetImageFileNames.at(0));
-    settings.setValue("files/lightFramesDir", info.absolutePath());
-
     emit readQImage(targetImageFileNames.at(0));
 }
 
 void MainWindow::handleButtonDarkFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/darkFramesDir",
-            settings.value("files/lightFramesDir", QDir::homePath())).toString());
+    QDir dir = QDir(settings.value("files/darks/dir",
+            settings.value("files/lights/dir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
+    QString filter = settings.value("files/darks/filter",
+            settings.value("files/lights/filter",QString())).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
+
     if (!dialog.exec()) return;
 
     QStringList darkFrameFileNames = dialog.selectedFiles();
+    QFileInfo info(darkFrameFileNames.at(0));
+    settings.setValue("files/darks/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/darks/filter", newFilter);
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -374,24 +393,31 @@ void MainWindow::handleButtonDarkFrames() {
         record->SetType(ImageRecord::DARK);
         table_model_.Append(record);
     }
-
-    QFileInfo info(darkFrameFileNames.at(0));
-    settings.setValue("files/darkFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonDarkFlatFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/darkFlatFramesDir",
-            settings.value("files/lightFramesDir", QDir::homePath())).toString());
+    QDir dir = QDir(settings.value("files/darkflats/dir",
+            settings.value("files/lights/dir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
+    QString filter = settings.value("files/darkflats/filter",
+            settings.value("files/lights/filter",QString())).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
+
     if (!dialog.exec()) return;
 
     QStringList darkFlatFrameFileNames = dialog.selectedFiles();
+    QFileInfo info(darkFlatFrameFileNames.at(0));
+    settings.setValue("files/darkflats/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/darkflats/filter", newFilter);
 
     for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -399,24 +425,31 @@ void MainWindow::handleButtonDarkFlatFrames() {
         record->SetType(ImageRecord::DARK_FLAT);
         table_model_.Append(record);
     }
-
-    QFileInfo info(darkFlatFrameFileNames.at(0));
-    settings.setValue("files/darkFlatFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonFlatFrames() {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/flatFramesDir",
-            settings.value("files/lightFramesDir", QDir::homePath())).toString());
+    QDir dir = QDir(settings.value("files/flats/dir",
+            settings.value("files/lights/dir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
+    QString filter = settings.value("files/flats/filter",
+            settings.value("files/lights/filter",QString())).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
+
     if (!dialog.exec()) return;
 
     QStringList flatFrameFileNames = dialog.selectedFiles();
+    QFileInfo info(flatFrameFileNames.at(0));
+    settings.setValue("files/flats/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/flats/filter", newFilter);
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -424,25 +457,32 @@ void MainWindow::handleButtonFlatFrames() {
         record->SetType(ImageRecord::FLAT);
         table_model_.Append(record);
     }
-
-    QFileInfo info(flatFrameFileNames.at(0));
-    settings.setValue("files/flatFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonBiasFrames()
 {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QDir dir = QDir(settings.value("files/biasFramesDir",
-            settings.value("files/lightFramesDir", QDir::homePath())).toString());
+    QDir dir = QDir(settings.value("files/bias/dir",
+            settings.value("files/lights/dir", QDir::homePath())).toString());
 
     QFileDialog dialog(this);
     dialog.setDirectory(dir);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     dialog.setNameFilters(image_file_filter_);
 
+    QString filter = settings.value("files/bias/filter",
+            settings.value("files/lights/filter",QString())).toString();
+    if (!filter.isNull()) {
+        dialog.selectNameFilter(filter);
+    }
+
     if (!dialog.exec()) return;
 
     QStringList biasFrameFileNames = dialog.selectedFiles();
+    QFileInfo info(biasFrameFileNames.at(0));
+    settings.setValue("files/bias/dir", info.absolutePath());
+    QString newFilter = dialog.selectedNameFilter();
+    settings.setValue("files/bias/filter", newFilter);
 
     for (int i = 0; i < biasFrameFileNames.length(); i++) {
         ImageRecord *record = stacker_->GetImageRecord(
@@ -450,9 +490,6 @@ void MainWindow::handleButtonBiasFrames()
         record->SetType(ImageRecord::BIAS);
         table_model_.Append(record);
     }
-
-    QFileInfo info(biasFrameFileNames.at(0));
-    settings.setValue("files/biasFramesDir", info.absolutePath());
 }
 
 void MainWindow::handleButtonOptions()
@@ -468,16 +505,6 @@ void MainWindow::handleButtonOptions()
     delete dialog;
 }
 
-void MainWindow::handleButtonCheckAll()
-{
-
-}
-
-void MainWindow::handleButtonUncheckAll()
-{
-
-}
-
 void MainWindow::handleButtonSaveList()
 {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
@@ -487,6 +514,13 @@ void MainWindow::handleButtonSaveList()
             "JSON document (*.json)");
     if (filename.isEmpty())
         return;
+
+    // Linux doesn't force the proper extension unlike Windows and Mac
+    QRegularExpression regex(".json$");
+    if (!regex.match(filename).hasMatch()) {
+        qDebug() << "Filename was missing extension, adding it";
+        filename += ".json";
+    }
 
     QJsonArray images;
     for (int i = 0; i < table_model_.rowCount(); i++) {

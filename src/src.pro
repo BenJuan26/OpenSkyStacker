@@ -1,10 +1,3 @@
-
-#-------------------------------------------------
-#
-# Project created by QtCreator 2017-03-14T21:16:33
-#
-#-------------------------------------------------
-
 QT       += core gui
 
 TRANSLATIONS += translations/openskystacker_es.ts

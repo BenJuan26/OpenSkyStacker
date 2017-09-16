@@ -1,7 +1,7 @@
 */*.pro.user
 */*.pro.user*
 src/*_resource.rc
-src/*.lnk
+*.lnk
 */.DS_Store
 Makefile
 Makefile.*

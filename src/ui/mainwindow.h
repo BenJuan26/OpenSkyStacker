@@ -91,8 +91,6 @@ private slots:
     void handleButtonFlatFrames();
     void handleButtonBiasFrames();
     void handleButtonOptions();
-    void handleButtonCheckAll();
-    void handleButtonUncheckAll();
     void handleButtonSaveList();
     void handleButtonLoadList();
 
