@@ -94,7 +94,7 @@ std::vector<AdjoiningPixel> AdjoiningPixel::Deblend(float base_step)
         }
     }
 
-    //delete currentAp;
+    delete current_ap_;
 
     return apList;
 }

@@ -73,9 +73,9 @@ void ImageStacker::ProcessNonRaw() {
 
     ref_image_ = ReadImage(ref_image_file_name_);
 
-    if (use_bias_)  ref_image_ -= master_bias_;
-    if (use_darks_) ref_image_ -= master_dark_;
-    if (use_flats_) ref_image_ /= master_flat_;
+    if (use_bias_)  cv::subtract(ref_image_, master_bias_, ref_image_, cv::noArray(), CV_32F);
+    if (use_darks_) cv::subtract(ref_image_, master_dark_, ref_image_, cv::noArray(), CV_32F);
+    if (use_flats_) cv::divide(ref_image_, master_flat_, ref_image_, 1.0, CV_32F);
 
     // 32-bit float no matter what for the working image
     ref_image_.convertTo(working_image_, CV_32F);
@@ -91,16 +91,14 @@ void ImageStacker::ProcessNonRaw() {
 
         cv::Mat targetImage = ReadImage(target_image_file_names_.at(k));
 
-
         // ------------- CALIBRATION --------------
         message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
         qDebug() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
-        if (use_bias_)  targetImage -= master_bias_;
-        if (use_darks_) targetImage -= master_dark_;
-        if (use_flats_) targetImage /= master_flat_;
-
+        if (use_bias_)  cv::subtract(targetImage, master_bias_, targetImage, cv::noArray(), CV_32F);
+        if (use_darks_) cv::subtract(targetImage, master_dark_, targetImage, cv::noArray(), CV_32F);
+        if (use_flats_) cv::divide(targetImage, master_flat_, targetImage, 1.0, CV_32F);
 
         // -------------- ALIGNMENT ---------------
         message = tr("Aligning image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
@@ -231,11 +229,14 @@ cv::Mat ImageStacker::GetCalibratedImage(QString filename) {
     libraw_processed_image_t *proc = libraw.dcraw_make_mem_image();
     cv::Mat image = cv::Mat(cv::Size(imgdata->sizes.width, imgdata->sizes.height),
                     CV_16UC3, proc->data);
+    cv::Mat result = image.clone();
+
+    delete proc;
 
     if (bits_per_channel_ == BITS_32)
-        image.convertTo(image, CV_32F, 1/65535.0);
+        result.convertTo(result, CV_32F, 1/65535.0);
 
-    return image.clone();
+    return result;
 }
 
 void ImageStacker::ProcessRaw() {
@@ -578,7 +579,13 @@ QImage ImageStacker::Mat2QImage(const cv::Mat &src)
 
 void ImageStacker::StackDarks()
 {
-    cv::Mat dark1 = GetBayerMatrix(dark_frame_file_names_.at(0));
+    cv::Mat dark1;
+    bool raw = FileHasRawExtension(dark_frame_file_names_.at(0));
+    if (raw) {
+        dark1 = GetBayerMatrix(dark_frame_file_names_.at(0));
+    } else {
+        dark1 = ReadImage(dark_frame_file_names_.at(0));
+    }
     if (use_bias_) dark1 -= master_bias_;
 
     cv::Mat result;
@@ -587,7 +594,12 @@ void ImageStacker::StackDarks()
     QString message;
 
     for (int i = 1; i < dark_frame_file_names_.length() && !cancel_; i++) {
-        cv::Mat dark = GetBayerMatrix(dark_frame_file_names_.at(i));
+        cv::Mat dark;
+        if (raw) {
+            dark = GetBayerMatrix(dark_frame_file_names_.at(i));
+        } else {
+            dark = ReadImage(dark_frame_file_names_.at(i));
+        }
 
         message = tr("Stacking dark frame %1 of %2").arg(QString::number(i+1), QString::number(dark_frame_file_names_.length()));
         qDebug() << message;
@@ -605,7 +617,13 @@ void ImageStacker::StackDarks()
 
 void ImageStacker::StackDarkFlats()
 {
-    cv::Mat darkFlat1 = GetBayerMatrix(dark_flat_frame_file_names_.at(0));
+    cv::Mat darkFlat1;
+    bool raw = FileHasRawExtension(dark_flat_frame_file_names_.at(0));
+    if (raw) {
+        darkFlat1 = GetBayerMatrix(dark_flat_frame_file_names_.at(0));
+    } else {
+        darkFlat1 = ReadImage(dark_flat_frame_file_names_.at(0));
+    }
     if (use_bias_) darkFlat1 -= master_bias_;
 
     cv::Mat result;
@@ -614,7 +632,12 @@ void ImageStacker::StackDarkFlats()
     QString message;
 
     for (int i = 1; i < dark_flat_frame_file_names_.length() && !cancel_; i++) {
-        cv::Mat dark = GetBayerMatrix(dark_flat_frame_file_names_.at(i));
+        cv::Mat dark;
+        if (raw) {
+            dark = GetBayerMatrix(dark_flat_frame_file_names_.at(i));
+        } else {
+            dark = ReadImage(dark_flat_frame_file_names_.at(i));
+        }
 
         message = tr("Stacking dark flat frame %1 of %2").arg(QString::number(i+1), QString::number(dark_flat_frame_file_names_.length()));
         qDebug() << message;
@@ -633,7 +656,13 @@ void ImageStacker::StackDarkFlats()
 void ImageStacker::StackFlats()
 {
     // most algorithms compute the median, but we will stick with mean for now
-    cv::Mat flat1 = GetBayerMatrix(flat_frame_file_names_.at(0));
+    cv::Mat flat1;
+    bool raw = FileHasRawExtension(flat_frame_file_names_.at(0));
+    if (raw) {
+        flat1 = GetBayerMatrix(flat_frame_file_names_.at(0));
+    } else {
+        flat1 = ReadImage(flat_frame_file_names_.at(0));
+    }
     if (use_bias_) flat1 -= master_bias_;
     if (use_dark_flats_) flat1 -= master_dark_flat_;
 
@@ -643,7 +672,12 @@ void ImageStacker::StackFlats()
     QString message;
 
     for (int i = 1; i < flat_frame_file_names_.length() && !cancel_; i++) {
-        cv::Mat flat = GetBayerMatrix(flat_frame_file_names_.at(i));
+        cv::Mat flat;
+        if (raw) {
+            flat = GetBayerMatrix(flat_frame_file_names_.at(i));
+        } else {
+            flat = ReadImage(flat_frame_file_names_.at(i));
+        }
 
         message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flat_frame_file_names_.length()));
         qDebug() << message;
@@ -670,15 +704,25 @@ void ImageStacker::StackFlats()
 
 void ImageStacker::StackBias()
 {
-    cv::Mat bias1 = GetBayerMatrix(bias_frame_file_names_.at(0));
+    cv::Mat bias1;
+    bool raw = FileHasRawExtension(bias_frame_file_names_.at(0));
+    if (raw) {
+        bias1 = GetBayerMatrix(bias_frame_file_names_.at(0));
+    } else {
+        bias1 = ReadImage(bias_frame_file_names_.at(0));
+    }
     cv::Mat result;
     bias1.convertTo(result, CV_32F);
 
     QString message;
 
     for (int i = 1; i < bias_frame_file_names_.length() && !cancel_; i++) {
-        cv::Mat bias = GetBayerMatrix(bias_frame_file_names_.at(i));
-
+        cv::Mat bias;
+        if (raw) {
+            bias = GetBayerMatrix(bias_frame_file_names_.at(i));
+        } else {
+            bias = ReadImage(bias_frame_file_names_.at(i));
+        }
         message = tr("Stacking bias frame %1 of %2").arg(QString::number(i+1), QString::number(bias_frame_file_names_.length()));
         qDebug() << message;
         current_operation_++;
@@ -775,11 +819,10 @@ cv::Mat ImageStacker::RawToMat(QString filename)
     cv::Mat image = cv::Mat(processor.imgdata.sizes.width, processor.imgdata.sizes.height, CV_16UC3);
     cvtColor(tmp, image, CV_RGB2BGR);
 
+    delete proc;
+
     if (bits_per_channel_ == BITS_32)
         image.convertTo(image, CV_32F, 1/65535.0);
-
-    // free the memory that otherwise wouldn't have been handled by OpenCV
-    processor.recycle();
 
     return image;
 }

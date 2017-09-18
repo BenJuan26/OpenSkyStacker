@@ -10,6 +10,11 @@
 #include "ui/processingdialog.h"
 #include "ui/optionsdialog.h"
 
+#ifdef WIN32
+#include <QtWinExtras/QWinTaskbarButton>
+#include <QtWinExtras/QWinTaskbarProgress>
+#endif
+
 namespace Ui {
 class MainWindow;
 }
@@ -112,6 +117,10 @@ private:
     ImageTableModel table_model_;
     bool has_failed_ = false;
     QString error_message_;
+
+#ifdef WIN32
+    QWinTaskbarButton *taskbar_button_;
+#endif //WIN32
 };
 
 #endif // MAINWINDOW_H

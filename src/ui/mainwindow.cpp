@@ -20,11 +20,6 @@
 
 #include <stdexcept>
 
-#ifdef WIN32
-#include <QtWinExtras/QWinTaskbarButton>
-#include <QtWinExtras/QWinTaskbarProgress>
-#endif
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui_(new Ui::MainWindow)
@@ -105,6 +100,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(stacker_, SIGNAL(QImageReady(QImage)), this,
             SLOT(setImage(QImage)));
 
+#ifdef WIN32
+    taskbar_button_ = new QWinTaskbarButton(this);
+    taskbar_button_->setWindow(this->windowHandle());
+#endif //WIN32
+
 }
 
 void MainWindow::finishedStacking(cv::Mat image) {
@@ -131,10 +131,7 @@ void MainWindow::updateProgress(QString message, int percentComplete)
 {
     Q_UNUSED(message);
 #ifdef WIN32
-    QWinTaskbarButton *button = new QWinTaskbarButton(this);
-    button->setWindow(this->windowHandle());
-
-    QWinTaskbarProgress *progress = button->progress();
+    QWinTaskbarProgress *progress = taskbar_button_->progress();
     progress->setVisible(true);
     progress->setValue(percentComplete);
 #endif // WIN32
@@ -146,9 +143,6 @@ void MainWindow::clearProgress(cv::Mat image, QString message)
     Q_UNUSED(image);
     Q_UNUSED(message);
 #ifdef WIN32
-    QWinTaskbarButton *button = new QWinTaskbarButton(this);
-    button->setWindow(this->windowHandle());
-
     QWinTaskbarProgress *progress = button->progress();
     progress->setVisible(false);
 #endif // WIN32
