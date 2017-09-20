@@ -143,7 +143,7 @@ void MainWindow::clearProgress(cv::Mat image, QString message)
     Q_UNUSED(image);
     Q_UNUSED(message);
 #ifdef WIN32
-    QWinTaskbarProgress *progress = button->progress();
+    QWinTaskbarProgress *progress = taskbar_button_->progress();
     progress->setVisible(false);
 #endif // WIN32
 }
