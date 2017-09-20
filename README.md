@@ -1,6 +1,6 @@
 # OpenSkyStacker
 
-Multi-platform astroimaging stacker.
+Multi-platform deep-sky stacker for astrophotography.
 
 [![Build Status](https://travis-ci.org/BenJuan26/OpenSkyStacker.svg?branch=master)](https://travis-ci.org/BenJuan26/OpenSkyStacker) [![Documentation](https://codedocs.xyz/BenJuan26/OpenSkyStacker.svg)](https://codedocs.xyz/BenJuan26/OpenSkyStacker/)
 
@@ -10,7 +10,7 @@ OpenSkyStacker is not unique in what it accomplishes, as there is other stacking
 
 ## Download
 
-For Windows, Mac, and Ubuntu, OpenSkyStacker can be downloaded from the [releases page](https://github.com/BenJuan26/OpenSkyStacker/releases) of this repo. Releasing software for all the many Linux distros is not a simple process, so users on other distros can [compile from source](#build).
+[Download here](https://github.com/BenJuan26/OpenSkyStacker/releases) for Windows, Mac, and Ubuntu. Users on other distros can [compile from source](#build).
 
 ## Build
 

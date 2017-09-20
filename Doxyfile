@@ -1,7 +1,7 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = OpenSkyStacker
-PROJECT_NUMBER         = v0.1.1
-PROJECT_BRIEF          = "Multi-platform astroimaging stacker"
+PROJECT_NUMBER         = v0.2.1
+PROJECT_BRIEF          = "Multi-platform deep-sky stacker for astrophotography"
 PROJECT_LOGO           = src/images/openskystacker-logoabbr-128.png
 OUTPUT_DIRECTORY       = doc
 CREATE_SUBDIRS         = NO
