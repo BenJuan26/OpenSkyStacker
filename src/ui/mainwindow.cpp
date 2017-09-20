@@ -99,12 +99,6 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(updateProgress(QString, int)));
     connect(stacker_, SIGNAL(QImageReady(QImage)), this,
             SLOT(setImage(QImage)));
-
-#ifdef WIN32
-    taskbar_button_ = new QWinTaskbarButton(this);
-    taskbar_button_->setWindow(this->windowHandle());
-#endif //WIN32
-
 }
 
 void MainWindow::finishedStacking(cv::Mat image) {
@@ -786,4 +780,14 @@ MainWindow::~MainWindow()
     worker_thread_->wait();
     delete worker_thread_;
     delete stacker_;
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+
+#ifdef WIN32
+    taskbar_button_ = new QWinTaskbarButton(this);
+    taskbar_button_->setWindow(this->windowHandle());
+#endif //WIN32
 }

@@ -31,6 +31,9 @@ public:
     //! Destructor.
     ~MainWindow();
 
+protected:
+    void showEvent(QShowEvent *event);
+
 signals:
     //! Asynchronously kicks off the image stacking process.
     void stackImages();
