@@ -26,6 +26,7 @@ public:
         @param image The image containing the stars.
         @return A list of detected stars.
     */
+    std::vector<Star> GetStars(cv::Mat image, int thresholdCoeff);
     std::vector<Star> GetStars(cv::Mat image);
 
     //! Gets the value of the pixel at the given coordinates, truncating to the edges if the coordinates are outside the image bounds.

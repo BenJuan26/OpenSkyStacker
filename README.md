@@ -10,57 +10,22 @@ OpenSkyStacker is not unique in what it accomplishes, as there is other stacking
 
 ## Download
 
-[Download here](https://github.com/BenJuan26/OpenSkyStacker/releases) for Windows, Mac, and Ubuntu. Users on other distros can [compile from source](#build).
+[Download here](https://github.com/BenJuan26/OpenSkyStacker/releases) for Windows, Mac, and Ubuntu. Linux users on other distros can [compile from source](https://github.com/BenJuan26/OpenSkyStacker/wiki/Build-from-source).
 
-## Build
+## Getting started
 
-### Dependencies
+To start stacking, load your images using the buttons to the top-right. For an explanation of light frames, dark frames, etc., I would recommend [DeepSkyStacker's page on the matter](http://deepskystacker.free.fr/english/theory.htm).
 
-This software depends on Qt5, OpenCV, and LibRaw. On Debian-like Linux distros, these can be installed by:
+When you load light frames, the first one is set as the reference image by default and displayed in bold. You can choose a different reference image by selecting it from the list, right-clicking, and selecting `Set As Reference` from the menu. Images can be checked or unchecked to include or exclude them from stacking.
 
-```
-sudo apt-get install qt5-default libopencv-dev libraw-dev
-```
+To stack the checked images, click the `Align and Stack` button. You'll be prompted where to save the resulting image, which is always a 32-bit TIFF file, and the stacking process will begin.
 
-On Mac, these can be installed using Homebrew:
+### Troubleshooting
 
-```
-brew install qt opencv libraw
-```
+If you're met with an error or if the resulting image looks skewed or undesirable, try changing the star detection threshold using the `Options` button. You can see how many stars are detected at the current threshold by clicking the `Detect Stars` button. You should aim for about 60-80 detected stars for the best results.
 
-### Building
+**Note**: OpenSkyStacker uses stars for alignment, so it is unsuitable for planetary, lunar, or solar stacking.
 
-Use `qmake` to generate the `Makefile`:
+## Build from source
 
-```
-qmake qt=qt5
-```
-
-Then use `make` to build OpenSkyStacker:
-
-```
-make
-```
-
-This will compile the program to the `bin/` directory.
-
-### Releasing for Mac
-
-Qt provides the somewhat-helpful `macdeployqt` program to deploy Qt apps for Mac. However, it's not perfect: in my experience it doesn't correctly change the absolute paths of some libraries. For that reason, two scripts are provided for deploying on Mac: [mac_deploy.sh](src/scripts/mac_deploy.sh) and [create_dmg.sh](src/scripts/create_dmg.sh). The former will run `macdeployqt` and fix anything it may have missed, and the latter will create a pretty DMG image ready for release.
-
-```
-cd src
-./mac_deploy.sh
-./create_dmg.sh
-```
-
-## Testing
-
-To build the test executable, run qmake with the addition of `CONFIG+=test`:
-
-```
-qmake CONFIG+=test
-make
-```
-
-The tests can then be run by executing `bin/testoss` or `bin/testoss.exe`.
+See the [wiki page](https://github.com/BenJuan26/OpenSkyStacker/wiki/Build-from-source) for instructions to build OpenSkyStacker from the source code.

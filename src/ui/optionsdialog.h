@@ -20,8 +20,13 @@ public:
     int GetThresh() const;
     void SetThresh(int value);
 
+signals:
+    void detectStars(int);
+
 private slots:
+    void handleButtonDetectStars();
     void valuesChanged(int thresh);
+    void setDetectedStars(int stars);
 
 private:
     Ui::OptionsDialog *ui;

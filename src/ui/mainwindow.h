@@ -42,6 +42,9 @@ signals:
     /*! @param filename The name of the image file to read. */
     void readQImage(QString filename);
 
+    void detectStars(QString, int);
+    void doneDetectingStars(int);
+
 public slots:
     //! Handles the result of the stacking process.
     /*! Saves the processed image at the previously selected path and displays the image in the preview window.
@@ -91,6 +94,9 @@ public slots:
 
     void checkTableData();
 
+    void stackerDoneDetectingStars(int stars);
+    void detectStars(int threshold);
+
 private slots:
     void handleButtonLightFrames();
     void handleButtonStack();
@@ -107,6 +113,7 @@ private:
     void setMemImage(QImage image);
     void clearReferenceFrame();
     void setDefaultReferenceImage();
+    void selectReferenceImage();
     void loadImagesIntoStacker();
     QImage Mat2QImage(const cv::Mat &src);
 

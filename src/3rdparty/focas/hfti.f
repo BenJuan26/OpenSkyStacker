@@ -51,7 +51,14 @@ c    ..
 c
 c     compute the j-th transformation and apply it to a and b.
 c    ..
+c       print 69, "call h12(1,", j, ",", j, "+1,", m, ",a(1,", j,       &
+c    &   "),1,h(", j, "),a(1,", j, "+1),1,", mda, ",", n, "-", j, ")"
+c  69   format(9(A,I3),A)
    70	  call h12 (1,j,j+1,m,a(1,j),1,h(j),a(1,j+1),1,mda,n-j)
+        
+c       print 69, "call h12(2,", j, ",", j, "+1,", m, ",a(1,", j,       &
+c    &   "),1,h(", j, "),b,1,",mdb, ",", mdb, ")"
+c  79   format(7(A,I3),A)
    80	  call h12 (2,j,j+1,m,a(1,j),1,h(j),b,1,mdb,nb)
 c
 c     determine the pseudorank, k, using the tolerance, tau.
@@ -88,6 +95,10 @@ c    ..
   160 if (k.eq.n) go to 180
 	  do 170 ii=1,k
 	  i=kp1-ii
+
+c       print 169, "call h12(1,", i, ",", kp1,",", n, ",a(", i,         &
+c    &   ",1)", mda, ",g(", i, "),a,", mda, ",1,", i, "-1)"
+c 169   format(8(A,I3),A)
   170	  call h12 (1,i,kp1,n,a(i,1),mda,g(i),a,mda,1,i-1)
   180 continue
 c
@@ -113,6 +124,8 @@ c    ..
 	      do 220 j=kp1,n
   220	      b(j,jb)=szero
 	      do 230 i=1,k
+c           print 169, "call h12(2,", i, ",", kp1,",", n, ",a(", i,     &
+c    &      ",1)", mda, ",g(", i, "),b(1,", jb, ",1,", mdb, ",1)"
   230	      call h12 (2,i,kp1,n,a(i,1),mda,g(i),b(1,jb),1,mdb,1)
 c
 c      re-order the solution vector to compensate for the

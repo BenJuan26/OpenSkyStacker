@@ -332,6 +332,15 @@ void ImageStacker::ReadQImage(QString filename)
     emit QImageReady(Mat2QImage(image));
 }
 
+void ImageStacker::detectStars(QString filename, int threshold)
+{
+    cv::Mat image = ReadImage(filename);
+    StarDetector sd;
+    std::vector<Star> list = sd.GetStars(image, threshold);
+
+    emit doneDetectingStars(list.size());
+}
+
 cv::Mat ImageStacker::AverageImages(cv::Mat img1, cv::Mat img2) {
     cv::Mat result;
 

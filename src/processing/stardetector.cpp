@@ -25,7 +25,7 @@ StarDetector::~StarDetector()
 
 }
 
-std::vector<Star> StarDetector::GetStars(cv::Mat image)
+std::vector<Star> StarDetector::GetStars(cv::Mat image, int thresholdCoeff)
 {
     cv::Mat imageGray(image.rows, image.cols, CV_32FC1);
     cvtColor(image, imageGray, CV_BGR2GRAY);
@@ -39,9 +39,6 @@ std::vector<Star> StarDetector::GetStars(cv::Mat image)
 
     cv::Scalar mean, stdDev;
     cv::meanStdDev(thresholdImage, mean, stdDev);
-
-    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    float thresholdCoeff = settings.value("StarDetector/thresholdCoeff", THRESHOLD_COEFF).toFloat();
 
     float threshold = stdDev[0] * thresholdCoeff * 1.5;
     float minPeak = stdDev[0] * thresholdCoeff * 2.0;
@@ -62,6 +59,14 @@ std::vector<Star> StarDetector::GetStars(cv::Mat image)
     }
 
     return allStars;
+}
+
+std::vector<Star> StarDetector::GetStars(cv::Mat image)
+{
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    float thresholdCoeff = settings.value("StarDetector/thresholdCoeff", THRESHOLD_COEFF).toFloat();
+
+    return GetStars(image, thresholdCoeff);
 }
 
 // TODO: ASSUMING GRAYSCALE 32 BIT FOR NOW

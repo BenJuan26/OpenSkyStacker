@@ -111,6 +111,8 @@ signals:
 
     //! Emitted when an error occurs during processing.
     void ProcessingError(QString message);
+
+    void doneDetectingStars(int);
 public slots:
     //! The main method for processing the images.
     void Process();
@@ -120,6 +122,8 @@ public slots:
         @param filename The image file to read.
     */
     void ReadQImage(QString filename);
+
+    void detectStars(QString filename, int threshold);
 
 private:
     cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok = 0);

@@ -89,6 +89,10 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(Process()));
     connect(this, SIGNAL(readQImage(QString)), stacker_,
             SLOT(ReadQImage(QString)));
+    connect(this, SIGNAL(detectStars(QString,int)), stacker_,
+            SLOT(detectStars(QString,int)));
+    connect(stacker_, SIGNAL(doneDetectingStars(int)), this,
+            SLOT(stackerDoneDetectingStars(int)));
     connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), this,
             SLOT(finishedStacking(cv::Mat)));
     connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), this,
@@ -349,7 +353,7 @@ void MainWindow::handleButtonLightFrames() {
         table_model_.Append(record);
     }
 
-    emit readQImage(targetImageFileNames.at(0));
+    setDefaultReferenceImage();
 }
 
 void MainWindow::handleButtonDarkFrames() {
@@ -489,6 +493,11 @@ void MainWindow::handleButtonOptions()
 {
     OptionsDialog *dialog = new OptionsDialog(this);
 
+    connect(dialog, SIGNAL(detectStars(int)), this,
+            SLOT(detectStars(int)));
+    connect(this, SIGNAL(doneDetectingStars(int)), dialog,
+            SLOT(setDetectedStars(int)));
+
     if (dialog->exec()) {
         int thresh = dialog->GetThresh();
         QSettings settings("OpenSkyStacker", "OpenSkyStacker");
@@ -598,6 +607,8 @@ void MainWindow::handleButtonLoadList()
 
         table_model_.Append(record);
     }
+
+    setDefaultReferenceImage();
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src) {
@@ -670,6 +681,29 @@ void MainWindow::checkTableData()
     }
 }
 
+void MainWindow::stackerDoneDetectingStars(int stars)
+{
+    emit doneDetectingStars(stars);
+}
+
+void MainWindow::detectStars(int threshold)
+{
+    QString refFileName;
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        ImageRecord *record = table_model_.At(i);
+        if (record->IsReference()) {
+            refFileName = record->GetFilename();
+            break;
+        }
+    }
+
+    if (refFileName.isNull()) {
+        emit doneDetectingStars(-1);
+    } else {
+        emit detectStars(refFileName, threshold);
+    }
+}
+
 void MainWindow::setFileImage(QString filename) {
 
     QGraphicsScene* scene = new QGraphicsScene(this);
@@ -712,10 +746,29 @@ void MainWindow::setDefaultReferenceImage()
         for (int i = 0; i < table_model_.rowCount(); i++) {
             ImageRecord *record = table_model_.At(i);
 
-            if (record->GetType() == ImageRecord::LIGHT) {
+            if (record->GetType() == ImageRecord::LIGHT && record->IsChecked()) {
                 record->SetReference(true);
+                QModelIndex index = ui_->imageListView->model()->index(i, 0);
+                ui_->imageListView->selectionModel()->select(index,
+                        QItemSelectionModel::Select | QItemSelectionModel::Rows |
+                        QItemSelectionModel::Clear);
                 break;
             }
+        }
+    }
+}
+
+void MainWindow::selectReferenceImage()
+{
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        ImageRecord *record = table_model_.At(i);
+
+        if (record->GetType() == ImageRecord::LIGHT && record->IsReference()) {
+            QModelIndex index = ui_->imageListView->model()->index(i, 0);
+            ui_->imageListView->selectionModel()->select(index,
+                    QItemSelectionModel::Select | QItemSelectionModel::Rows |
+                    QItemSelectionModel::Clear);
+            break;
         }
     }
 }
