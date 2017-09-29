@@ -20,6 +20,8 @@
 
 #include <stdexcept>
 
+using namespace openskystacker;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui_(new Ui::MainWindow)
@@ -41,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     image_file_filter_ << tr("All files (*)") << tr("Image files "
             "(*.jpg *.jpeg *.png *.tif)");
     image_file_filter_ << tr("Raw image files (*.NEF *.CR2 *.DNG *.RAW)");
+    image_file_filter_ << tr("FITS image files (*.fit *.fits)");
 
     QTableView *table = ui_->imageListView;
     table->setModel(&table_model_);
@@ -108,7 +111,14 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::finishedStacking(cv::Mat image) {
     QString path = stacker_->GetSaveFilePath();
     try {
-        imwrite(path.toUtf8().constData(), image);
+        // OpenCV doesn't support grayscale 32-bit tiff images
+        if (image.channels() == 1) {
+            cv::Mat converted;
+            image.convertTo(converted, CV_16U, 65535);
+            imwrite(path.toUtf8().constData(), converted);
+        } else {
+            imwrite(path.toUtf8().constData(), image);
+        }
     }
     catch (std::exception) {
         QMessageBox errorBox;
@@ -285,7 +295,7 @@ void MainWindow::handleButtonStack() {
     }
 
     // Linux doesn't force the proper extension unlike Windows and Mac
-    QRegularExpression regex(".tif$");
+    QRegularExpression regex("\\.tif$");
     if (!regex.match(saveFilePath).hasMatch()) {
         qDebug() << "Filename was missing extension, adding it";
         saveFilePath += ".tif";
@@ -518,7 +528,7 @@ void MainWindow::handleButtonSaveList()
         return;
 
     // Linux doesn't force the proper extension unlike Windows and Mac
-    QRegularExpression regex(".json$");
+    QRegularExpression regex("\\.json$");
     if (!regex.match(filename).hasMatch()) {
         qDebug() << "Filename was missing extension, adding it";
         filename += ".json";
@@ -565,6 +575,9 @@ void MainWindow::handleButtonLoadList()
         contents = in.readAll();
     }
 
+    QFileInfo info(file);
+    QString absolutePathToJson = info.absolutePath();
+
     QJsonDocument doc = QJsonDocument::fromJson(contents.toUtf8());
     if (!doc.isArray()) {
         QMessageBox::information(this, tr("Error loading list"),
@@ -592,6 +605,9 @@ void MainWindow::handleButtonLoadList()
                     tr("Couldn't read the list file. Object at index %1 has no valid filename.").arg(i));
             return;
         }
+        QFileInfo imageInfo(imageFileName);
+        if (imageInfo.isRelative())
+            imageFileName = absolutePathToJson + "/" + imageFileName;
 
         int type = img.value("type").toInt(-1);
         if (type < 0) {
@@ -631,12 +647,16 @@ QImage MainWindow::Mat2QImage(const cv::Mat &src) {
         else if (stacker_->GetBitsPerChannel() == ImageStacker::BITS_32) {
             for(int x = 0; x < src.cols; x++) {
                 for(int y = 0; y < src.rows; y++) {
-
-                    cv::Vec3f pixel = src.at<cv::Vec3f>(y,x);
-                    b = pixel.val[0]*255;
-                    g = pixel.val[1]*255;
-                    r = pixel.val[2]*255;
-                    dest.setPixel(x, y, qRgb(r,g,b));
+                    if (src.channels() == 1) {
+                        int pixel = src.at<float>(y,x) * 255;
+                        dest.setPixel(x, y, qRgb(pixel, pixel, pixel));
+                    } else {
+                        cv::Vec3f pixel = src.at<cv::Vec3f>(y,x);
+                        b = pixel.val[0]*255;
+                        g = pixel.val[1]*255;
+                        r = pixel.val[2]*255;
+                        dest.setPixel(x, y, qRgb(r,g,b));
+                    }
                 }
             }
         }

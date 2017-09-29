@@ -1,13 +1,32 @@
 #ifndef IMAGESTACKER_H
 #define IMAGESTACKER_H
 
-#include <QObject>
-#include <opencv2/core/core.hpp>
-#include <QMutex>
 #include "processing/stardetector.h"
 #include "processing/focas.h"
 #include "model/imagerecord.h"
+
+#include <QObject>
+#include <QMutex>
 #include <QImage>
+#include <QDebug>
+#include <QTime>
+#include <QFileInfo>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/video/video.hpp>
+
+#include <ctime>
+
+#ifdef WIN32
+#define LIBRAW_NODLL
+#endif
+#include <libraw.h>
+
+#include <CCfits/CCfits>
+
+namespace openskystacker {
 
 //! The main class for handling the image processing.
 class ImageStacker : public QObject
@@ -27,10 +46,18 @@ public:
     //! The extensions that the app will treat as RAW images.
     static const std::vector<QString> RAW_EXTENSIONS;
 
+    static const std::vector<QString> FITS_EXTENSIONS;
+
     //! Used to define the number of bits of the final image.
     enum BitsPerChannel {
         BITS_16, /*!< 16-bit image. */
         BITS_32  /*!< 32-bit image. */
+    };
+
+    enum ImageType {
+        RAW_IMAGE,
+        FITS_IMAGE,
+        RGB_IMAGE
     };
 
     //! Constructs an ImageRecord from the given file.
@@ -129,9 +156,10 @@ private:
     cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok = 0);
     cv::Mat AverageImages(cv::Mat img1, cv::Mat img2);
 
+    ImageType GetImageType(QString filename);
+
     void ProcessRaw();
     void ProcessNonRaw();
-    bool FileHasRawExtension(QString filename);
     int GetTotalOperations();
 
     int ValidateImageSizes();
@@ -140,6 +168,7 @@ private:
 
     cv::Mat ConvertAndScaleImage(cv::Mat image);
     cv::Mat RawToMat(QString filename);
+    cv::Mat FITSToMat(QString filename);
     cv::Mat GetCalibratedImage(QString filename);
     cv::Mat GetBayerMatrix(QString filename);
     cv::Mat GenerateAlignedImageOld(cv::Mat ref, cv::Mat target);
@@ -178,5 +207,7 @@ private:
     cv::Mat master_flat_;
     cv::Mat master_bias_;
 };
+
+}
 
 #endif // IMAGESTACKER_H

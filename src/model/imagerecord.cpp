@@ -1,5 +1,7 @@
 #include "model/imagerecord.h"
 
+using namespace openskystacker;
+
 ImageRecord::ImageRecord()
 {
     reference_ = false;

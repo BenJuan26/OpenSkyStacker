@@ -14,6 +14,7 @@
 #define	CLIP		3	/* Sigma clipping factor */
 #define PM		57.2958 /* Radian to degree conversion */
 
+using namespace openskystacker;
 
 StarDetector::StarDetector()
 {
@@ -27,8 +28,13 @@ StarDetector::~StarDetector()
 
 std::vector<Star> StarDetector::GetStars(cv::Mat image, int thresholdCoeff)
 {
-    cv::Mat imageGray(image.rows, image.cols, CV_32FC1);
-    cvtColor(image, imageGray, CV_BGR2GRAY);
+    cv::Mat imageGray;
+    if (image.channels() == 1) {
+        imageGray = image.clone();
+    } else {
+        imageGray = cv::Mat(image.rows, image.cols, CV_32FC1);
+        cvtColor(image, imageGray, CV_BGR2GRAY);
+    }
 
     cv::Mat skyImage = GenerateSkyBackground(imageGray);
 

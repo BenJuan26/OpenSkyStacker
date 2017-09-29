@@ -16,12 +16,13 @@ CONFIG += c++11
 DEFINES += QT_DEPRECATED_WARNINGS
 
 DESTDIR = ../bin
-MOC_DIR = ../build/moc
-RCC_DIR = ../build/rcc
-UI_DIR = ../build/ui
-win32:OBJECTS_DIR = ../build/o/win32
-macx:OBJECTS_DIR = ../build/o/macx
-linux:OBJECTS_DIR = ../build/o/linux
+BUILD_DIR = ../build
+MOC_DIR = $$BUILD_DIR/moc
+RCC_DIR = $$BUILD_DIR/rcc
+UI_DIR = $$BUILD_DIR/ui
+win32:OBJECTS_DIR = $$BUILD_DIR/o/win32
+macx:OBJECTS_DIR = $$BUILD_DIR/o/macx
+linux:OBJECTS_DIR = $$BUILD_DIR/o/linux
 
 
 SOURCES += main.cpp\
@@ -68,6 +69,11 @@ test {
 
     # On macOS we don't want the app bundled; a standalone executable is fine.
     CONFIG -= app_bundle
+
+    linux {
+        QMAKE_CXXFLAGS += --coverage
+        QMAKE_LFLAGS += --coverage
+    }
 }
 
 win32 {
@@ -76,6 +82,10 @@ win32 {
     OPENCV_DIR = $$(OPENCV_DIR)
     OPENCV_VER = $$(OPENCV_VER)
     LIBRAW_DIR = $$(LIBRAW_DIR)
+    CCFITS_INCLUDE = $$(CCFITS_INCLUDE)
+    CCFITS_LIB = $$(CCFITS_LIB)
+    CFITSIO_INCLUDE = $$(CFITSIO_INCLUDE)
+    CFITSIO_LIB = $$(CFITSIO_LIB)
 
     isEmpty(OPENCV_DIR) {
         error(Must define the env var OPENCV_DIR that points to the OpenCV build directory.)
@@ -86,9 +96,24 @@ win32 {
     isEmpty(LIBRAW_DIR) {
         error(Must define the env var LIBRAW_DIR that points to the LibRaw build directory.)
     }
+    isEmpty(CCFITS_INCLUDE) {
+        error(Must define the env var CCFITS_INCLUDE that points to the CCfits include files.)
+    }
+    isEmpty(CCFITS_LIB) {
+        error(Must define the env var CCFITS_LIB that points to directory containing the CCfits library.)
+    }
+    isEmpty(CFITSIO_INCLUDE) {
+        error(Must define the env var CFITSIO_INCLUDE that points to the cfitsio include files.)
+    }
+    isEmpty(CFITSIO_LIB) {
+        error(Must define the env var CFITSIO_LIB that points to directory containing the cfitsio library.)
+    }
+
 
     INCLUDEPATH += $$OPENCV_DIR/include
     INCLUDEPATH += $$LIBRAW_DIR/libraw
+    INCLUDEPATH += $$CCFITS_INCLUDE
+    INCLUDEPATH += $$CFITSIO_INCLUDE
     LIBS += -lucrt
     LIBS += -lucrtd
     LIBS += -L$$OPENCV_DIR/lib/Release
@@ -101,13 +126,18 @@ win32 {
     LIBS += -L$$LIBRAW_DIR/lib
     LIBS += -llibraw
     LIBS += -lWS2_32
+    LIBS += -L$$CCFITS_LIB -lCCfits
+    LIBS += -L$$CFITSIO_LIB -lcfitsio
+
+    # Don't use Microsoft's min and max functions
+    DEFINES += NOMINMAX
 }
 
 macx {
     ICON = $$PWD/images/OpenSkyStacker.icns
 
     CONFIG += link_pkgconfig
-    PKGCONFIG += libraw
+    PKGCONFIG += libraw ccfits cfitsio
 
     # Not using pkg-config for OpenCV because we only want a few libs
     QMAKE_CXXFLAGS += $$system(pkg-config --cflags opencv)
@@ -124,7 +154,8 @@ macx {
 
 linux {
     CONFIG += link_pkgconfig
-    PKGCONFIG += libraw
+    PKGCONFIG += libraw cfitsio
+    LIBS += -lCCfits
 
     # Not using pkg-config for OpenCV because we only want a few libs
     QMAKE_CXXFLAGS += $$system(pkg-config --cflags opencv)

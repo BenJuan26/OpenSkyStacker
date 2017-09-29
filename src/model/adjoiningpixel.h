@@ -10,6 +10,8 @@
 
 typedef unsigned long ulong;
 
+namespace openskystacker {
+
 //! A group of pixels potentially representing one or more Stars.
 /*! Derived from Java code from PIXY2 (https://github.com/jankotek/Pixy2).
 */
@@ -64,5 +66,7 @@ private:
     float current_threshold_;
     std::vector<Pixel> pixels_;
 };
+
+}
 
 #endif // ADJOININGPIXEL_H
