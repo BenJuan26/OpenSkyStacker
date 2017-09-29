@@ -1,14 +1,34 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QDir>
-#include <opencv2/core/core.hpp>
-#include <processing/imagestacker.h>
-#include <QThread>
+#include "model/imagerecord.h"
 #include "model/imagetablemodel.h"
 #include "ui/processingdialog.h"
 #include "ui/optionsdialog.h"
+#include "ui_mainwindow.h"
+#include "processingdialog.h"
+#include "processing/stardetector.h"
+#include "processing/imagestacker.h"
+
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QDebug>
+#include <QGraphicsPixmapItem>
+#include <QDesktopWidget>
+#include <QSettings>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QThread>
+#include <QJsonDocument>
+#include <QMainWindow>
+#include <QDir>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/video/video.hpp>
+
+#include <stdexcept>
 
 #ifdef WIN32
 #include <QtWinExtras/QWinTaskbarButton>

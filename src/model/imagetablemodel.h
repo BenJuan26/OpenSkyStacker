@@ -1,10 +1,15 @@
 #ifndef IMAGETABLEMODEL_H
 #define IMAGETABLEMODEL_H
 
-#include <QAbstractTableModel>
 #include "imagerecord.h"
+
+#include <QAbstractTableModel>
 #include <QDebug>
 #include <QCoreApplication>
+#include <QFileInfo>
+#include <QColor>
+#include <QBrush>
+#include <QFont>
 
 namespace openskystacker {
 

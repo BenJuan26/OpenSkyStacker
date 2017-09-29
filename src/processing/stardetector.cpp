@@ -1,7 +1,4 @@
 #include "stardetector.h"
-#include "hfti.h"
-#include <QTime>
-#include <functional>
 
 #define THRESHOLD_COEFF 20.0
 

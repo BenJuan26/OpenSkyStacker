@@ -3,6 +3,9 @@
 
 #include <QDialog>
 #include <QString>
+#include <QPushButton>
+#include <QDebug>
+
 #include <opencv2/core/core.hpp>
 
 namespace Ui {

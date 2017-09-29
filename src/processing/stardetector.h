@@ -5,11 +5,16 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "model/adjoiningpixel.h"
-#include <stack>
+#include "hfti.h"
+
 #include <QDebug>
 #include <QSettings>
+#include <QTime>
+
+#include <functional>
 #include <string>
 #include <string.h>
+#include <stack>
 
 namespace openskystacker {
 

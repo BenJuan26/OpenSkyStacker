@@ -1,24 +1,4 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "processingdialog.h"
-#include "processing/stardetector.h"
-#include "model/imagerecord.h"
-
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QDebug>
-#include <QGraphicsPixmapItem>
-#include <QDesktopWidget>
-#include <QSettings>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonDocument>
-
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/video/video.hpp>
-
-#include <stdexcept>
 
 using namespace openskystacker;
 
@@ -34,7 +14,6 @@ MainWindow::MainWindow(QWidget *parent) :
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
     stacker_ = new ImageStacker();
-    stacker_->SetBitsPerChannel(ImageStacker::BITS_32);
     worker_thread_ = new QThread();
 
     stacker_->moveToThread(worker_thread_);
@@ -628,39 +607,25 @@ void MainWindow::handleButtonLoadList()
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src) {
-        QImage dest(src.cols, src.rows, QImage::Format_RGB32);
-        int r, g, b;
+    QImage dest(src.cols, src.rows, QImage::Format_RGB32);
+    int r, g, b;
 
-        if (stacker_->GetBitsPerChannel() == ImageStacker::BITS_16) {
-            for(int x = 0; x < src.cols; x++) {
-                for(int y = 0; y < src.rows; y++) {
-
-                    cv::Vec<unsigned short,3> pixel =
-                            src.at< cv::Vec<unsigned short,3> >(y,x);
-                    b = pixel.val[0]/256;
-                    g = pixel.val[1]/256;
-                    r = pixel.val[2]/256;
-                    dest.setPixel(x, y, qRgb(r,g,b));
-                }
+    for(int x = 0; x < src.cols; x++) {
+        for(int y = 0; y < src.rows; y++) {
+            if (src.channels() == 1) {
+                int pixel = src.at<float>(y,x) * 255;
+                dest.setPixel(x, y, qRgb(pixel, pixel, pixel));
+            } else {
+                cv::Vec3f pixel = src.at<cv::Vec3f>(y,x);
+                b = pixel.val[0]*255;
+                g = pixel.val[1]*255;
+                r = pixel.val[2]*255;
+                dest.setPixel(x, y, qRgb(r,g,b));
             }
         }
-        else if (stacker_->GetBitsPerChannel() == ImageStacker::BITS_32) {
-            for(int x = 0; x < src.cols; x++) {
-                for(int y = 0; y < src.rows; y++) {
-                    if (src.channels() == 1) {
-                        int pixel = src.at<float>(y,x) * 255;
-                        dest.setPixel(x, y, qRgb(pixel, pixel, pixel));
-                    } else {
-                        cv::Vec3f pixel = src.at<cv::Vec3f>(y,x);
-                        b = pixel.val[0]*255;
-                        g = pixel.val[1]*255;
-                        r = pixel.val[2]*255;
-                        dest.setPixel(x, y, qRgb(r,g,b));
-                    }
-                }
-            }
-        }
-        return dest;
+    }
+
+    return dest;
 }
 
 void MainWindow::positionAndResizeWindow()

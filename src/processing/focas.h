@@ -30,13 +30,16 @@
 #ifndef FOCAS_H
 #define FOCAS_H
 
-#include "opencv2/core/core.hpp"
-#include <cmath>
-#include <algorithm>
 #include "model/triangle.h"
 #include "model/star.h"
 #include "hfti.h"
+
 #include <qdebug.h>
+
+#include <cmath>
+#include <algorithm>
+
+#include "opencv2/core/core.hpp"
 
 namespace openskystacker {
 

@@ -70,7 +70,7 @@ test {
     # On macOS we don't want the app bundled; a standalone executable is fine.
     CONFIG -= app_bundle
 
-    linux {
+    unix {
         QMAKE_CXXFLAGS += --coverage
         QMAKE_LFLAGS += --coverage
     }

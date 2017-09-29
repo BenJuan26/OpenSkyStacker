@@ -13,7 +13,6 @@ const std::vector<QString> ImageStacker::FITS_EXTENSIONS = {"fit", "fits"};
 ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 {
     cancel_ = false;
-    bits_per_channel_ = BITS_32;
 }
 
 ImageRecord* ImageStacker::GetImageRecord(QString filename)
@@ -115,8 +114,7 @@ cv::Mat ImageStacker::GetCalibratedImage(QString filename) {
 
     delete proc;
 
-    if (bits_per_channel_ == BITS_32)
-        result.convertTo(result, CV_32F, 1/65535.0);
+    result.convertTo(result, CV_32F, 1/65535.0);
 
     return result;
 }
@@ -190,10 +188,6 @@ void ImageStacker::ProcessRaw() {
     }
 
     working_image_ /= totalValidImages;
-
-    if (bits_per_channel_ == BITS_16) {
-        working_image_.convertTo(working_image_, CV_16U);
-    }
 
     // LibRaw works in RGB while OpenCV works in BGR
     cv::cvtColor(working_image_, working_image_, CV_RGB2BGR);
@@ -290,11 +284,6 @@ void ImageStacker::ProcessNonRaw() {
 
     working_image_ /= totalValidImages;
 
-    // only need to change the bit depth, no scaling
-    if (bits_per_channel_ == BITS_16) {
-        working_image_.convertTo(working_image_, CV_16U);
-    }
-
     emit Finished(working_image_, tr("Stacking completed"));
 }
 
@@ -319,62 +308,6 @@ void ImageStacker::detectStars(QString filename, int threshold)
     std::vector<Star> list = sd.GetStars(image, threshold);
 
     emit doneDetectingStars(list.size());
-}
-
-cv::Mat ImageStacker::AverageImages(cv::Mat img1, cv::Mat img2) {
-    cv::Mat result;
-
-    switch (bits_per_channel_) {
-    case BITS_16: {
-        result = cv::Mat(img1.rows, img1.cols, CV_16UC3);
-        for(int x = 0; x < img1.cols; x++) {
-            for(int y = 0; y < img1.rows; y++) {
-
-                cv::Vec<unsigned short, 3> pixel1 = img1.at< cv::Vec<unsigned short,3> >(y,x);
-                unsigned short b1 = pixel1.val[0];
-                unsigned short g1 = pixel1.val[1];
-                unsigned short r1 = pixel1.val[2];
-
-                cv::Vec<unsigned short,3> pixel2 = img2.at< cv::Vec<unsigned short,3> >(y,x);
-                unsigned short b2 = pixel2.val[0];
-                unsigned short g2 = pixel2.val[1];
-                unsigned short r2 = pixel2.val[2];
-
-                result.at< cv::Vec<unsigned short,3> >(y,x).val[0] = (b1 + b2) / 2;
-                result.at< cv::Vec<unsigned short,3> >(y,x).val[1] = (g1 + g2) / 2;
-                result.at< cv::Vec<unsigned short,3> >(y,x).val[2] = (r1 + r2) / 2;
-            }
-        }
-
-        break;
-    }
-
-    case BITS_32: {
-        result = cv::Mat(img1.rows, img1.cols, CV_32FC3);
-        for(int x = 0; x < img1.cols; x++) {
-            for(int y = 0; y < img1.rows; y++) {
-
-                cv::Vec3f pixel1 = img1.at<cv::Vec3f>(y,x);
-                float b1 = pixel1.val[0];
-                float g1 = pixel1.val[1];
-                float r1 = pixel1.val[2];
-
-                cv::Vec3f pixel2 = img2.at<cv::Vec3f>(y,x);
-                float b2 = pixel2.val[0];
-                float g2 = pixel2.val[1];
-                float r2 = pixel2.val[2];
-
-                result.at<cv::Vec3f>(y,x).val[0] = (b1 + b2) / 2.0;
-                result.at<cv::Vec3f>(y,x).val[1] = (g1 + g2) / 2.0;
-                result.at<cv::Vec3f>(y,x).val[2] = (r1 + r2) / 2.0;
-            }
-        }
-
-        break;
-    }
-    }
-
-    return result;
 }
 
 ImageStacker::ImageType ImageStacker::GetImageType(QString filename)
@@ -691,10 +624,7 @@ void ImageStacker::StackFlats()
     //  and values brighter than the average will darken the image, flattening the field
     float avg = cv::mean(result)[0];
 
-    if (bits_per_channel_ == BITS_16)
-        result.convertTo(master_flat_, CV_32F, 1.0/avg);
-    else if (bits_per_channel_ == BITS_32)
-        master_flat_ = result / avg;
+    master_flat_ = result / avg;
 }
 
 void ImageStacker::StackBias()
@@ -735,61 +665,35 @@ cv::Mat ImageStacker::ConvertAndScaleImage(cv::Mat image)
 {
     cv::Mat result;
 
-    if (bits_per_channel_ == BITS_16) {
-        if (image.channels() == 1)
-            result = cv::Mat(image.rows, image.cols, CV_16UC1);
-        else
-            result = cv::Mat(image.rows, image.cols, CV_16UC3);
-        switch (image.depth()) {
-        case CV_8U: default:
-            image.convertTo(result, CV_16U, 256);
-            break;
-        case CV_8S:
-            image.convertTo(result, CV_16U, 256, 32768);
-            break;
-        case CV_16S:
-            image.convertTo(result, CV_16U, 1, 32768);
-            break;
-        case CV_16U:
-            result = image.clone();
-            break;
-        case CV_32S:
-            image.convertTo(result, CV_16U, 1/256.0, 32768);
-            break;
-        case CV_32F: case CV_64F:
-            image.convertTo(result, CV_16U, 65536);
-            break;
-        }
+    if (image.channels() == 1)
+        result = cv::Mat(image.rows, image.cols, CV_32FC1);
+    else
+        result = cv::Mat(image.rows, image.cols, CV_32FC3);
+
+    switch (image.depth()) {
+    case CV_8U: default:
+        image.convertTo(result, CV_32F, 1/255.0);
+        break;
+    case CV_8S:
+        image.convertTo(result, CV_32F, 1/255.0, 1.0);
+        break;
+    case CV_16S:
+        image.convertTo(result, CV_32F, 1/65535.0, 1.0);
+        break;
+    case CV_16U:
+        image.convertTo(result, CV_32F, 1/65535.0);
+        break;
+    case CV_32S:
+        image.convertTo(result, CV_32F, 1.0/2147483647.0, 1.0);
+        break;
+    case CV_32F:
+        result = image.clone();
+        break;
+    case CV_64F:
+        image.convertTo(result, CV_32F);
+        break;
     }
-    else if (bits_per_channel_ == BITS_32) {
-        if (image.channels() == 1)
-            result = cv::Mat(image.rows, image.cols, CV_32FC1);
-        else
-            result = cv::Mat(image.rows, image.cols, CV_32FC3);
-        switch (image.depth()) {
-        case CV_8U: default:
-            image.convertTo(result, CV_32F, 1/255.0);
-            break;
-        case CV_8S:
-            image.convertTo(result, CV_32F, 1/255.0, 1.0);
-            break;
-        case CV_16S:
-            image.convertTo(result, CV_32F, 1/65535.0, 1.0);
-            break;
-        case CV_16U:
-            image.convertTo(result, CV_32F, 1/65535.0);
-            break;
-        case CV_32S:
-            image.convertTo(result, CV_32F, 1.0/2147483647.0, 1.0);
-            break;
-        case CV_32F:
-            result = image.clone();
-            break;
-        case CV_64F:
-            image.convertTo(result, CV_32F);
-            break;
-        }
-    }
+
     return result;
 }
 
@@ -822,8 +726,7 @@ cv::Mat ImageStacker::RawToMat(QString filename)
 
     delete proc;
 
-    if (bits_per_channel_ == BITS_32)
-        image.convertTo(image, CV_32F, 1/65535.0);
+    image.convertTo(image, CV_32F, 1/65535.0);
 
     return image;
 }
@@ -960,22 +863,6 @@ cv::Mat ImageStacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok)
 
 
 // GETTER / SETTER
-
-ImageStacker::BitsPerChannel ImageStacker::GetBitsPerChannel() const
-{
-    mutex_.lock();
-    BitsPerChannel value = bits_per_channel_;
-    mutex_.unlock();
-
-    return value;
-}
-
-void ImageStacker::SetBitsPerChannel(const BitsPerChannel &value)
-{
-    mutex_.lock();
-    bits_per_channel_ = value;
-    mutex_.unlock();
-}
 
 bool ImageStacker::GetUseFlats() const
 {

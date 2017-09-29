@@ -3,9 +3,11 @@
 
 #include "pixel.h"
 #include "star.h"
+
 #include <vector>
 #include <math.h>
 #include <stdlib.h>
+
 #include "opencv2/opencv.hpp"
 
 typedef unsigned long ulong;

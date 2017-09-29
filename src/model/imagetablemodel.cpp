@@ -1,8 +1,4 @@
 #include "imagetablemodel.h"
-#include <QFileInfo>
-#include <QColor>
-#include <QBrush>
-#include <QFont>
 
 using namespace openskystacker;
 

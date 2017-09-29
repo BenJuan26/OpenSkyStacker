@@ -48,12 +48,6 @@ public:
 
     static const std::vector<QString> FITS_EXTENSIONS;
 
-    //! Used to define the number of bits of the final image.
-    enum BitsPerChannel {
-        BITS_16, /*!< 16-bit image. */
-        BITS_32  /*!< 32-bit image. */
-    };
-
     enum ImageType {
         RAW_IMAGE,
         FITS_IMAGE,
@@ -109,9 +103,6 @@ public:
     bool GetUseFlats() const;
     void SetUseFlats(bool value);
 
-    BitsPerChannel GetBitsPerChannel() const;
-    void SetBitsPerChannel(const BitsPerChannel &value);
-
     QStringList GetBiasFrameFileNames() const;
     void SetBiasFrameFileNames(const QStringList &value);
 
@@ -154,7 +145,6 @@ public slots:
 
 private:
     cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok = 0);
-    cv::Mat AverageImages(cv::Mat img1, cv::Mat img2);
 
     ImageType GetImageType(QString filename);
 
@@ -182,7 +172,6 @@ private:
 
     int current_operation_;
     int total_operations_;
-    BitsPerChannel bits_per_channel_;
 
     bool use_darks_ = false;
     bool use_dark_flats_ = false;

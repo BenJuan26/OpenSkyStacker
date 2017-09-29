@@ -1,7 +1,5 @@
 #include "processingdialog.h"
 #include "ui_processingdialog.h"
-#include <QPushButton>
-#include <QDebug>
 
 ProcessingDialog::ProcessingDialog(QWidget *parent) :
     QDialog(parent),
