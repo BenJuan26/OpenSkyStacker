@@ -11,6 +11,8 @@
 #include <string>
 #include <string.h>
 
+namespace openskystacker {
+
 //! Manages star analysis and detection.
 class StarDetector
 {
@@ -62,5 +64,7 @@ private:
     std::vector<AdjoiningPixel> GetAdjoiningPixels(cv::Mat image, float threshold, float minPeak);
     AdjoiningPixel DetectAdjoiningPixel(cv::Mat image, int x, int y, float threshold);
 };
+
+}
 
 #endif // STARDETECTOR_H

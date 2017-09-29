@@ -4,6 +4,8 @@
 #include <QString>
 #include <ctime>
 
+namespace openskystacker {
+
 //! Contains metadata regarding an image.
 class ImageRecord
 {
@@ -58,5 +60,7 @@ private:
     int width_;
     int height_;
 };
+
+}
 
 #endif // IMAGERECORD_H

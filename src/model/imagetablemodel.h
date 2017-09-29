@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QCoreApplication>
 
+namespace openskystacker {
+
 //! Defines the behaviour of the table of images.
 class ImageTableModel : public QAbstractTableModel
 {
@@ -67,5 +69,7 @@ public:
 private:
     QList<ImageRecord*> list;
 };
+
+}
 
 #endif // IMAGETABLEMODEL_H

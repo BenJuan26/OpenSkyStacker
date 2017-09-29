@@ -1,5 +1,7 @@
 #include "adjoiningpixel.h"
 
+using namespace openskystacker;
+
 AdjoiningPixel::AdjoiningPixel()
 {
 

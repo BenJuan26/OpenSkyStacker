@@ -1,6 +1,8 @@
 #ifndef STAR_H
 #define STAR_H
 
+namespace openskystacker {
+
 //! Represents a star as it appears in an image.
 class Star
 {
@@ -49,5 +51,7 @@ private:
     float radius_;
     float value_;
 };
+
+}
 
 #endif // STAR_H

@@ -1,5 +1,7 @@
 #include "triangle.h"
 
+using namespace openskystacker;
+
 Triangle::Triangle()
 {
 

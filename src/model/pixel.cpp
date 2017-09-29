@@ -1,5 +1,7 @@
 #include "pixel.h"
 
+using namespace openskystacker;
+
 Pixel::Pixel()
 {
 

@@ -1,6 +1,8 @@
 #ifndef PIXEL_H
 #define PIXEL_H
 
+namespace openskystacker {
+
 //! Represents a pixel in an image.
 class Pixel
 {
@@ -32,5 +34,7 @@ private:
     int y_;
     float value_;
 };
+
+}
 
 #endif // PIXEL_H

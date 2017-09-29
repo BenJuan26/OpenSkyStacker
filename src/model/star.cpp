@@ -1,5 +1,7 @@
 #include "star.h"
 
+using namespace openskystacker;
+
 Star::Star()
 {
 

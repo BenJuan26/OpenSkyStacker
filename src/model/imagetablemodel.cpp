@@ -4,6 +4,8 @@
 #include <QBrush>
 #include <QFont>
 
+using namespace openskystacker;
+
 ImageTableModel::ImageTableModel(QObject *parent) : QAbstractTableModel{parent}
 {
 

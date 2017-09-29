@@ -1,6 +1,8 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
+namespace openskystacker {
+
 //! Represents a triangle in the context of image alignment using the FOCAS algorithm.
 class Triangle
 {
@@ -31,5 +33,7 @@ public:
     //! The y coordinate in triangle space
     float y_;
 };
+
+}
 
 #endif // TRIANGLE_H

@@ -121,10 +121,10 @@ private:
 
     Ui::MainWindow *ui_;
     QThread *worker_thread_;
-    ImageStacker *stacker_;
+    openskystacker::ImageStacker *stacker_;
     ProcessingDialog *processing_dialog_;
     QStringList image_file_filter_;
-    ImageTableModel table_model_;
+    openskystacker::ImageTableModel table_model_;
     bool has_failed_ = false;
     QString error_message_;
 

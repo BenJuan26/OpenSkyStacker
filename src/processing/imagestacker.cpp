@@ -1,21 +1,14 @@
 #include "imagestacker.h"
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/video/video.hpp>
-#include <QDebug>
-#include <QTime>
-#include <QFileInfo>
-#include <ctime>
 
-#ifdef WIN32
-#define LIBRAW_NODLL
-#endif
-#include <libraw.h>
+using namespace openskystacker;
+using namespace CCfits;
 
 const std::vector<QString> ImageStacker::RAW_EXTENSIONS = {"3fr", "ari", "arw", "bay", "crw", "cr2",
         "cap", "data", "dcs", "dcr", "dng", "drf", "eip", "erf", "fff", "gpr", "iiq", "k25", "kdc",
         "mdc", "mef", "mos", "mrw", "nef", "nrw", "obm", "orf", "pef", "ptx", "pxn", "r3d", "raf",
         "raw", "rwl", "rw2", "rwz", "sr2", "srf", "srw", "x3f"};
+
+const std::vector<QString> ImageStacker::FITS_EXTENSIONS = {"fit", "fits"};
 
 ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 {
@@ -42,110 +35,6 @@ ImageRecord* ImageStacker::GetImageRecord(QString filename)
     return record;
 }
 
-void ImageStacker::ProcessNonRaw() {
-    cancel_ = false;
-    emit UpdateProgress(tr("Checking image sizes"), 0);
-
-    int err = ValidateImageSizes();
-    if (err) {
-        emit ProcessingError("Images must all be the same size.");
-        return;
-    }
-
-    current_operation_ = 0;
-    total_operations_ = target_image_file_names_.length() * 2 + 1;
-
-    if (use_bias_)       total_operations_ += bias_frame_file_names_.length();
-    if (use_darks_)      total_operations_ += dark_frame_file_names_.length();
-    if (use_dark_flats_) total_operations_ += dark_flat_frame_file_names_.length();
-    if (use_flats_)      total_operations_ += flat_frame_file_names_.length();
-
-    if (use_bias_)       StackBias();
-    if (use_darks_)      StackDarks();
-    if (use_dark_flats_) StackDarkFlats();
-    if (use_flats_)      StackFlats();
-
-
-    emit UpdateProgress(tr("Reading light frame 1 of %n", "",
-            target_image_file_names_.length() + 1),
-            100*current_operation_/total_operations_);
-    current_operation_++;
-
-    ref_image_ = ReadImage(ref_image_file_name_);
-
-    if (use_bias_)  cv::subtract(ref_image_, master_bias_, ref_image_, cv::noArray(), CV_32F);
-    if (use_darks_) cv::subtract(ref_image_, master_dark_, ref_image_, cv::noArray(), CV_32F);
-    if (use_flats_) cv::divide(ref_image_, master_flat_, ref_image_, 1.0, CV_32F);
-
-    // 32-bit float no matter what for the working image
-    ref_image_.convertTo(working_image_, CV_32F);
-
-    QString message;
-    int totalValidImages = 1;
-
-    for (int k = 0; k < target_image_file_names_.length() && !cancel_; k++) {
-        // ---------------- LOAD -----------------
-        message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        cv::Mat targetImage = ReadImage(target_image_file_names_.at(k));
-
-        // ------------- CALIBRATION --------------
-        message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        if (use_bias_)  cv::subtract(targetImage, master_bias_, targetImage, cv::noArray(), CV_32F);
-        if (use_darks_) cv::subtract(targetImage, master_dark_, targetImage, cv::noArray(), CV_32F);
-        if (use_flats_) cv::divide(targetImage, master_flat_, targetImage, 1.0, CV_32F);
-
-        // -------------- ALIGNMENT ---------------
-        message = tr("Aligning image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        current_operation_++;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        int ok = 0;
-        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage, &ok);
-
-        if (cancel_) return;
-
-        if (ok != 0)
-            continue;
-
-        // -------------- STACKING ---------------
-        message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
-        current_operation_++;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        cv::add(working_image_, targetAligned, working_image_, cv::noArray(), CV_32F);
-        totalValidImages++;
-    }
-
-    if (cancel_) return;
-    if (totalValidImages < 2) {
-        emit ProcessingError(tr("No images could be aligned to the reference image. Try using a lower tolerance."));
-        return;
-    }
-
-    working_image_ /= totalValidImages;
-
-    // only need to change the bit depth, no scaling
-    if (bits_per_channel_ == BITS_16) {
-        working_image_.convertTo(working_image_, CV_16U);
-    }
-
-    emit Finished(working_image_, tr("Stacking completed"));
-}
-
-bool ImageStacker::FileHasRawExtension(QString filename)
-{
-    QFileInfo info(filename);
-    QString ext = info.completeSuffix();
-    return std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end();
-}
-
 int ImageStacker::GetTotalOperations()
 {
     int ops = target_image_file_names_.length() * 2 + 1;
@@ -159,26 +48,19 @@ int ImageStacker::GetTotalOperations()
 }
 
 void ImageStacker::Process() {
-    bool raw = FileHasRawExtension(ref_image_file_name_);
-    if (raw) {
-        for (int i = 0; i < target_image_file_names_.length(); i++) {
-            if (!FileHasRawExtension(target_image_file_names_.at(i))) {
-                emit ProcessingError(tr("Cannot mix raw and processed images."));
-                return;
-            }
-        }
+    ImageType refType = GetImageType(ref_image_file_name_);
 
-        ProcessRaw();
-    } else {
-        for (int i = 0; i < target_image_file_names_.length(); i++) {
-            if (FileHasRawExtension(target_image_file_names_.at(i))) {
-                emit ProcessingError(tr("Cannot mix raw and processed images."));
-                return;
-            }
+    for (int i = 0; i < target_image_file_names_.length(); i++) {
+        if (GetImageType(target_image_file_names_.at(i)) != refType) {
+            emit ProcessingError(tr("Images must be the same type."));
+            return;
         }
-
-        ProcessNonRaw();
     }
+
+    if (refType == RAW_IMAGE)
+        ProcessRaw();
+    else
+        ProcessNonRaw();
 }
 
 cv::Mat ImageStacker::GetBayerMatrix(QString filename) {
@@ -319,6 +201,104 @@ void ImageStacker::ProcessRaw() {
     emit Finished(working_image_, tr("Stacking completed"));
 }
 
+void ImageStacker::ProcessNonRaw() {
+    cancel_ = false;
+    emit UpdateProgress(tr("Checking image sizes"), 0);
+
+    int err = ValidateImageSizes();
+    if (err) {
+        emit ProcessingError("Images must all be the same size.");
+        return;
+    }
+
+    current_operation_ = 0;
+    total_operations_ = target_image_file_names_.length() * 2 + 1;
+
+    if (use_bias_)       total_operations_ += bias_frame_file_names_.length();
+    if (use_darks_)      total_operations_ += dark_frame_file_names_.length();
+    if (use_dark_flats_) total_operations_ += dark_flat_frame_file_names_.length();
+    if (use_flats_)      total_operations_ += flat_frame_file_names_.length();
+
+    if (use_bias_)       StackBias();
+    if (use_darks_)      StackDarks();
+    if (use_dark_flats_) StackDarkFlats();
+    if (use_flats_)      StackFlats();
+
+
+    emit UpdateProgress(tr("Reading light frame 1 of %n", "",
+            target_image_file_names_.length() + 1),
+            100*current_operation_/total_operations_);
+    current_operation_++;
+
+    ref_image_ = ReadImage(ref_image_file_name_);
+
+    if (use_bias_)  cv::subtract(ref_image_, master_bias_, ref_image_, cv::noArray(), CV_32F);
+    if (use_darks_) cv::subtract(ref_image_, master_dark_, ref_image_, cv::noArray(), CV_32F);
+    if (use_flats_) cv::divide(ref_image_, master_flat_, ref_image_, 1.0, CV_32F);
+
+    // 32-bit float no matter what for the working image
+    ref_image_.convertTo(working_image_, CV_32F);
+
+    QString message;
+    int totalValidImages = 1;
+
+    for (int k = 0; k < target_image_file_names_.length() && !cancel_; k++) {
+        // ---------------- LOAD -----------------
+        message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
+        qDebug() << message;
+        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
+
+        cv::Mat targetImage = ReadImage(target_image_file_names_.at(k));
+
+        // ------------- CALIBRATION --------------
+        message = tr("Calibrating light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
+        qDebug() << message;
+        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
+
+        if (use_bias_)  cv::subtract(targetImage, master_bias_, targetImage, cv::noArray(), CV_32F);
+        if (use_darks_) cv::subtract(targetImage, master_dark_, targetImage, cv::noArray(), CV_32F);
+        if (use_flats_) cv::divide(targetImage, master_flat_, targetImage, 1.0, CV_32F);
+
+        // -------------- ALIGNMENT ---------------
+        message = tr("Aligning image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
+        current_operation_++;
+        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
+
+        int ok = 0;
+        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage, &ok);
+
+        if (cancel_) return;
+
+        if (ok != 0)
+            continue;
+
+        // -------------- STACKING ---------------
+        message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
+        qDebug() << message;
+        current_operation_++;
+        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
+
+        cv::add(working_image_, targetAligned, working_image_, cv::noArray(), CV_32F);
+        totalValidImages++;
+    }
+
+    if (cancel_) return;
+    if (totalValidImages < 2) {
+        emit ProcessingError(tr("No images could be aligned to the reference image. Try using a lower tolerance."));
+        return;
+    }
+
+    working_image_ /= totalValidImages;
+
+    // only need to change the bit depth, no scaling
+    if (bits_per_channel_ == BITS_16) {
+        working_image_.convertTo(working_image_, CV_16U);
+    }
+
+    emit Finished(working_image_, tr("Stacking completed"));
+}
+
+
 void ImageStacker::ReadQImage(QString filename)
 {
     cv::Mat image = ReadImage(filename);
@@ -395,6 +375,20 @@ cv::Mat ImageStacker::AverageImages(cv::Mat img1, cv::Mat img2) {
     }
 
     return result;
+}
+
+ImageStacker::ImageType ImageStacker::GetImageType(QString filename)
+{
+    QFileInfo info(filename);
+    QString ext = info.suffix();
+
+    if (std::find(FITS_EXTENSIONS.begin(), FITS_EXTENSIONS.end(), ext.toLower()) != FITS_EXTENSIONS.end()) {
+        return FITS_IMAGE;
+    } else if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+        return RAW_IMAGE;
+    } else {
+        return RGB_IMAGE;
+    }
 }
 
 int ImageStacker::ValidateImageSizes()
@@ -559,22 +553,13 @@ QImage ImageStacker::Mat2QImage(const cv::Mat &src)
     QImage dest(src.cols, src.rows, QImage::Format_RGB32);
     int r, g, b;
 
-    if (GetBitsPerChannel() == ImageStacker::BITS_16) {
-        for(int x = 0; x < src.cols; x++) {
-            for(int y = 0; y < src.rows; y++) {
-
-                cv::Vec<unsigned short,3> pixel = src.at< cv::Vec<unsigned short,3> >(y,x);
-                b = pixel.val[0]/256;
-                g = pixel.val[1]/256;
-                r = pixel.val[2]/256;
-                dest.setPixel(x, y, qRgb(r,g,b));
-            }
-        }
-    }
-    else if (GetBitsPerChannel() == ImageStacker::BITS_32) {
-        for(int x = 0; x < src.cols; x++) {
-            for(int y = 0; y < src.rows; y++) {
-
+    for(int x = 0; x < src.cols; x++) {
+        for(int y = 0; y < src.rows; y++) {
+            if (src.channels() == 1) {
+                float pixel = src.at<float>(y, x);
+                int value = pixel * 255;
+                dest.setPixel(x,y,qRgb(value, value, value));
+            } else {
                 cv::Vec3f pixel = src.at<cv::Vec3f>(y,x);
                 b = pixel.val[0]*255;
                 g = pixel.val[1]*255;
@@ -583,13 +568,14 @@ QImage ImageStacker::Mat2QImage(const cv::Mat &src)
             }
         }
     }
+
     return dest;
 }
 
 void ImageStacker::StackDarks()
 {
     cv::Mat dark1;
-    bool raw = FileHasRawExtension(dark_frame_file_names_.at(0));
+    bool raw = GetImageType(dark_frame_file_names_.at(0)) == RAW_IMAGE;
     if (raw) {
         dark1 = GetBayerMatrix(dark_frame_file_names_.at(0));
     } else {
@@ -627,7 +613,7 @@ void ImageStacker::StackDarks()
 void ImageStacker::StackDarkFlats()
 {
     cv::Mat darkFlat1;
-    bool raw = FileHasRawExtension(dark_flat_frame_file_names_.at(0));
+    bool raw = GetImageType(dark_flat_frame_file_names_.at(0)) == RAW_IMAGE;
     if (raw) {
         darkFlat1 = GetBayerMatrix(dark_flat_frame_file_names_.at(0));
     } else {
@@ -666,7 +652,7 @@ void ImageStacker::StackFlats()
 {
     // most algorithms compute the median, but we will stick with mean for now
     cv::Mat flat1;
-    bool raw = FileHasRawExtension(flat_frame_file_names_.at(0));
+    bool raw = GetImageType(flat_frame_file_names_.at(0)) == RAW_IMAGE;
     if (raw) {
         flat1 = GetBayerMatrix(flat_frame_file_names_.at(0));
     } else {
@@ -714,7 +700,7 @@ void ImageStacker::StackFlats()
 void ImageStacker::StackBias()
 {
     cv::Mat bias1;
-    bool raw = FileHasRawExtension(bias_frame_file_names_.at(0));
+    bool raw = GetImageType(bias_frame_file_names_.at(0)) == RAW_IMAGE;
     if (raw) {
         bias1 = GetBayerMatrix(bias_frame_file_names_.at(0));
     } else {
@@ -750,7 +736,10 @@ cv::Mat ImageStacker::ConvertAndScaleImage(cv::Mat image)
     cv::Mat result;
 
     if (bits_per_channel_ == BITS_16) {
-        result = cv::Mat(image.rows, image.cols, CV_16UC3);
+        if (image.channels() == 1)
+            result = cv::Mat(image.rows, image.cols, CV_16UC1);
+        else
+            result = cv::Mat(image.rows, image.cols, CV_16UC3);
         switch (image.depth()) {
         case CV_8U: default:
             image.convertTo(result, CV_16U, 256);
@@ -773,7 +762,10 @@ cv::Mat ImageStacker::ConvertAndScaleImage(cv::Mat image)
         }
     }
     else if (bits_per_channel_ == BITS_32) {
-        result = cv::Mat(image.rows, image.cols, CV_32FC3);
+        if (image.channels() == 1)
+            result = cv::Mat(image.rows, image.cols, CV_32FC1);
+        else
+            result = cv::Mat(image.rows, image.cols, CV_32FC3);
         switch (image.depth()) {
         case CV_8U: default:
             image.convertTo(result, CV_32F, 1/255.0);
@@ -836,20 +828,76 @@ cv::Mat ImageStacker::RawToMat(QString filename)
     return image;
 }
 
+cv::Mat ImageStacker::FITSToMat(QString filename)
+{
+    std::auto_ptr<FITS> pInFile(new FITS(filename.toUtf8().constData(), Read, true));
+    PHDU &image = pInFile->pHDU();
+    image.readAllKeys();
+
+    cv::Mat result;
+    long rows = image.axis(1);
+    long cols = image.axis(0);
+
+    long bits = image.bitpix();
+    switch(bits) {
+    case 8: {
+        std::valarray<unsigned char> contents;
+        image.read(contents);
+        cv::Mat tmp = cv::Mat(rows, cols, CV_8UC1, &contents[0]);
+        tmp.convertTo(result, CV_32F, 1.0/255.0);
+        break;
+    }
+    case 16: default: {
+        std::valarray<unsigned short> contents;
+        image.read(contents);
+        cv::Mat tmp = cv::Mat(rows, cols, CV_16UC1, &contents[0]);
+        tmp.convertTo(result, CV_32F, 1.0/65535.0);
+        break;
+    }
+    case 32: {
+        std::valarray<unsigned long> contents;
+        image.read(contents);
+        cv::Mat tmp = cv::Mat(rows, cols, CV_32SC1, &contents[0]);
+        tmp.convertTo(result, CV_32F, 1.0/2147483647.0, 2147483648);
+        break;
+    }
+    case -32: {
+        std::valarray<float> contents;
+        image.read(contents);
+        cv::Mat tmp = cv::Mat(rows, cols, CV_32FC1, &contents[0]);
+        result = tmp.clone();
+        break;
+    }
+    case -64: {
+        std::valarray<double> contents;
+        image.read(contents);
+        cv::Mat tmp = cv::Mat(rows, cols, CV_64FC1, &contents[0]);
+        tmp.convertTo(result, CV_32F);
+        break;
+    }
+    }
+
+    return result;
+}
+
 cv::Mat ImageStacker::ReadImage(QString filename)
 {
     cv::Mat result;
 
-    QFileInfo info(filename);
-    QString ext = info.completeSuffix();
+    ImageType type = GetImageType(filename);
 
     // assumption: if it looks like a raw file, it is a raw file
-    if (std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), ext.toLower()) != RAW_EXTENSIONS.end()) {
+    switch(type) {
+    case RAW_IMAGE:
         result = RawToMat(filename);
-    }
-    else {
+        break;
+    case FITS_IMAGE:
+        result = FITSToMat(filename);
+        break;
+    case RGB_IMAGE: default:
         result = cv::imread(filename.toUtf8().constData(), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
         result = ConvertAndScaleImage(result);
+        break;
     }
 
     return result;
