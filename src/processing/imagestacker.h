@@ -3,6 +3,7 @@
 
 #include "processing/stardetector.h"
 #include "processing/focas.h"
+#include "processing/exif.h"
 #include "model/imagerecord.h"
 
 #include <QObject>
@@ -162,6 +163,8 @@ private:
     cv::Mat GetCalibratedImage(QString filename);
     cv::Mat GetBayerMatrix(QString filename);
     cv::Mat GenerateAlignedImageOld(cv::Mat ref, cv::Mat target);
+
+    time_t EXIFTimeToCTime(std::string exifTime);
 
     void StackDarks();
     void StackDarkFlats();

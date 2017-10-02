@@ -11,6 +11,8 @@
 #include <QBrush>
 #include <QFont>
 
+#include <cmath>
+
 namespace openskystacker {
 
 //! Defines the behaviour of the table of images.

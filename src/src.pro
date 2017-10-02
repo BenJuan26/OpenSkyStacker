@@ -38,7 +38,8 @@ SOURCES += main.cpp\
     model/triangle.cpp \
     model/imagerecord.cpp \
     model/imagetablemodel.cpp \
-    ui/optionsdialog.cpp
+    ui/optionsdialog.cpp \
+    processing/exif.cpp
 
 HEADERS  += ui/mainwindow.h \
     processing/imagestacker.h \
@@ -53,7 +54,8 @@ HEADERS  += ui/mainwindow.h \
     model/triangle.h \
     model/imagerecord.h \
     model/imagetablemodel.h \
-    ui/optionsdialog.h
+    ui/optionsdialog.h \
+    processing/exif.h
 
 FORMS    += ui/mainwindow.ui \
     ui/processingdialog.ui \

@@ -19,10 +19,11 @@ MainWindow::MainWindow(QWidget *parent) :
     stacker_->moveToThread(worker_thread_);
     worker_thread_->start();
 
-    image_file_filter_ << tr("All files (*)") << tr("Image files "
-            "(*.jpg *.jpeg *.png *.tif)");
-    image_file_filter_ << tr("Raw image files (*.NEF *.CR2 *.DNG *.RAW)");
-    image_file_filter_ << tr("FITS image files (*.fit *.fits)");
+    image_file_filter_
+            << tr("All files (*)")
+            << tr("Image files (*.jpg *.jpeg *.png *.tif)")
+            << tr("Raw image files (*.NEF *.CR2 *.DNG *.RAW)")
+            << tr("FITS image files (*.fit *.fits)");
 
     QTableView *table = ui_->imageListView;
     table->setModel(&table_model_);

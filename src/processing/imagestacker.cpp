@@ -2,6 +2,7 @@
 
 using namespace openskystacker;
 using namespace CCfits;
+using namespace easyexif;
 
 const std::vector<QString> ImageStacker::RAW_EXTENSIONS = {"3fr", "ari", "arw", "bay", "crw", "cr2",
         "cap", "data", "dcs", "dcr", "dng", "drf", "eip", "erf", "fff", "gpr", "iiq", "k25", "kdc",
@@ -17,19 +18,44 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 
 ImageRecord* ImageStacker::GetImageRecord(QString filename)
 {
-    LibRaw processor;
-
-    processor.open_file(filename.toUtf8().constData());
-
-    libraw_imgother_t other = processor.imgdata.other;
-
     ImageRecord *record = new ImageRecord();
     record->SetFilename(filename);
-    record->SetIso(other.iso_speed);
-    record->SetShutter(other.shutter);
-    record->SetTimestamp(other.timestamp);
-    record->SetWidth(processor.imgdata.sizes.width);
-    record->SetHeight(processor.imgdata.sizes.height);
+
+    switch (GetImageType(filename)) {
+    case RAW_IMAGE: {
+        LibRaw processor;
+
+        processor.open_file(filename.toUtf8().constData());
+
+        libraw_imgother_t other = processor.imgdata.other;
+
+        record->SetIso(other.iso_speed);
+        record->SetShutter(other.shutter);
+        record->SetTimestamp(other.timestamp);
+        record->SetWidth(processor.imgdata.sizes.width);
+        record->SetHeight(processor.imgdata.sizes.height);
+        break;
+    }
+    case FITS_IMAGE: {
+
+        break;
+    }
+    case RGB_IMAGE: default: {
+        QFile file(filename);
+        file.open(QIODevice::ReadOnly);
+        QByteArray blob = file.readAll();
+
+        EXIFInfo exif;
+        if (!exif.parseFrom((unsigned char*)blob.constData(), blob.size())) {
+            record->SetIso(exif.ISOSpeedRatings);
+            record->SetShutter(exif.ExposureTime);
+            record->SetTimestamp(EXIFTimeToCTime(exif.DateTime));
+            record->SetWidth(exif.ImageWidth);
+            record->SetHeight(exif.ImageHeight);
+        }
+        break;
+    }
+    }
 
     return record;
 }
@@ -79,6 +105,37 @@ cv::Mat ImageStacker::GetBayerMatrix(QString filename) {
     cv::Mat bayer(imgdata->sizes.raw_width, imgdata->sizes.raw_height,
             CV_16UC1, imgdata->rawdata.raw_image);
     return bayer.clone();
+}
+
+time_t ImageStacker::EXIFTimeToCTime(std::string exifTime)
+{
+    // EXIF format: YYYY:MM:DD HH:MM:SS
+
+    QString timeString(exifTime.c_str());
+    QStringList dateAndTime = timeString.split(' ');
+    QString imageDate = dateAndTime.at(0);
+    QString imageTime = dateAndTime.at(1);
+
+    QStringList dateList = imageDate.split(':');
+    QString year = dateList.at(0);
+    QString mon = dateList.at(1);
+    QString mday = dateList.at(2);
+
+    QStringList timeList = imageTime.split(':');
+    QString hour = timeList.at(0);
+    QString min = timeList.at(1);
+    QString sec = timeList.at(2);
+
+    struct tm tm;
+    tm.tm_year = year.toInt() - 1900; // years since 1900
+    tm.tm_mon = mon.toInt() - 1;      // month is 0-indexed
+    tm.tm_mday = mday.toInt();
+    tm.tm_hour = hour.toInt();
+    tm.tm_min = min.toInt();
+    tm.tm_sec = sec.toInt();
+    tm.tm_isdst = -1;                 // tell the library to use local DST
+
+    return mktime(&tm);
 }
 
 cv::Mat ImageStacker::GetCalibratedImage(QString filename) {
