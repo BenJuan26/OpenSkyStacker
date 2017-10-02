@@ -165,6 +165,7 @@ private:
     cv::Mat GenerateAlignedImageOld(cv::Mat ref, cv::Mat target);
 
     time_t EXIFTimeToCTime(std::string exifTime);
+    time_t FITSTimeToCTime(std::string fitsTime);
 
     void StackDarks();
     void StackDarkFlats();

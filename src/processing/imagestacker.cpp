@@ -37,6 +37,33 @@ ImageRecord* ImageStacker::GetImageRecord(QString filename)
         break;
     }
     case FITS_IMAGE: {
+        std::auto_ptr<FITS> pInFile(new FITS(filename.toUtf8().constData(), Read));
+        PHDU &image = pInFile->pHDU();
+        image.readAllKeys();
+
+        int exp;
+        try {
+            image.readKey<int>("EXPTIME", exp);
+        } catch (HDU::NoSuchKeyword) {
+            try {
+                image.readKey<int>("EXPOSURE", exp);
+            } catch (HDU::NoSuchKeyword) {
+                exp = -1;
+            }
+        }
+
+        std::string date;
+        try {
+            image.readKey<std::string>("DATE-OBS", date);
+        } catch (HDU::NoSuchKeyword) {
+            date = "";
+        }
+
+        record->SetIso(-1);
+        record->SetShutter(exp);
+        record->SetTimestamp(FITSTimeToCTime(date));
+        record->SetWidth(image.axis(0));
+        record->SetHeight(image.axis(1));
 
         break;
     }
@@ -117,6 +144,37 @@ time_t ImageStacker::EXIFTimeToCTime(std::string exifTime)
     QString imageTime = dateAndTime.at(1);
 
     QStringList dateList = imageDate.split(':');
+    QString year = dateList.at(0);
+    QString mon = dateList.at(1);
+    QString mday = dateList.at(2);
+
+    QStringList timeList = imageTime.split(':');
+    QString hour = timeList.at(0);
+    QString min = timeList.at(1);
+    QString sec = timeList.at(2);
+
+    struct tm tm;
+    tm.tm_year = year.toInt() - 1900; // years since 1900
+    tm.tm_mon = mon.toInt() - 1;      // month is 0-indexed
+    tm.tm_mday = mday.toInt();
+    tm.tm_hour = hour.toInt();
+    tm.tm_min = min.toInt();
+    tm.tm_sec = sec.toInt();
+    tm.tm_isdst = -1;                 // tell the library to use local DST
+
+    return mktime(&tm);
+}
+
+time_t ImageStacker::FITSTimeToCTime(std::string fitsTime)
+{
+    // ISO 8601 format: yyyy-mm-ddTHH:MM:SS[.sss]
+
+    QString timeString(fitsTime.c_str());
+    QStringList dateAndTime = timeString.split('T');
+    QString imageDate = dateAndTime.at(0);
+    QString imageTime = dateAndTime.at(1);
+
+    QStringList dateList = imageDate.split('-');
     QString year = dateList.at(0);
     QString mon = dateList.at(1);
     QString mday = dateList.at(2);

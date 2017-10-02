@@ -74,7 +74,12 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
                 return QString::number(image->GetShutter()) + " s";
             }
         }
-        case 4: return image->GetIso();
+        case 4:
+            if (image->GetIso() <= 0) {
+                return "-";
+            } else {
+                return image->GetIso();
+            }
         case 5: {
             std::time_t time = image->GetTimestamp();
             std::tm *timeinfo = std::localtime(&time);
