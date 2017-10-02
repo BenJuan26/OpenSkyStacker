@@ -79,6 +79,19 @@ ImageRecord* ImageStacker::GetImageRecord(QString filename)
             record->SetTimestamp(EXIFTimeToCTime(exif.DateTime));
             record->SetWidth(exif.ImageWidth);
             record->SetHeight(exif.ImageHeight);
+        } else {
+            record->SetIso(-1);
+            record->SetShutter(-1);
+            record->SetTimestamp(-1);
+
+            cv::Mat image = cv::imread(filename.toUtf8().constData());
+            if (image.data) {
+                record->SetWidth(image.cols);
+                record->SetHeight(image.rows);
+            } else {
+                record->SetWidth(-1);
+                record->SetHeight(-1);
+            }
         }
         break;
     }

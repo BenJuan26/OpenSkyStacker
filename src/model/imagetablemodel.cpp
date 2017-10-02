@@ -75,13 +75,16 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             }
         }
         case 4:
-            if (image->GetIso() <= 0) {
+            if (image->GetIso() <= 0)
                 return "-";
-            } else {
+            else
                 return image->GetIso();
-            }
         case 5: {
             std::time_t time = image->GetTimestamp();
+            if (time == -1) {
+                return "-";
+            }
+
             std::tm *timeinfo = std::localtime(&time);
             if (!timeinfo) {
                 return "-";
@@ -89,8 +92,16 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
                 return std::asctime(timeinfo);
             }
         }
-        case 6: return image->GetWidth();
-        case 7: return image->GetHeight();
+        case 6:
+            if (image->GetWidth() <= 0)
+                return "-";
+            else
+                return image->GetWidth();
+        case 7:
+            if (image->GetHeight() <= 0)
+                return "-";
+            else
+                return image->GetHeight();
         default: return {};
         }
     }
