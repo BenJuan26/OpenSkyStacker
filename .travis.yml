@@ -7,3 +7,5 @@ install:
     - docker build -t openskystacker .
 script:
     - docker run -it openskystacker /bin/sh -c 'qmake -qt=qt5 && make'
+deploy:
+    - docker run -it openskystacker /bin/sh -c 'qmake CONFIG+=test && make && bin/testoss'
