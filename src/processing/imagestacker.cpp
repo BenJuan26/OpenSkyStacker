@@ -112,7 +112,7 @@ int ImageStacker::GetTotalOperations()
     return ops;
 }
 
-void ImageStacker::Process() {
+void ImageStacker::Process(int tolerance) {
     ImageType refType = GetImageType(ref_image_file_name_);
 
     for (int i = 0; i < target_image_file_names_.length(); i++) {
@@ -123,9 +123,9 @@ void ImageStacker::Process() {
     }
 
     if (refType == RAW_IMAGE)
-        ProcessRaw();
+        ProcessRaw(tolerance);
     else
-        ProcessNonRaw();
+        ProcessNonRaw(tolerance);
 }
 
 cv::Mat ImageStacker::GetBayerMatrix(QString filename) {
@@ -247,7 +247,7 @@ cv::Mat ImageStacker::GetCalibratedImage(QString filename) {
     return result;
 }
 
-void ImageStacker::ProcessRaw() {
+void ImageStacker::ProcessRaw(int tolerance) {
     cancel_ = false;
     emit UpdateProgress(tr("Checking image sizes"), 0);
 
@@ -292,7 +292,7 @@ void ImageStacker::ProcessRaw() {
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         int ok = 0;
-        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage, &ok);
+        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage, tolerance, &ok);
 
         if (cancel_) return;
 
@@ -323,7 +323,7 @@ void ImageStacker::ProcessRaw() {
     emit Finished(working_image_, tr("Stacking completed"));
 }
 
-void ImageStacker::ProcessNonRaw() {
+void ImageStacker::ProcessNonRaw(int tolerance) {
     cancel_ = false;
     emit UpdateProgress(tr("Checking image sizes"), 0);
 
@@ -387,7 +387,7 @@ void ImageStacker::ProcessNonRaw() {
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
         int ok = 0;
-        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage, &ok);
+        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage, tolerance, &ok);
 
         if (cancel_) return;
 
@@ -668,7 +668,10 @@ void ImageStacker::StackDarks()
 
     result /= dark_frame_file_names_.length();
 
-    result.convertTo(master_dark_, CV_16U);
+    if (raw)
+        result.convertTo(master_dark_, CV_16U);
+    else
+        master_dark_ = result.clone();
 }
 
 void ImageStacker::StackDarkFlats()
@@ -706,7 +709,10 @@ void ImageStacker::StackDarkFlats()
 
     result /= dark_flat_frame_file_names_.length();
 
-    result.convertTo(master_dark_flat_, CV_16U);
+    if (raw)
+        result.convertTo(master_dark_flat_, CV_16U);
+    else
+        master_dark_flat_ = result.clone();
 }
 
 void ImageStacker::StackFlats()
@@ -786,7 +792,10 @@ void ImageStacker::StackBias()
 
     result /= bias_frame_file_names_.length();
 
-    result.convertTo(master_bias_, CV_16U);
+    if (raw)
+        result.convertTo(master_bias_, CV_16U);
+    else
+        master_bias_ = result.clone();
 }
 
 cv::Mat ImageStacker::ConvertAndScaleImage(cv::Mat image)
@@ -994,10 +1003,10 @@ std::vector<ImageRecord *> ImageStacker::LoadImageList(QString filename, int *er
 }
 
 // derived from FOCAS mktransform.c
-cv::Mat ImageStacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok) {
+cv::Mat ImageStacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok) {
     StarDetector sd;
-    std::vector<Star> List1 = sd.GetStars(ref);
-    std::vector<Star> List2 = sd.GetStars(target);
+    std::vector<Star> List1 = sd.GetStars(ref, tolerance);
+    std::vector<Star> List2 = sd.GetStars(target, tolerance);
 
     std::vector<Triangle> List_triangA = GenerateTriangleList(List1);
     std::vector<Triangle> List_triangB = GenerateTriangleList(List2);

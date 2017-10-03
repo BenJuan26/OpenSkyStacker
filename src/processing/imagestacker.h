@@ -139,7 +139,7 @@ signals:
     void doneDetectingStars(int);
 public slots:
     //! The main method for processing the images.
-    void Process();
+    void Process(int tolerance);
 
     //! Gets an image from disk and asynchronously reads it as a QImage.
     /*! Emits QImageReady once the image is ready.
@@ -150,12 +150,12 @@ public slots:
     void detectStars(QString filename, int threshold);
 
 private:
-    cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok = 0);
+    cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok = 0);
 
     static ImageType GetImageType(QString filename);
 
-    void ProcessRaw();
-    void ProcessNonRaw();
+    void ProcessRaw(int tolerance);
+    void ProcessNonRaw(int tolerance);
     int GetTotalOperations();
 
     int ValidateImageSizes();

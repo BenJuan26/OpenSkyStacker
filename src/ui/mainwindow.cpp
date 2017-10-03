@@ -68,8 +68,8 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(handleButtonLoadList()));
 
     // Signals / slots for stacker
-    connect(this, SIGNAL (stackImages()), stacker_,
-            SLOT(Process()));
+    connect(this, SIGNAL (stackImages(int)), stacker_,
+            SLOT(Process(int)));
     connect(this, SIGNAL(readQImage(QString)), stacker_,
             SLOT(ReadQImage(QString)));
     connect(this, SIGNAL(detectStars(QString,int)), stacker_,
@@ -294,8 +294,10 @@ void MainWindow::handleButtonStack() {
     connect(stacker_, SIGNAL(Finished(cv::Mat, QString)), processing_dialog_,
             SLOT(complete(cv::Mat, QString)));
 
+    float threshold = settings.value("StarDetector/thresholdCoeff", 20).toFloat();
+
     // Asynchronously trigger the processing
-    emit stackImages();
+    emit stackImages(threshold);
 
     if (!processing_dialog_->exec()) {
         qDebug() << "Cancelling...";

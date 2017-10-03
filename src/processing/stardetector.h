@@ -63,8 +63,6 @@ public:
     */
     void DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars);
 
-    void test();
-
 private:
     std::vector<AdjoiningPixel> GetAdjoiningPixels(cv::Mat image, float threshold, float minPeak);
     AdjoiningPixel DetectAdjoiningPixel(cv::Mat image, int x, int y, float threshold);

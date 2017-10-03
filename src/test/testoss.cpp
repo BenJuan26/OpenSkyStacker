@@ -4,44 +4,63 @@ using namespace openskystacker;
 
 void TestOSS::initTestCase()
 {
+    appPath = qApp->applicationDirPath();
+    samplesPath = appPath + "/../src/images/samples";
     qRegisterMetaType<cv::Mat>("cv::Mat");
 }
 
 void TestOSS::testDetectStars()
 {
-    QString binPath = qApp->applicationDirPath();
+    QFETCH(QString, filename);
+    QFETCH(int, numstars);
 
     ImageStacker *stacker = new ImageStacker();
     QSignalSpy spy(stacker, SIGNAL(doneDetectingStars(int)));
 
-    int err = 0;
-    std::vector<ImageRecord *> records = ImageStacker::LoadImageList(binPath + "/../src/images/samples/detect.json", &err);
-    QCOMPARE(err, 0);
-
-    ImageRecord *record = records.at(0);
-
-    stacker->detectStars(record->GetFilename(), 20);
+    stacker->detectStars(filename, 20);
 
     QCOMPARE(spy.count(), 1);
     QList<QVariant> list = spy.takeFirst();
     int result = list.at(0).toInt();
-    QVERIFY(result > 60);
+    QVERIFY(result > numstars);
+}
+
+void TestOSS::testDetectStars_data()
+{
+    QTest::addColumn<QString>("filename");
+    QTest::addColumn<int>("threshold");
+    QTest::addColumn<int>("numstars");
+
+    QTest::newRow("Raw M42") << samplesPath + "/raw/lights/DSC_4494.NEF" << 20 << 60;
+    QTest::newRow("FITS Heart and Soul")
+            << samplesPath + "/FITS/HeartAndSoul_Light_Ha_300sec_1x1_frame1_-15.1C.fit" << 50 << 200;
+}
+
+void TestOSS::testStackImages_data()
+{
+    QTest::addColumn<QString>("jsonfile");
+    QTest::addColumn<int>("threshold");
+
+    QTest::newRow("Raw M42") << samplesPath + "/Raw/all.json" << 20;
+    QTest::newRow("JPEG M42") << samplesPath + "/JPEG/all.json" << 20;
+    QTest::newRow("FITS Heart and Soul") << samplesPath + "/FITS/all.json" << 50;
 }
 
 void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &) {
 
 }
 
-void TestOSS::testStackRawImages()
+void TestOSS::testStackImages()
 {
+    QFETCH(QString, jsonfile);
+    QFETCH(int, threshold);
+
     ImageStacker *stacker = new ImageStacker();
     QSignalSpy stackSpy(stacker, SIGNAL(Finished(cv::Mat,QString)));
     QSignalSpy errorSpy(stacker, SIGNAL(ProcessingError(QString)));
 
-    QString binPath = qApp->applicationDirPath();
-
     int err = 0;
-    std::vector<ImageRecord *> records = ImageStacker::LoadImageList(binPath + "/../src/images/samples/Raw/all.json", &err);
+    std::vector<ImageRecord *> records = ImageStacker::LoadImageList(jsonfile, &err);
     QCOMPARE(err, 0);
 
     QString ref;
@@ -93,7 +112,12 @@ void TestOSS::testStackRawImages()
     stacker->SetBiasFrameFileNames(bias);
 
     qInstallMessageHandler(suppressDebugOutput);
-    stacker->Process();
+    try {
+        stacker->Process(threshold);
+    } catch (std::exception) {
+        QFAIL("Exception thrown");
+    }
+
     qInstallMessageHandler(0);
 
     if (errorSpy.count() > 0) {

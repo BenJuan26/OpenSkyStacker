@@ -15,8 +15,16 @@ class TestOSS: public QObject
     Q_OBJECT
 private slots:
     void initTestCase();
+
     void testDetectStars();
-    void testStackRawImages();
+    void testDetectStars_data();
+
+    void testStackImages();
+    void testStackImages_data();
+
+private:
+    QString appPath;
+    QString samplesPath;
 };
 
 }
