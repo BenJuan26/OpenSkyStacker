@@ -14,8 +14,8 @@ class TestOSS: public QObject
 {
     Q_OBJECT
 private slots:
-    void testUseDarks();
     void testDetectStars();
+    void testStackRawImages();
 };
 
 }
