@@ -12,6 +12,9 @@
 #include <QDebug>
 #include <QTime>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -59,13 +62,15 @@ public:
     /*!
         @param filename The image file to get the record from.
     */
-    ImageRecord* GetImageRecord(QString filename);
+    static ImageRecord *GetImageRecord(QString filename);
 
     //! Gets an OpenCV Mat from the image at the specified filename.
     /*!
         @param filename The image file to read.
     */
     cv::Mat ReadImage(QString filename);
+
+    static std::vector<ImageRecord*> LoadImageList(QString filename, int *err = 0);
 
     // get/set
     QString GetRefImageFileName() const;
@@ -147,7 +152,7 @@ public slots:
 private:
     cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int *ok = 0);
 
-    ImageType GetImageType(QString filename);
+    static ImageType GetImageType(QString filename);
 
     void ProcessRaw();
     void ProcessNonRaw();
@@ -164,8 +169,8 @@ private:
     cv::Mat GetBayerMatrix(QString filename);
     cv::Mat GenerateAlignedImageOld(cv::Mat ref, cv::Mat target);
 
-    time_t EXIFTimeToCTime(std::string exifTime);
-    time_t FITSTimeToCTime(std::string fitsTime);
+    static time_t EXIFTimeToCTime(std::string exifTime);
+    static time_t FITSTimeToCTime(std::string fitsTime);
 
     void StackDarks();
     void StackDarkFlats();

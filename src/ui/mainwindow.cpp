@@ -548,60 +548,40 @@ void MainWindow::handleButtonLoadList()
         return;
     }
 
-    QFile file(filename);
-    QString contents;
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream in(&file);
-        contents = in.readAll();
-    }
+    int err = 0;
+    std::vector<ImageRecord *> records = ImageStacker::LoadImageList(filename, &err);
 
-    QFileInfo info(file);
-    QString absolutePathToJson = info.absolutePath();
-
-    QJsonDocument doc = QJsonDocument::fromJson(contents.toUtf8());
-    if (!doc.isArray()) {
+    switch (err) {
+    case -1:
         QMessageBox::information(this, tr("Error loading list"),
                 tr("Couldn't read the list file. Top level object is not an array."));
+        break;
+    case -2:
+        QMessageBox::information(this, tr("Error loading list"),
+                tr("Couldn't read the list file. One of the objects is not a JSON object."));
+        break;
+    case -3:
+        QMessageBox::information(this, tr("Error loading list"),
+                tr("Couldn't read the list file. One of the objects has no valid filename."));
+        break;
+    case -4:
+        QMessageBox::information(this, tr("Error loading list"),
+                tr("Couldn't read the list file. One of the objects has no valid type."));
+        break;
+    default:
+        break;
+    }
+
+    if (!err) {
+        for (int i = 0; i < table_model_.rowCount(); i++) {
+            table_model_.RemoveAt(0);
+        }
+
+        for (ImageRecord *record : records) {
+            table_model_.Append(record);
+        }
+    } else {
         return;
-    }
-
-    for (int i = 0; i < table_model_.rowCount(); i++) {
-        table_model_.RemoveAt(0);
-    }
-
-    QJsonArray list = doc.array();
-    for (int i = 0; i < list.size(); i++) {
-        QJsonValue val = list.at(i);
-        QJsonObject img = val.toObject();
-        if (img.isEmpty()) {
-            QMessageBox::information(this, tr("Error loading list"),
-                    tr("Couldn't read the list file. Object at index %1 is not a JSON object.").arg(i));
-            return;
-        }
-
-        QString imageFileName = img.value("filename").toString();
-        if (imageFileName.isNull()) {
-            QMessageBox::information(this, tr("Error loading list"),
-                    tr("Couldn't read the list file. Object at index %1 has no valid filename.").arg(i));
-            return;
-        }
-        QFileInfo imageInfo(imageFileName);
-        if (imageInfo.isRelative())
-            imageFileName = absolutePathToJson + "/" + imageFileName;
-
-        int type = img.value("type").toInt(-1);
-        if (type < 0) {
-            QMessageBox::information(this, tr("Error loading list"),
-                    tr("Couldn't read the list file. Object at index %1 has no valid type.").arg(i));
-            return;
-        }
-
-        bool checked = img.value("checked").toBool();
-        ImageRecord *record = stacker_->GetImageRecord(imageFileName);
-        record->SetType(static_cast<ImageRecord::FrameType>(type));
-        record->SetChecked(checked);
-
-        table_model_.Append(record);
     }
 
     setDefaultReferenceImage();

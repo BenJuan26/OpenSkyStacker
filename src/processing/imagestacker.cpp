@@ -16,7 +16,7 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
     cancel_ = false;
 }
 
-ImageRecord* ImageStacker::GetImageRecord(QString filename)
+ImageRecord *ImageStacker::GetImageRecord(QString filename)
 {
     ImageRecord *record = new ImageRecord();
     record->SetFilename(filename);
@@ -929,6 +929,65 @@ cv::Mat ImageStacker::ReadImage(QString filename)
         result = cv::imread(filename.toUtf8().constData(), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
         result = ConvertAndScaleImage(result);
         break;
+    }
+
+    return result;
+}
+
+std::vector<ImageRecord *> ImageStacker::LoadImageList(QString filename, int *err)
+{
+    std::vector<ImageRecord *> result;
+
+    QFile file(filename);
+    QString contents;
+    if (file.open(QIODevice::ReadOnly)) {
+        QTextStream in(&file);
+        contents = in.readAll();
+    }
+
+    QFileInfo info(file);
+    QString absolutePathToJson = info.absolutePath();
+
+    QJsonDocument doc = QJsonDocument::fromJson(contents.toUtf8());
+    if (!doc.isArray()) {
+        if (err)
+            *err = -1;
+        return result;
+    }
+
+    QJsonArray list = doc.array();
+    for (int i = 0; i < list.size(); i++) {
+        QJsonValue val = list.at(i);
+        QJsonObject img = val.toObject();
+        if (img.isEmpty()) {
+            if (err)
+                *err = -2;
+            return result;
+        }
+
+        QString imageFileName = img.value("filename").toString();
+        if (imageFileName.isNull()) {
+            if (err)
+                *err = -3;
+            return result;
+        }
+        QFileInfo imageInfo(imageFileName);
+        if (imageInfo.isRelative())
+            imageFileName = absolutePathToJson + "/" + imageFileName;
+
+        int type = img.value("type").toInt(-1);
+        if (type < 0) {
+            if (err)
+                *err = -4;
+            return result;
+        }
+
+        bool checked = img.value("checked").toBool();
+        ImageRecord *record = GetImageRecord(imageFileName);
+        record->SetType(static_cast<ImageRecord::FrameType>(type));
+        record->SetChecked(checked);
+
+        result.push_back(record);
     }
 
     return result;
