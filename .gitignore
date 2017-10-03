@@ -12,6 +12,7 @@ src/*.snap
 src/parts
 src/stage
 src/prime
+src/images/samples
 
 build
 bin

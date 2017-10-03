@@ -24,6 +24,7 @@ win32:OBJECTS_DIR = $$BUILD_DIR/o/win32
 macx:OBJECTS_DIR = $$BUILD_DIR/o/macx
 linux:OBJECTS_DIR = $$BUILD_DIR/o/linux
 
+QMAKE_DISTCLEAN += -r $$BUILD_DIR
 
 SOURCES += main.cpp\
     ui/mainwindow.cpp \
