@@ -31,7 +31,7 @@ void TestOSS::testDetectStars_data()
     QTest::addColumn<int>("threshold");
     QTest::addColumn<int>("numstars");
 
-    QTest::newRow("Raw M42") << samplesPath + "/raw/lights/DSC_4494.NEF" << 20 << 60;
+    QTest::newRow("Raw M42") << samplesPath + "/Raw/Lights/DSC_4494.NEF" << 20 << 60;
     QTest::newRow("FITS Heart and Soul")
             << samplesPath + "/FITS/HeartAndSoul_Light_Ha_300sec_1x1_frame1_-15.1C.fit" << 50 << 200;
 }
