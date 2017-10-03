@@ -2,6 +2,11 @@
 
 using namespace openskystacker;
 
+void TestOSS::initTestCase()
+{
+    qRegisterMetaType<cv::Mat>("cv::Mat");
+}
+
 void TestOSS::testDetectStars()
 {
     QString binPath = qApp->applicationDirPath();
@@ -29,8 +34,6 @@ void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &)
 
 void TestOSS::testStackRawImages()
 {
-    qRegisterMetaType<cv::Mat>("cv::Mat");
-
     ImageStacker *stacker = new ImageStacker();
     QSignalSpy stackSpy(stacker, SIGNAL(Finished(cv::Mat,QString)));
     QSignalSpy errorSpy(stacker, SIGNAL(ProcessingError(QString)));
