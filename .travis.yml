@@ -1,11 +1,14 @@
 language: c++
-dist: trusty
-sudo: required
-services:
-    - docker
+matrix:
+    include:
+      - os: linux
+        services:
+          - docker
+      - os: osx
+        osx_image: xcode9
 install:
-    - docker build -t openskystacker .
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt opencv libraw ccfits; else docker build -t openskystacker .; fi
 script:
-    - docker run -it openskystacker /bin/sh -c 'qmake -qt=qt5 && make'
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then qmake && make; else docker run -it openskystacker /bin/sh -c 'qmake -qt=qt5 && make'; fi
 after_script:
-    - docker run -it openskystacker /bin/sh -c 'qmake -qt=qt5 CONFIG+=test && make && bin/testoss'
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then qmake CONFIG+=test && make; else docker run -it openskystacker /bin/sh -c 'qmake -qt=qt5 CONFIG+=test && make && bin/testoss'; fi
