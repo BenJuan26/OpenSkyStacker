@@ -6,6 +6,7 @@ src/*_resource.rc
 Makefile
 Makefile.*
 *.dmg
+.coveralls.yml
 
 # Snapcraft
 src/*.snap
