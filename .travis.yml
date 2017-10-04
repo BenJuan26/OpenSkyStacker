@@ -16,4 +16,4 @@ after_script:
     qmake -qt=qt5 CONFIG+=test &&
     make &&
     bin/testoss &&
-    coveralls -E '.*\/build\/.*' -b src'
+    coveralls -E ".*\/build\/.*" -b src'
