@@ -12,7 +12,7 @@ script:
     make'
 after_script:
   - >
-    docker run -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN -it openskystacker /bin/sh -c '
+    docker run -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN -e TRAVIS_BRANCH=$TRAVIS_BRANCH -it openskystacker /bin/sh -c '
     qmake -qt=qt5 CONFIG+=test &&
     make &&
     bin/testoss &&
