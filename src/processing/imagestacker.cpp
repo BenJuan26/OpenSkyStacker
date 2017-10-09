@@ -9,7 +9,7 @@ const std::vector<QString> ImageStacker::RAW_EXTENSIONS = {"3fr", "ari", "arw", 
         "mdc", "mef", "mos", "mrw", "nef", "nrw", "obm", "orf", "pef", "ptx", "pxn", "r3d", "raf",
         "raw", "rwl", "rw2", "rwz", "sr2", "srf", "srw", "x3f"};
 
-const std::vector<QString> ImageStacker::FITS_EXTENSIONS = {"fit", "fits"};
+const std::vector<QString> ImageStacker::FITS_EXTENSIONS = {"fit", "fits", "fts"};
 
 ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 {
