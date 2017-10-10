@@ -154,8 +154,6 @@ private:
 
     static ImageType GetImageType(QString filename);
 
-    void ProcessRaw(int tolerance);
-    void ProcessNonRaw(int tolerance);
     int GetTotalOperations();
 
     int ValidateImageSizes();
