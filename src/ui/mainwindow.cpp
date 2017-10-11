@@ -586,6 +586,11 @@ void MainWindow::handleButtonLoadList()
         return;
     }
 
+    QFile file(filename);
+    QFileInfo info(file);
+    dir = info.absolutePath();
+    settings.setValue("files/listDir", dir);
+
     setDefaultReferenceImage();
 }
 

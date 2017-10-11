@@ -242,6 +242,9 @@ cv::Mat ImageStacker::GetCalibratedImage(QString filename) {
 }
 
 void ImageStacker::Process(int tolerance) {
+    time_t now;
+    time(&now);
+
     ImageType refType = GetImageType(ref_image_file_name_);
 
     for (int i = 0; i < target_image_file_names_.length(); i++) {
@@ -321,6 +324,11 @@ void ImageStacker::Process(int tolerance) {
     // LibRaw works in RGB while OpenCV works in BGR
     if (GetImageType(ref_image_file_name_) == RAW_IMAGE)
         cv::cvtColor(working_image_, working_image_, CV_RGB2BGR);
+
+    time_t doneStacking;
+    time(&doneStacking);
+
+    qDebug() << "Stacking took" << difftime(doneStacking, now) << "seconds";
 
     emit Finished(working_image_, tr("Stacking completed"));
 }

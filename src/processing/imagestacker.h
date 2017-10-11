@@ -202,8 +202,8 @@ private:
     cv::Mat master_dark_flat_;
     cv::Mat master_flat_;
     cv::Mat master_bias_;
-};
+}; // class ImageStacker
 
-}
+} // namespace openskystacker
 
 #endif // IMAGESTACKER_H
