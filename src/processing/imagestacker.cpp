@@ -46,20 +46,19 @@ void ImageStacker::Process(int tolerance) {
     current_operation_ = 0;
     total_operations_ = GetTotalOperations();
 
-    if (use_bias_)       StackBias();
-    if (use_darks_)      StackDarks();
-    if (use_dark_flats_) StackDarkFlats();
-    if (use_flats_)      StackFlats();
+    cv::Mat masterDark, masterDarkFlat, masterFlat, masterBias;
+
+    if (use_bias_)       masterBias = StackBias(bias_frame_file_names_);
+    if (use_darks_)      masterDark = StackDarks(dark_frame_file_names_, masterBias);
+    if (use_dark_flats_) masterDarkFlat = StackDarkFlats(dark_flat_frame_file_names_, masterBias);
+    if (use_flats_)      masterFlat = StackFlats(flat_frame_file_names_, masterDarkFlat, masterBias);
 
     emit UpdateProgress(tr("Reading light frame 1 of %n", "",
             target_image_file_names_.length() + 1),
             100*current_operation_/total_operations_);
     current_operation_++;
 
-    ref_image_ = GetCalibratedImage(ref_image_file_name_,
-            use_darks_ ? master_dark_ : cv::Mat(),
-            use_flats_ ? master_flat_ : cv::Mat(),
-            use_bias_  ? master_bias_ : cv::Mat());
+    ref_image_ = GetCalibratedImage(ref_image_file_name_, masterDark , masterFlat, masterBias);
     working_image_ = ref_image_.clone();
 
     QString message;
@@ -71,10 +70,7 @@ void ImageStacker::Process(int tolerance) {
         qDebug() << message;
         if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
 
-        cv::Mat targetImage = GetCalibratedImage(target_image_file_names_.at(k),
-                use_darks_ ? master_dark_ : cv::Mat(),
-                use_flats_ ? master_flat_ : cv::Mat(),
-                use_bias_  ? master_bias_ : cv::Mat());
+        cv::Mat targetImage = GetCalibratedImage(target_image_file_names_.at(k), masterDark, masterFlat, masterBias);
 
         // -------------- ALIGNMENT ---------------
         message = tr("Aligning image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
@@ -298,198 +294,7 @@ int ImageStacker::ValidateImageSizes()
     return 0;
 }
 
-void ImageStacker::StackDarks()
-{
-    cv::Mat dark1;
-    bool raw = GetImageType(dark_frame_file_names_.at(0)) == RAW_IMAGE;
-    if (raw) {
-        dark1 = GetBayerMatrix(dark_frame_file_names_.at(0));
-    } else {
-        dark1 = ReadImage(dark_frame_file_names_.at(0));
-    }
-    if (use_bias_) dark1 -= master_bias_;
 
-    cv::Mat result;
-    dark1.convertTo(result, CV_32F);
-
-    QString message;
-
-    for (int i = 1; i < dark_frame_file_names_.length() && !cancel_; i++) {
-        cv::Mat dark;
-        if (raw) {
-            dark = GetBayerMatrix(dark_frame_file_names_.at(i));
-        } else {
-            dark = ReadImage(dark_frame_file_names_.at(i));
-        }
-
-        message = tr("Stacking dark frame %1 of %2").arg(QString::number(i+1), QString::number(dark_frame_file_names_.length()));
-        qDebug() << message;
-        current_operation_++;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        if (use_bias_) dark -= master_bias_;
-        cv::add(result, dark, result, cv::noArray(), CV_32F);
-    }
-
-    result /= dark_frame_file_names_.length();
-
-    if (raw)
-        result.convertTo(master_dark_, CV_16U);
-    else
-        master_dark_ = result.clone();
-}
-
-void ImageStacker::StackDarkFlats()
-{
-    cv::Mat darkFlat1;
-    bool raw = GetImageType(dark_flat_frame_file_names_.at(0)) == RAW_IMAGE;
-    if (raw) {
-        darkFlat1 = GetBayerMatrix(dark_flat_frame_file_names_.at(0));
-    } else {
-        darkFlat1 = ReadImage(dark_flat_frame_file_names_.at(0));
-    }
-    if (use_bias_) darkFlat1 -= master_bias_;
-
-    cv::Mat result;
-    darkFlat1.convertTo(result, CV_32F);
-
-    QString message;
-
-    for (int i = 1; i < dark_flat_frame_file_names_.length() && !cancel_; i++) {
-        cv::Mat dark;
-        if (raw) {
-            dark = GetBayerMatrix(dark_flat_frame_file_names_.at(i));
-        } else {
-            dark = ReadImage(dark_flat_frame_file_names_.at(i));
-        }
-
-        message = tr("Stacking dark flat frame %1 of %2").arg(QString::number(i+1), QString::number(dark_flat_frame_file_names_.length()));
-        qDebug() << message;
-        current_operation_++;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        if (use_bias_) dark -= master_bias_;
-        cv::add(result, dark, result, cv::noArray(), CV_32F);
-    }
-
-    result /= dark_flat_frame_file_names_.length();
-
-    if (raw)
-        result.convertTo(master_dark_flat_, CV_16U);
-    else
-        master_dark_flat_ = result.clone();
-}
-
-void ImageStacker::StackFlats()
-{
-    // most algorithms compute the median, but we will stick with mean for now
-    cv::Mat flat1;
-    bool raw = GetImageType(flat_frame_file_names_.at(0)) == RAW_IMAGE;
-    if (raw) {
-        flat1 = GetBayerMatrix(flat_frame_file_names_.at(0));
-    } else {
-        flat1 = ReadImage(flat_frame_file_names_.at(0));
-    }
-    if (use_bias_) flat1 -= master_bias_;
-    if (use_dark_flats_) flat1 -= master_dark_flat_;
-
-    cv::Mat result;
-    flat1.convertTo(result, CV_32F);
-
-    QString message;
-
-    for (int i = 1; i < flat_frame_file_names_.length() && !cancel_; i++) {
-        cv::Mat flat;
-        if (raw) {
-            flat = GetBayerMatrix(flat_frame_file_names_.at(i));
-        } else {
-            flat = ReadImage(flat_frame_file_names_.at(i));
-        }
-
-        message = tr("Stacking flat frame %1 of %2").arg(QString::number(i+1), QString::number(flat_frame_file_names_.length()));
-        qDebug() << message;
-        current_operation_++;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        if (use_bias_) flat -= master_bias_;
-        if (use_dark_flats_) flat -= master_dark_flat_;
-        cv::add(result, flat, result, cv::noArray(), CV_32F);
-    }
-
-    result /= flat_frame_file_names_.length();
-
-    // scale the flat frame so that the average value is 1.0
-    // since we're dividing, flat values darker than the average value will brighten the image
-    //  and values brighter than the average will darken the image, flattening the field
-    float avg = cv::mean(result)[0];
-
-    master_flat_ = result / avg;
-}
-
-void ImageStacker::StackBias()
-{
-    cv::Mat bias1;
-    bool raw = GetImageType(bias_frame_file_names_.at(0)) == RAW_IMAGE;
-    if (raw) {
-        bias1 = GetBayerMatrix(bias_frame_file_names_.at(0));
-    } else {
-        bias1 = ReadImage(bias_frame_file_names_.at(0));
-    }
-    cv::Mat result;
-    bias1.convertTo(result, CV_32F);
-
-    QString message;
-
-    for (int i = 1; i < bias_frame_file_names_.length() && !cancel_; i++) {
-        cv::Mat bias;
-        if (raw) {
-            bias = GetBayerMatrix(bias_frame_file_names_.at(i));
-        } else {
-            bias = ReadImage(bias_frame_file_names_.at(i));
-        }
-        message = tr("Stacking bias frame %1 of %2").arg(QString::number(i+1), QString::number(bias_frame_file_names_.length()));
-        qDebug() << message;
-        current_operation_++;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        cv::add(result, bias, result, cv::noArray(), CV_32F);
-    }
-
-    result /= bias_frame_file_names_.length();
-
-    if (raw)
-        result.convertTo(master_bias_, CV_16U);
-    else
-        master_bias_ = result.clone();
-}
-
-// derived from FOCAS mktransform.c
-cv::Mat ImageStacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok) {
-    StarDetector sd;
-    std::vector<Star> List1 = sd.GetStars(ref, tolerance);
-    std::vector<Star> List2 = sd.GetStars(target, tolerance);
-
-    std::vector<Triangle> List_triangA = GenerateTriangleList(List1);
-    std::vector<Triangle> List_triangB = GenerateTriangleList(List2);
-
-    int nobjs = 40;
-
-    int k = 0;
-    std::vector< std::vector<int> > matches = FindMatches(nobjs, &k, List_triangA, List_triangB);
-    std::vector< std::vector<float> > transformVec = FindTransform(matches, k, List1, List2, ok);
-
-    if (ok && *ok != 0)
-        return target;
-
-    cv::Mat matTransform(2,3,CV_32F);
-    for(int i = 0; i < 2; i++)
-        for (int j = 0; j < 3; j++)
-            matTransform.at<float>(i,j) = transformVec[i][j];
-
-    warpAffine(target, target, matTransform, target.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
-
-    return target;
-}
 
 
 

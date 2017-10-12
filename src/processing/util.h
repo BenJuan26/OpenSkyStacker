@@ -2,7 +2,11 @@
 #define UTIL_H
 
 #include "model/imagerecord.h"
+#include "model/star.h"
+#include "model/triangle.h"
+#include "processing/stardetector.h"
 #include "processing/exif.h"
+#include "processing/focas.h"
 
 #include <QString>
 #include <QStringList>
@@ -17,7 +21,6 @@
 
 #include <libraw.h>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <CCfits/CCfits>
@@ -49,6 +52,11 @@ cv::Mat RawToMat(QString filename);
 cv::Mat ConvertAndScaleImage(cv::Mat image);
 std::vector<ImageRecord *> LoadImageList(QString filename, int *err);
 QImage Mat2QImage(const cv::Mat &src);
+cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok);
+cv::Mat StackDarks(QStringList filenames, cv::Mat bias);
+cv::Mat StackDarkFlats(QStringList filenames, cv::Mat bias);
+cv::Mat StackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias);
+cv::Mat StackBias(QStringList filenames);
 }
 
 #endif // UTIL_H

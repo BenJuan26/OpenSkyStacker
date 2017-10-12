@@ -458,3 +458,171 @@ QImage openskystacker::Mat2QImage(const cv::Mat &src)
 
     return dest;
 }
+
+// derived from FOCAS mktransform.c
+cv::Mat openskystacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok) {
+    StarDetector sd;
+    std::vector<Star> List1 = sd.GetStars(ref, tolerance);
+    std::vector<Star> List2 = sd.GetStars(target, tolerance);
+
+    std::vector<Triangle> List_triangA = GenerateTriangleList(List1);
+    std::vector<Triangle> List_triangB = GenerateTriangleList(List2);
+
+    int nobjs = 40;
+
+    int k = 0;
+    std::vector< std::vector<int> > matches = FindMatches(nobjs, &k, List_triangA, List_triangB);
+    std::vector< std::vector<float> > transformVec = FindTransform(matches, k, List1, List2, ok);
+
+    if (ok && *ok != 0)
+        return target;
+
+    cv::Mat matTransform(2,3,CV_32F);
+    for(int i = 0; i < 2; i++)
+        for (int j = 0; j < 3; j++)
+            matTransform.at<float>(i,j) = transformVec[i][j];
+
+    warpAffine(target, target, matTransform, target.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+
+    return target;
+}
+
+cv::Mat openskystacker::StackDarks(QStringList filenames, cv::Mat bias)
+{
+    cv::Mat dark1;
+    bool raw = GetImageType(filenames.at(0)) == RAW_IMAGE;
+    if (raw) {
+        dark1 = GetBayerMatrix(filenames.at(0));
+    } else {
+        dark1 = ReadImage(filenames.at(0));
+    }
+    if (bias.dims > 0) dark1 -= bias;
+
+    cv::Mat result;
+    dark1.convertTo(result, CV_32F);
+
+    for (int i = 1; i < filenames.length(); i++) {
+        cv::Mat dark;
+        if (raw) {
+            dark = GetBayerMatrix(filenames.at(i));
+        } else {
+            dark = ReadImage(filenames.at(i));
+        }
+
+        if (bias.dims > 0) dark -= bias;
+        cv::add(result, dark, result, cv::noArray(), CV_32F);
+    }
+
+    result /= filenames.length();
+
+    if (raw)
+        result.convertTo(result, CV_16U);
+
+    return result;
+}
+
+cv::Mat openskystacker::StackDarkFlats(QStringList filenames, cv::Mat bias)
+{
+    cv::Mat darkFlat1;
+    bool raw = GetImageType(filenames.at(0)) == RAW_IMAGE;
+    if (raw) {
+        darkFlat1 = GetBayerMatrix(filenames.at(0));
+    } else {
+        darkFlat1 = ReadImage(filenames.at(0));
+    }
+    if (bias.dims > 0) darkFlat1 -= bias;
+
+    cv::Mat result;
+    darkFlat1.convertTo(result, CV_32F);
+
+    for (int i = 1; i < filenames.length(); i++) {
+        cv::Mat dark;
+        if (raw) {
+            dark = GetBayerMatrix(filenames.at(i));
+        } else {
+            dark = ReadImage(filenames.at(i));
+        }
+
+        if (bias.dims > 0) dark -= bias;
+        cv::add(result, dark, result, cv::noArray(), CV_32F);
+    }
+
+    result /= filenames.length();
+
+    if (raw)
+        result.convertTo(result, CV_16U);
+
+    return result;
+}
+
+cv::Mat openskystacker::StackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias)
+{
+    // most algorithms compute the median, but we will stick with mean for now
+    cv::Mat flat1;
+    bool raw = GetImageType(filenames.at(0)) == RAW_IMAGE;
+    if (raw) {
+        flat1 = GetBayerMatrix(filenames.at(0));
+    } else {
+        flat1 = ReadImage(filenames.at(0));
+    }
+    if (bias.dims > 0) flat1 -= bias;
+    if (darkFlat.dims > 0) flat1 -= darkFlat;
+
+    cv::Mat result;
+    flat1.convertTo(result, CV_32F);
+
+    for (int i = 1; i < filenames.length(); i++) {
+        cv::Mat flat;
+        if (raw) {
+            flat = GetBayerMatrix(filenames.at(i));
+        } else {
+            flat = ReadImage(filenames.at(i));
+        }
+
+        if (bias.dims > 0) flat -= bias;
+        if (darkFlat.dims > 0) flat -= darkFlat;
+        cv::add(result, flat, result, cv::noArray(), CV_32F);
+    }
+
+    result /= filenames.length();
+
+    // scale the flat frame so that the average value is 1.0
+    // since we're dividing, flat values darker than the average value will brighten the image
+    //  and values brighter than the average will darken the image, flattening the field
+    float avg = cv::mean(result)[0];
+
+    result /= avg;
+
+    return result;
+}
+
+cv::Mat openskystacker::StackBias(QStringList filenames)
+{
+    cv::Mat bias1;
+    bool raw = GetImageType(filenames.at(0)) == RAW_IMAGE;
+    if (raw) {
+        bias1 = GetBayerMatrix(filenames.at(0));
+    } else {
+        bias1 = ReadImage(filenames.at(0));
+    }
+    cv::Mat result;
+    bias1.convertTo(result, CV_32F);
+
+    for (int i = 1; i < filenames.length(); i++) {
+        cv::Mat bias;
+        if (raw) {
+            bias = GetBayerMatrix(filenames.at(i));
+        } else {
+            bias = ReadImage(filenames.at(i));
+        }
+
+        cv::add(result, bias, result, cv::noArray(), CV_32F);
+    }
+
+    result /= filenames.length();
+
+    if (raw)
+        result.convertTo(result, CV_16U);
+
+    return result;
+}

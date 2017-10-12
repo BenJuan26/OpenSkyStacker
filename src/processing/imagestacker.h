@@ -126,21 +126,9 @@ public slots:
     void detectStars(QString filename, int threshold);
 
 private:
-    cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok = 0);
-
     int GetTotalOperations();
 
     int ValidateImageSizes();
-
-    cv::Mat GenerateAlignedImageOld(cv::Mat ref, cv::Mat target);
-
-    static time_t EXIFTimeToCTime(std::string exifTime);
-    static time_t FITSTimeToCTime(std::string fitsTime);
-
-    void StackDarks();
-    void StackDarkFlats();
-    void StackFlats();
-    void StackBias();
 
     mutable QMutex mutex_;
 
@@ -165,10 +153,6 @@ private:
     cv::Mat ref_image_;
     cv::Mat final_image_;
 
-    cv::Mat master_dark_;
-    cv::Mat master_dark_flat_;
-    cv::Mat master_flat_;
-    cv::Mat master_bias_;
 }; // class ImageStacker
 
 } // namespace openskystacker
