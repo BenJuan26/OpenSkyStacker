@@ -4,6 +4,7 @@
 #include "processing/stardetector.h"
 #include "processing/focas.h"
 #include "processing/exif.h"
+#include "processing/util.h"
 #include "model/imagerecord.h"
 
 #include <QObject>
@@ -46,31 +47,6 @@ public:
 
     //! Flag set to asynchronously cancel processing.
     bool cancel_;
-
-    //! The extensions that the app will treat as RAW images.
-    static const std::vector<QString> RAW_EXTENSIONS;
-
-    static const std::vector<QString> FITS_EXTENSIONS;
-
-    enum ImageType {
-        RAW_IMAGE,
-        FITS_IMAGE,
-        RGB_IMAGE
-    };
-
-    //! Constructs an ImageRecord from the given file.
-    /*!
-        @param filename The image file to get the record from.
-    */
-    static ImageRecord *GetImageRecord(QString filename);
-
-    //! Gets an OpenCV Mat from the image at the specified filename.
-    /*!
-        @param filename The image file to read.
-    */
-    cv::Mat ReadImage(QString filename);
-
-    static std::vector<ImageRecord*> LoadImageList(QString filename, int *err = 0);
 
     // get/set
     QString GetRefImageFileName() const;
@@ -152,19 +128,10 @@ public slots:
 private:
     cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok = 0);
 
-    static ImageType GetImageType(QString filename);
-
     int GetTotalOperations();
 
     int ValidateImageSizes();
 
-    QImage Mat2QImage(const cv::Mat &src);
-
-    cv::Mat ConvertAndScaleImage(cv::Mat image);
-    cv::Mat RawToMat(QString filename);
-    cv::Mat FITSToMat(QString filename);
-    cv::Mat GetCalibratedImage(QString filename);
-    cv::Mat GetBayerMatrix(QString filename);
     cv::Mat GenerateAlignedImageOld(cv::Mat ref, cv::Mat target);
 
     static time_t EXIFTimeToCTime(std::string exifTime);

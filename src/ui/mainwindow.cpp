@@ -339,7 +339,7 @@ void MainWindow::handleButtonLightFrames() {
     settings.setValue("files/lights/filter", newFilter);
 
     for (int i = 0; i < targetImageFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(
+        ImageRecord *record = GetImageRecord(
                 targetImageFileNames.at(i));
         record->SetType(ImageRecord::LIGHT);
         table_model_.Append(record);
@@ -374,7 +374,7 @@ void MainWindow::handleButtonDarkFrames() {
     settings.setValue("files/darks/filter", newFilter);
 
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(
+        ImageRecord *record = GetImageRecord(
                 darkFrameFileNames.at(i));
         record->SetType(ImageRecord::DARK);
         table_model_.Append(record);
@@ -407,7 +407,7 @@ void MainWindow::handleButtonDarkFlatFrames() {
     settings.setValue("files/darkflats/filter", newFilter);
 
     for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(
+        ImageRecord *record = GetImageRecord(
                 darkFlatFrameFileNames.at(i));
         record->SetType(ImageRecord::DARK_FLAT);
         table_model_.Append(record);
@@ -440,7 +440,7 @@ void MainWindow::handleButtonFlatFrames() {
     settings.setValue("files/flats/filter", newFilter);
 
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(
+        ImageRecord *record = GetImageRecord(
                 flatFrameFileNames.at(i));
         record->SetType(ImageRecord::FLAT);
         table_model_.Append(record);
@@ -474,7 +474,7 @@ void MainWindow::handleButtonBiasFrames()
     settings.setValue("files/bias/filter", newFilter);
 
     for (int i = 0; i < biasFrameFileNames.length(); i++) {
-        ImageRecord *record = stacker_->GetImageRecord(
+        ImageRecord *record = GetImageRecord(
                 biasFrameFileNames.at(i));
         record->SetType(ImageRecord::BIAS);
         table_model_.Append(record);
@@ -551,7 +551,7 @@ void MainWindow::handleButtonLoadList()
     }
 
     int err = 0;
-    std::vector<ImageRecord *> records = ImageStacker::LoadImageList(filename, &err);
+    std::vector<ImageRecord *> records = LoadImageList(filename, &err);
 
     switch (err) {
     case -1:
@@ -592,28 +592,6 @@ void MainWindow::handleButtonLoadList()
     settings.setValue("files/listDir", dir);
 
     setDefaultReferenceImage();
-}
-
-QImage MainWindow::Mat2QImage(const cv::Mat &src) {
-    QImage dest(src.cols, src.rows, QImage::Format_RGB32);
-    int r, g, b;
-
-    for(int x = 0; x < src.cols; x++) {
-        for(int y = 0; y < src.rows; y++) {
-            if (src.channels() == 1) {
-                int pixel = src.at<float>(y,x) * 255;
-                dest.setPixel(x, y, qRgb(pixel, pixel, pixel));
-            } else {
-                cv::Vec3f pixel = src.at<cv::Vec3f>(y,x);
-                b = pixel.val[0]*255;
-                g = pixel.val[1]*255;
-                r = pixel.val[2]*255;
-                dest.setPixel(x, y, qRgb(r,g,b));
-            }
-        }
-    }
-
-    return dest;
 }
 
 void MainWindow::positionAndResizeWindow()
@@ -680,7 +658,7 @@ void MainWindow::detectStars(int threshold)
 void MainWindow::setFileImage(QString filename) {
 
     QGraphicsScene* scene = new QGraphicsScene(this);
-    cv::Mat image = stacker_->ReadImage(filename);
+    cv::Mat image = ReadImage(filename);
     QGraphicsPixmapItem *p = scene->addPixmap(
             QPixmap::fromImage(Mat2QImage(image)));
     ui_->imageHolder->setScene(scene);

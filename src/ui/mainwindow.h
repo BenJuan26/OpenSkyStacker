@@ -9,6 +9,7 @@
 #include "processingdialog.h"
 #include "processing/stardetector.h"
 #include "processing/imagestacker.h"
+#include "processing/util.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -135,7 +136,6 @@ private:
     void setDefaultReferenceImage();
     void selectReferenceImage();
     void loadImagesIntoStacker();
-    QImage Mat2QImage(const cv::Mat &src);
 
     void positionAndResizeWindow();
 

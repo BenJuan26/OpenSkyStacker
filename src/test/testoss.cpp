@@ -60,7 +60,7 @@ void TestOSS::testStackImages()
     QSignalSpy errorSpy(stacker, SIGNAL(ProcessingError(QString)));
 
     int err = 0;
-    std::vector<ImageRecord *> records = ImageStacker::LoadImageList(jsonfile, &err);
+    std::vector<ImageRecord *> records = LoadImageList(jsonfile, &err);
     QCOMPARE(err, 0);
 
     QString ref;

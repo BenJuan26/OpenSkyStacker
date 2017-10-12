@@ -16,6 +16,5 @@ after_script:
     qmake -qt=qt5 CONFIG+=test &&
     make &&
     bin/testoss &&
-    coveralls -E ".*\/build\/.*" -b src --dump coveralls.json &&
-    cat coveralls.json &&
-    coveralls -E ".*\/build\/.*" -b src'
+    coveralls -E ".*\/build\/.*" -b src > /dev/null'
+
