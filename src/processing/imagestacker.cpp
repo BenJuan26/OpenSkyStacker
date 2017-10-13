@@ -25,6 +25,8 @@ void ImageStacker::Process(int tolerance) {
     time_t now;
     time(&now);
 
+    int THREADS = 1;
+
     ImageType refType = GetImageType(ref_image_file_name_);
 
     for (int i = 0; i < target_image_file_names_.length(); i++) {
@@ -70,37 +72,21 @@ void ImageStacker::Process(int tolerance) {
     params.masterFlat = masterFlat;
     params.masterBias = masterBias;
     params.tolerance = tolerance;
-    params.threadIndex = 0;
-    params.totalThreads = 4;
-    QFuture<StackingResult> future1 = QtConcurrent::run(ProcessConcurrent, params);
+    params.totalThreads = THREADS;
 
-    params.threadIndex = 1;
-    QFuture<StackingResult> future2 = QtConcurrent::run(ProcessConcurrent, params);
-
-    params.threadIndex = 2;
-    QFuture<StackingResult> future3 = QtConcurrent::run(ProcessConcurrent, params);
-
-    params.threadIndex = 3;
-    QFuture<StackingResult> future4 = QtConcurrent::run(ProcessConcurrent, params);
-
-    bool done = false;
-    while (!done) {
-        done = done || future1.isFinished();
-        done = done || future2.isFinished();
-        done = done || future3.isFinished();
-        done = done || future4.isFinished();
-        QThread::sleep(1);
+    std::vector< QFuture<StackingResult> > futures;
+    for (int i = 0; i < THREADS; i++) {
+        params.threadIndex = i;
+        QFuture<StackingResult> future = QtConcurrent::run(ProcessConcurrent, params);
+        futures.push_back(future);
     }
 
-    working_image_ += future1.result().image;
-    working_image_ += future2.result().image;
-    working_image_ += future3.result().image;
-    working_image_ += future4.result().image;
-
-    totalValidImages += future1.result().totalValidImages;
-    totalValidImages += future2.result().totalValidImages;
-    totalValidImages += future3.result().totalValidImages;
-    totalValidImages += future4.result().totalValidImages;
+    bool done = false;
+    for (QFuture<StackingResult> future : futures) {
+        future.waitForFinished();
+        working_image_ += future.result().image;
+        totalValidImages += future.result().totalValidImages;
+    }
 
     if (totalValidImages < 2) {
         emit ProcessingError(tr("No images could be aligned to the reference image. Try using a lower tolerance."));

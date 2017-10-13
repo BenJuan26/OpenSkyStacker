@@ -6,7 +6,6 @@ std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> Lis
 {
     int nobjs = NOBJS;
     if (List.size() < NOBJS) nobjs = List.size();
-    qDebug() << "Using" << nobjs << "objects";
 
     //ntriang = (nobjs - 2) * (nobjs - 1) * nobjs / 6;
     std::vector<Triangle> List_triang; //(ntriang);
