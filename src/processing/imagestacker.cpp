@@ -61,41 +61,47 @@ void ImageStacker::Process(int tolerance) {
     ref_image_ = GetCalibratedImage(ref_image_file_name_, masterDark , masterFlat, masterBias);
     working_image_ = ref_image_.clone();
 
-    QString message;
     int totalValidImages = 1;
 
-    for (int k = 0; k < target_image_file_names_.length() && !cancel_; k++) {
-        // ---------------- LOAD -----------------
-        message = tr("Reading light frame %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
+    StackingParams params;
+    params.lights = target_image_file_names_;
+    params.ref = ref_image_;
+    params.masterDark = masterDark;
+    params.masterFlat = masterFlat;
+    params.masterBias = masterBias;
+    params.tolerance = tolerance;
+    params.threadIndex = 0;
+    params.totalThreads = 4;
+    QFuture<StackingResult> future1 = QtConcurrent::run(ProcessConcurrent, params);
 
-        cv::Mat targetImage = GetCalibratedImage(target_image_file_names_.at(k), masterDark, masterFlat, masterBias);
+    params.threadIndex = 1;
+    QFuture<StackingResult> future2 = QtConcurrent::run(ProcessConcurrent, params);
 
-        // -------------- ALIGNMENT ---------------
-        message = tr("Aligning image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        current_operation_++;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
+    params.threadIndex = 2;
+    QFuture<StackingResult> future3 = QtConcurrent::run(ProcessConcurrent, params);
 
-        int ok = 0;
-        cv::Mat targetAligned = GenerateAlignedImage(ref_image_, targetImage, tolerance, &ok);
+    params.threadIndex = 3;
+    QFuture<StackingResult> future4 = QtConcurrent::run(ProcessConcurrent, params);
 
-        if (cancel_) return;
-
-        if (ok != 0)
-            continue;
-
-        // -------------- STACKING ---------------
-        message = tr("Stacking image %1 of %2").arg(QString::number(k+2), QString::number(target_image_file_names_.length() + 1));
-        qDebug() << message;
-        current_operation_++;
-        if (total_operations_ != 0) emit UpdateProgress(message, 100*current_operation_/total_operations_);
-
-        cv::add(working_image_, targetAligned, working_image_, cv::noArray(), CV_32F);
-        totalValidImages++;
+    bool done = false;
+    while (!done) {
+        done = done || future1.isFinished();
+        done = done || future2.isFinished();
+        done = done || future3.isFinished();
+        done = done || future4.isFinished();
+        QThread::sleep(1);
     }
 
-    if (cancel_) return;
+    working_image_ += future1.result().image;
+    working_image_ += future2.result().image;
+    working_image_ += future3.result().image;
+    working_image_ += future4.result().image;
+
+    totalValidImages += future1.result().totalValidImages;
+    totalValidImages += future2.result().totalValidImages;
+    totalValidImages += future3.result().totalValidImages;
+    totalValidImages += future4.result().totalValidImages;
+
     if (totalValidImages < 2) {
         emit ProcessingError(tr("No images could be aligned to the reference image. Try using a lower tolerance."));
         return;

@@ -626,3 +626,38 @@ cv::Mat openskystacker::StackBias(QStringList filenames)
 
     return result;
 }
+
+StackingResult openskystacker::ProcessConcurrent(StackingParams params)
+{
+    QStringList lights = params.lights;
+    cv::Mat ref = params.ref;
+    cv::Mat masterDark = params.masterDark;
+    cv::Mat masterFlat = params.masterFlat;
+    cv::Mat masterBias = params.masterBias;
+    int tolerance = params.tolerance;
+    int threadIndex = params.threadIndex;
+    int totalThreads = params.totalThreads;
+
+    int totalValidImages = 0;
+    cv::Mat workingImage = cv::Mat::zeros(ref.rows, ref.cols, ref.type());
+
+    for (int k = threadIndex; k < lights.length(); k += totalThreads) {
+        cv::Mat targetImage = GetCalibratedImage(lights.at(k), masterDark, masterFlat, masterBias);
+
+        int ok = 0;
+        cv::Mat targetAligned = GenerateAlignedImage(ref, targetImage, tolerance, &ok);
+
+        if (ok != 0)
+            continue;
+
+        cv::add(workingImage, targetAligned, workingImage, cv::noArray(), CV_32F);
+        totalValidImages++;
+    }
+
+    struct StackingResult result;
+    result.image = workingImage;
+    result.totalValidImages = totalValidImages;
+    result.status = 0;
+
+    return result;
+}

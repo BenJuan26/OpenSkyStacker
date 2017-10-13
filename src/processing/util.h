@@ -40,6 +40,23 @@ enum ImageType {
     RGB_IMAGE
 };
 
+struct StackingResult {
+    cv::Mat image;
+    int totalValidImages;
+    int status;
+};
+
+struct StackingParams {
+    QStringList lights;
+    cv::Mat ref;
+    cv::Mat masterDark;
+    cv::Mat masterFlat;
+    cv::Mat masterBias;
+    int tolerance;
+    int threadIndex;
+    int totalThreads;
+};
+
 cv::Mat GetBayerMatrix(QString filename);
 ImageRecord *GetImageRecord(QString filename);
 time_t EXIFTimeToCTime(std::string exifTime);
@@ -57,6 +74,7 @@ cv::Mat StackDarks(QStringList filenames, cv::Mat bias);
 cv::Mat StackDarkFlats(QStringList filenames, cv::Mat bias);
 cv::Mat StackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias);
 cv::Mat StackBias(QStringList filenames);
+StackingResult ProcessConcurrent(StackingParams params);
 }
 
 #endif // UTIL_H

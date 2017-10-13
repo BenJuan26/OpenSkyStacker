@@ -16,6 +16,8 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QFuture>
+#include <QtConcurrent/QtConcurrent>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
