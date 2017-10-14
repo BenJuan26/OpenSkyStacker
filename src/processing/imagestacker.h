@@ -117,7 +117,7 @@ signals:
     void doneDetectingStars(int);
 public slots:
     //! The main method for processing the images.
-    void Process(int tolerance);
+    void Process(int tolerance, int threads);
 
     //! Gets an image from disk and asynchronously reads it as a QImage.
     /*! Emits QImageReady once the image is ready.

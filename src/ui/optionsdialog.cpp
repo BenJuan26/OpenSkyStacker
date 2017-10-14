@@ -17,6 +17,8 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     connect(ui->buttonDetectStars, SIGNAL(released()), this,
             SLOT(handleButtonDetectStars()));
 
+    ui->spinboxThreads->setValue(QThread::idealThreadCount());
+
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     int thresh = settings.value("StarDetector/thresholdCoeff", 20).toInt();
     valuesChanged(thresh);
@@ -64,4 +66,60 @@ void OptionsDialog::handleButtonDetectStars()
 {
     ui->labelDetectStars->setText(tr("Detecting stars..."));
     emit detectStars(GetThresh());
+}
+
+void OptionsDialog::on_buttonBrowse_released()
+{
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    QString path = settings.value("files/savePath", settings.value(
+            "files/lightFramesDir", QDir::homePath())).toString();
+
+    QString saveFilePath = QFileDialog::getSaveFileName(this,
+            tr("Select Output Image"), path,
+            tr("TIFF Image (*.tif)"));
+
+    if (saveFilePath.isEmpty()) {
+        return;
+    }
+
+    // Linux doesn't force the proper extension unlike Windows and Mac
+    QRegularExpression regex("\\.tif$");
+    if (!regex.match(saveFilePath).hasMatch()) {
+        qDebug() << "Filename was missing extension, adding it";
+        saveFilePath += ".tif";
+    }
+
+    QFileInfo info(saveFilePath);
+    settings.setValue("files/savePath", info.absoluteFilePath());
+    ui->lineEditFileName->setText(saveFilePath);
+}
+
+QString OptionsDialog::GetPath() const
+{
+    return path_;
+}
+
+void OptionsDialog::SetPath(const QString &path)
+{
+    path_ = path;
+}
+
+void OptionsDialog::on_spinboxThreads_valueChanged(int value)
+{
+    threads_ = value;
+}
+
+int OptionsDialog::GetThreads() const
+{
+    return threads_;
+}
+
+void OptionsDialog::SetThreads(int threads)
+{
+    threads_ = threads;
+}
+
+void OptionsDialog::on_lineEditFileName_textChanged(const QString &text)
+{
+    path_ = text;
 }

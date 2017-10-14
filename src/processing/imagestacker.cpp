@@ -11,21 +11,21 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 
 int ImageStacker::GetTotalOperations()
 {
-    int ops = target_image_file_names_.length() * 2 + 1;
+    int ops = target_image_file_names_.length() + 1;
 
-    if (use_bias_)       ops += bias_frame_file_names_.length();
-    if (use_darks_)      ops += dark_frame_file_names_.length();
-    if (use_dark_flats_) ops += dark_flat_frame_file_names_.length();
-    if (use_flats_)      ops += flat_frame_file_names_.length();
+    if (use_bias_)       ops += 1;
+    if (use_darks_)      ops += 1;
+    if (use_dark_flats_) ops += 1;
+    if (use_flats_)      ops += 1;
 
     return ops;
 }
 
-void ImageStacker::Process(int tolerance) {
+void ImageStacker::Process(int tolerance, int threads) {
     time_t now;
     time(&now);
 
-    int THREADS = 1;
+    qDebug() << "Path:" << save_file_path_;
 
     ImageType refType = GetImageType(ref_image_file_name_);
 
@@ -37,7 +37,7 @@ void ImageStacker::Process(int tolerance) {
     }
 
     cancel_ = false;
-    emit UpdateProgress(tr("Checking image sizes"), 0);
+    emit UpdateProgress(tr("Checking image sizes..."), 0);
 
     int err = ValidateImageSizes();
     if (err) {
@@ -45,25 +45,41 @@ void ImageStacker::Process(int tolerance) {
         return;
     }
 
-    current_operation_ = 0;
+    current_operation_ = 1;
     total_operations_ = GetTotalOperations();
 
     cv::Mat masterDark, masterDarkFlat, masterFlat, masterBias;
 
-    if (use_bias_)       masterBias = StackBias(bias_frame_file_names_);
-    if (use_darks_)      masterDark = StackDarks(dark_frame_file_names_, masterBias);
-    if (use_dark_flats_) masterDarkFlat = StackDarkFlats(dark_flat_frame_file_names_, masterBias);
-    if (use_flats_)      masterFlat = StackFlats(flat_frame_file_names_, masterDarkFlat, masterBias);
+    if (use_bias_) {
+        emit UpdateProgress(tr("Stacking bias frames..."), 100 * current_operation_ / total_operations_);
+        masterBias = StackBias(bias_frame_file_names_);
+        current_operation_++;
+    }
+    if (use_darks_) {
+        emit UpdateProgress(tr("Stacking dark frames..."), 100 * current_operation_ / total_operations_);
+        masterDark = StackDarks(dark_frame_file_names_, masterBias);
+        current_operation_++;
+    }
+    if (use_dark_flats_) {
+        emit UpdateProgress(tr("Stacking dark flat frames..."), 100 * current_operation_ / total_operations_);
+        masterDarkFlat = StackDarkFlats(dark_flat_frame_file_names_, masterBias);
+        current_operation_++;
+    }
+    if (use_flats_) {
+        emit UpdateProgress(tr("Stacking flat frames..."), 100 * current_operation_ / total_operations_);
+        masterFlat = StackFlats(flat_frame_file_names_, masterDarkFlat, masterBias);
+        current_operation_++;
+    }
 
-    emit UpdateProgress(tr("Reading light frame 1 of %n", "",
-            target_image_file_names_.length() + 1),
-            100*current_operation_/total_operations_);
+    emit UpdateProgress(tr("Stacking light frames..."), 100 * current_operation_ / total_operations_);
     current_operation_++;
 
     ref_image_ = GetCalibratedImage(ref_image_file_name_, masterDark , masterFlat, masterBias);
     working_image_ = ref_image_.clone();
 
     int totalValidImages = 1;
+    if (threads >= target_image_file_names_.length())
+        threads = target_image_file_names_.length() - 1;
 
     StackingParams params;
     params.lights = target_image_file_names_;
@@ -72,18 +88,34 @@ void ImageStacker::Process(int tolerance) {
     params.masterFlat = masterFlat;
     params.masterBias = masterBias;
     params.tolerance = tolerance;
-    params.totalThreads = THREADS;
+    params.totalThreads = threads;
 
     std::vector< QFuture<StackingResult> > futures;
-    for (int i = 0; i < THREADS; i++) {
+    std::vector<int *> completes;
+    for (int i = 0; i < threads; i++) {
+        int *c = new int;
+        *c = 0;
+        completes.push_back(c);
         params.threadIndex = i;
-        QFuture<StackingResult> future = QtConcurrent::run(ProcessConcurrent, params);
+        QFuture<StackingResult> future = QtConcurrent::run(ProcessConcurrent, params, c);
         futures.push_back(future);
     }
 
     bool done = false;
+    while (!done) {
+        done = true;
+        int op = current_operation_;
+        for (int i = 0; i < futures.size(); i++) {
+            QFuture<StackingResult> future = futures.at(i);
+            op += *completes.at(i);
+            done = done && future.isFinished();
+        }
+
+        emit UpdateProgress(tr("Stacking light frames..."), 100 * op / total_operations_);
+        QThread::msleep(30);
+    }
+
     for (QFuture<StackingResult> future : futures) {
-        future.waitForFinished();
         working_image_ += future.result().image;
         totalValidImages += future.result().totalValidImages;
     }
@@ -155,8 +187,6 @@ int ImageStacker::ValidateImageSizes()
         refHeight = ref.rows;
     }
 
-    qDebug() << "refImage:" << refWidth << refHeight;
-
     for (int i = 0; i < target_image_file_names_.length(); i++) {
         QString filename = target_image_file_names_.at(i);
 
@@ -197,8 +227,6 @@ int ImageStacker::ValidateImageSizes()
                 height = ref.rows;
             }
 
-            qDebug() << "bias" << i << ":" << width << height;
-
             if (width != refWidth ||  height != refHeight) {
                 return -1;
             }
@@ -222,8 +250,6 @@ int ImageStacker::ValidateImageSizes()
                 width = ref.cols;
                 height = ref.rows;
             }
-
-            qDebug() << "dark" << i << ":" << width << height;
 
             if (width != refWidth ||  height != refHeight) {
                 return -1;
@@ -249,8 +275,6 @@ int ImageStacker::ValidateImageSizes()
                 height = ref.rows;
             }
 
-            qDebug() << "dark flat" << i << ":" << width << height;
-
             if (width != refWidth ||  height != refHeight) {
                 return -1;
             }
@@ -274,8 +298,6 @@ int ImageStacker::ValidateImageSizes()
                 width = ref.cols;
                 height = ref.rows;
             }
-
-            qDebug() << "flat" << i << ":" << width << height;
 
             if (width != refWidth ||  height != refHeight) {
                 return -1;

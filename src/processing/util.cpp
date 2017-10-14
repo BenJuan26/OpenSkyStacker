@@ -627,7 +627,7 @@ cv::Mat openskystacker::StackBias(QStringList filenames)
     return result;
 }
 
-StackingResult openskystacker::ProcessConcurrent(StackingParams params)
+StackingResult openskystacker::ProcessConcurrent(StackingParams params, int *numCompleted)
 {
     QStringList lights = params.lights;
     cv::Mat ref = params.ref;
@@ -647,6 +647,8 @@ StackingResult openskystacker::ProcessConcurrent(StackingParams params)
 
         int ok = 0;
         cv::Mat targetAligned = GenerateAlignedImage(ref, targetImage, tolerance, &ok);
+
+        *numCompleted = *numCompleted + 1;
 
         if (ok != 0)
             continue;

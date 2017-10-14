@@ -60,16 +60,16 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(handleButtonBiasFrames()));
     connect(ui_->buttonStack, SIGNAL(released()), this,
             SLOT(handleButtonStack()));
-    connect(ui_->buttonOptions, SIGNAL(released()), this,
-            SLOT(handleButtonOptions()));
+//    connect(ui_->buttonOptions, SIGNAL(released()), this,
+//            SLOT(handleButtonOptions()));
     connect(ui_->buttonSaveList, SIGNAL(released()), this,
             SLOT(handleButtonSaveList()));
     connect(ui_->buttonLoadList, SIGNAL(released()), this,
             SLOT(handleButtonLoadList()));
 
     // Signals / slots for stacker
-    connect(this, SIGNAL (stackImages(int)), stacker_,
-            SLOT(Process(int)));
+    connect(this, SIGNAL (stackImages(int, int)), stacker_,
+            SLOT(Process(int, int)));
     connect(this, SIGNAL(readQImage(QString)), stacker_,
             SLOT(ReadQImage(QString)));
     connect(this, SIGNAL(detectStars(QString,int)), stacker_,
@@ -262,27 +262,28 @@ void MainWindow::processingError(QString message)
 
 void MainWindow::handleButtonStack() {
     has_failed_ = false;
-    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
-    QString path = settings.value("files/savePath", settings.value(
-            "files/lightFramesDir", QDir::homePath())).toString();
 
-    QString saveFilePath = QFileDialog::getSaveFileName(this,
-            tr("Select Output Image"), path,
-            tr("TIFF Image (*.tif)"));
+    OptionsDialog *dialog = new OptionsDialog(this);
 
-    if (saveFilePath.isEmpty()) {
+    connect(dialog, SIGNAL(detectStars(int)), this,
+            SLOT(detectStars(int)));
+    connect(this, SIGNAL(doneDetectingStars(int)), dialog,
+            SLOT(setDetectedStars(int)));
+
+    if (!dialog->exec()) {
+        delete dialog;
         return;
     }
 
-    // Linux doesn't force the proper extension unlike Windows and Mac
-    QRegularExpression regex("\\.tif$");
-    if (!regex.match(saveFilePath).hasMatch()) {
-        qDebug() << "Filename was missing extension, adding it";
-        saveFilePath += ".tif";
-    }
+    int thresh = dialog->GetThresh();
+    QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+    settings.setValue("StarDetector/thresholdCoeff", thresh);
 
-    QFileInfo info(saveFilePath);
-    settings.setValue("files/savePath", info.absoluteFilePath());
+    int threads = dialog->GetThreads();
+    QString saveFilePath = dialog->GetPath();
+
+    delete dialog;
+
     stacker_->SetSaveFilePath(saveFilePath);
 
     setDefaultReferenceImage();
@@ -297,7 +298,7 @@ void MainWindow::handleButtonStack() {
     float threshold = settings.value("StarDetector/thresholdCoeff", 20).toFloat();
 
     // Asynchronously trigger the processing
-    emit stackImages(threshold);
+    emit stackImages(threshold, threads);
 
     if (!processing_dialog_->exec()) {
         qDebug() << "Cancelling...";

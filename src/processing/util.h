@@ -74,7 +74,7 @@ cv::Mat StackDarks(QStringList filenames, cv::Mat bias);
 cv::Mat StackDarkFlats(QStringList filenames, cv::Mat bias);
 cv::Mat StackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias);
 cv::Mat StackBias(QStringList filenames);
-StackingResult ProcessConcurrent(StackingParams params);
+StackingResult ProcessConcurrent(StackingParams params, int *numCompleted);
 }
 
 #endif // UTIL_H

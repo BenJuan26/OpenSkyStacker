@@ -113,7 +113,7 @@ void TestOSS::testStackImages()
 
     qInstallMessageHandler(suppressDebugOutput);
     try {
-        stacker->Process(threshold);
+        stacker->Process(threshold, 1);
     } catch (std::exception) {
         QFAIL("Exception thrown");
     }

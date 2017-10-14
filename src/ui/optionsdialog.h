@@ -4,6 +4,10 @@
 #include <QDialog>
 #include <QSettings>
 #include <QDebug>
+#include <QDir>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QThread>
 
 namespace Ui {
 class OptionsDialog;
@@ -20,6 +24,12 @@ public:
     int GetThresh() const;
     void SetThresh(int value);
 
+    QString GetPath() const;
+    void SetPath(const QString &path);
+
+    int GetThreads() const;
+    void SetThreads(int threads);
+
 signals:
     void detectStars(int);
 
@@ -28,9 +38,17 @@ private slots:
     void valuesChanged(int thresh);
     void setDetectedStars(int stars);
 
+    void on_buttonBrowse_released();
+
+    void on_spinboxThreads_valueChanged(int value);
+
+    void on_lineEditFileName_textChanged(const QString &text);
+
 private:
     Ui::OptionsDialog *ui;
     int thresh_;
+    int threads_;
+    QString path_;
 };
 
 #endif // OPTIONSDIALOG_H

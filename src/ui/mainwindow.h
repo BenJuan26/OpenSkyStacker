@@ -57,7 +57,7 @@ protected:
 
 signals:
     //! Asynchronously kicks off the image stacking process.
-    void stackImages(int threshold);
+    void stackImages(int threshold, int threads);
 
     //! Asynchronously read the image at the given filename.
     /*! @param filename The name of the image file to read. */
