@@ -280,6 +280,7 @@ void MainWindow::handleButtonStack() {
     settings.setValue("StarDetector/thresholdCoeff", thresh);
 
     int threads = dialog->GetThreads();
+    settings.setValue("ImageStacker/threads", threads);
     QString saveFilePath = dialog->GetPath();
 
     delete dialog;

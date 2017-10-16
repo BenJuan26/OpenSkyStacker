@@ -77,50 +77,13 @@ cv::Mat StarDetector::GenerateSkyBackground(cv::Mat image) {
     cv::Mat result = image.clone();
 
     cv::resize(result, result, cv::Size(result.cols/8, result.rows/8));
-    cv::medianBlur(result, result, 5);
+
+    int medianFilterSize = 5;
+    cv::medianBlur(result, result, medianFilterSize);
     cv::resize(result, result, cv::Size(image.cols, image.rows));
 
-    float *buffer;
-    buffer = new float[result.cols];
-    int filter_size = 16;
-
-    for (int y = 0; y < result.rows; y++) {
-        float val = 0.0;
-        for (int x = - (filter_size - 1) / 2 - 1 ; x < filter_size / 2 ; x++)
-            val += GetExtendedPixelValue(result, x, y);
-
-        for (int x = 0 ; x < result.cols ; x++) {
-            val -= GetExtendedPixelValue(result, x - (filter_size - 1) / 2 - 1, y);
-            val += GetExtendedPixelValue(result, x + filter_size / 2, y);
-
-            buffer[x] = val / (float)filter_size;
-        }
-
-        for (int x = 0 ; x < result.cols ; x++)
-            result.at<float>(y, x) = buffer[x];
-    }
-
-    delete [] buffer;
-
-    buffer = new float[result.rows];
-
-    for (int x = 0 ; x < result.cols ; x++) {
-        float val = 0.0;
-        for (int y = - (filter_size - 1) / 2 - 1 ; y < filter_size / 2 ; y++)
-            val += GetExtendedPixelValue(result, x, y);
-
-        for (int y = 0 ; y < result.rows ; y++) {
-            val -= GetExtendedPixelValue(result, x, y - (filter_size - 1) / 2 - 1);
-            val += GetExtendedPixelValue(result, x, y + filter_size / 2);
-
-            buffer[y] = val / (float)filter_size;
-        }
-
-        for (int y = 0 ; y < result.rows ; y++)
-            result.at<float>(y, x) = buffer[y];
-    }
-
-    delete [] buffer;
+    int gaussianFilterSize = 31;
+    cv::GaussianBlur(result, result, cv::Size(gaussianFilterSize, gaussianFilterSize), 0);
 
     return result;
 }

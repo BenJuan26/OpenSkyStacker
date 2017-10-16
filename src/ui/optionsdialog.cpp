@@ -17,9 +17,11 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     connect(ui->buttonDetectStars, SIGNAL(released()), this,
             SLOT(handleButtonDetectStars()));
 
-    ui->spinboxThreads->setValue(QThread::idealThreadCount());
-
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
+
+    int threads = settings.value("ImageStacker/threads", QThread::idealThreadCount()).toInt();
+    ui->spinboxThreads->setValue(threads);
+
     int thresh = settings.value("StarDetector/thresholdCoeff", 20).toInt();
     valuesChanged(thresh);
 }

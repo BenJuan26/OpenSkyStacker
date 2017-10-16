@@ -11,7 +11,7 @@ ImageStacker::ImageStacker(QObject *parent) : QObject(parent)
 
 int ImageStacker::GetTotalOperations()
 {
-    int ops = target_image_file_names_.length() + 1;
+    int ops = target_image_file_names_.length() + 4;
 
     if (use_bias_)       ops += 1;
     if (use_darks_)      ops += 1;
@@ -37,7 +37,9 @@ void ImageStacker::Process(int tolerance, int threads) {
     }
 
     cancel_ = false;
-    emit UpdateProgress(tr("Checking image sizes..."), 0);
+    current_operation_ = 1;
+    total_operations_ = GetTotalOperations();
+    emit UpdateProgress(tr("Checking image sizes..."), 100 * current_operation_++ / total_operations_);
 
     int err = ValidateImageSizes();
     if (err) {
@@ -45,34 +47,26 @@ void ImageStacker::Process(int tolerance, int threads) {
         return;
     }
 
-    current_operation_ = 1;
-    total_operations_ = GetTotalOperations();
-
     cv::Mat masterDark, masterDarkFlat, masterFlat, masterBias;
 
     if (use_bias_) {
-        emit UpdateProgress(tr("Stacking bias frames..."), 100 * current_operation_ / total_operations_);
+        emit UpdateProgress(tr("Stacking bias frames..."), 100 * current_operation_++ / total_operations_);
         masterBias = StackBias(bias_frame_file_names_);
-        current_operation_++;
     }
     if (use_darks_) {
-        emit UpdateProgress(tr("Stacking dark frames..."), 100 * current_operation_ / total_operations_);
+        emit UpdateProgress(tr("Stacking dark frames..."), 100 * current_operation_++ / total_operations_);
         masterDark = StackDarks(dark_frame_file_names_, masterBias);
-        current_operation_++;
     }
     if (use_dark_flats_) {
-        emit UpdateProgress(tr("Stacking dark flat frames..."), 100 * current_operation_ / total_operations_);
+        emit UpdateProgress(tr("Stacking dark flat frames..."), 100 * current_operation_++ / total_operations_);
         masterDarkFlat = StackDarkFlats(dark_flat_frame_file_names_, masterBias);
-        current_operation_++;
     }
     if (use_flats_) {
-        emit UpdateProgress(tr("Stacking flat frames..."), 100 * current_operation_ / total_operations_);
+        emit UpdateProgress(tr("Stacking flat frames..."), 100 * current_operation_++ / total_operations_);
         masterFlat = StackFlats(flat_frame_file_names_, masterDarkFlat, masterBias);
-        current_operation_++;
     }
 
-    emit UpdateProgress(tr("Stacking light frames..."), 100 * current_operation_ / total_operations_);
-    current_operation_++;
+    emit UpdateProgress(tr("Stacking light frames..."), 100 * current_operation_++ / total_operations_);
 
     ref_image_ = GetCalibratedImage(ref_image_file_name_, masterDark , masterFlat, masterBias);
     working_image_ = ref_image_.clone();
