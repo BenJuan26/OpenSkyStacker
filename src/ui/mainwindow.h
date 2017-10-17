@@ -9,6 +9,7 @@
 #include "processingdialog.h"
 #include "processing/stardetector.h"
 #include "processing/imagestacker.h"
+#include "processing/util.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -56,7 +57,7 @@ protected:
 
 signals:
     //! Asynchronously kicks off the image stacking process.
-    void stackImages(int threshold);
+    void stackImages(int threshold, int threads);
 
     //! Asynchronously read the image at the given filename.
     /*! @param filename The name of the image file to read. */
@@ -135,7 +136,6 @@ private:
     void setDefaultReferenceImage();
     void selectReferenceImage();
     void loadImagesIntoStacker();
-    QImage Mat2QImage(const cv::Mat &src);
 
     void positionAndResizeWindow();
 

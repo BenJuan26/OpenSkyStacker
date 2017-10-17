@@ -40,7 +40,8 @@ SOURCES += main.cpp\
     model/imagerecord.cpp \
     model/imagetablemodel.cpp \
     ui/optionsdialog.cpp \
-    processing/exif.cpp
+    processing/exif.cpp \
+    processing/util.cpp
 
 HEADERS  += ui/mainwindow.h \
     processing/imagestacker.h \
@@ -56,7 +57,8 @@ HEADERS  += ui/mainwindow.h \
     model/imagerecord.h \
     model/imagetablemodel.h \
     ui/optionsdialog.h \
-    processing/exif.h
+    processing/exif.h \
+    processing/util.h
 
 FORMS    += ui/mainwindow.ui \
     ui/processingdialog.ui \

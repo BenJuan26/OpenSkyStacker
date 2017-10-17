@@ -228,13 +228,6 @@ QPushButton:disabled {
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QPushButton" name="buttonOptions">
-           <property name="text">
-            <string>Options</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="buttonStack">
            <property name="enabled">
             <bool>false</bool>
@@ -270,7 +263,7 @@ QPushButton:disabled {
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="styleSheet">
