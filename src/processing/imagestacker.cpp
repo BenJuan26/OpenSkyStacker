@@ -130,7 +130,7 @@ void ImageStacker::Process(int tolerance, int threads) {
 
     qDebug() << "Stacking took" << difftime(doneStacking, now) << "seconds";
 
-    emit Finished(working_image_, tr("Stacking completed"));
+    emit Finished(working_image_, tr("Stacking completed in %1 seconds.").arg(difftime(doneStacking, now)));
 }
 
 void ImageStacker::ReadQImage(QString filename)

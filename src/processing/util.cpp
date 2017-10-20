@@ -460,7 +460,7 @@ QImage openskystacker::Mat2QImage(const cv::Mat &src)
 }
 
 // derived from FOCAS mktransform.c
-cv::Mat openskystacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok) {
+cv::Mat openskystacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *err) {
     StarDetector sd;
     std::vector<Star> List1 = sd.GetStars(ref, tolerance);
     std::vector<Star> List2 = sd.GetStars(target, tolerance);
@@ -472,9 +472,9 @@ cv::Mat openskystacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int to
 
     int k = 0;
     std::vector< std::vector<int> > matches = FindMatches(nobjs, &k, List_triangA, List_triangB);
-    std::vector< std::vector<float> > transformVec = FindTransform(matches, k, List1, List2, ok);
+    std::vector< std::vector<float> > transformVec = FindTransform(matches, k, List1, List2, err);
 
-    if (ok && *ok != 0)
+    if (err && *err != 0)
         return target;
 
     cv::Mat matTransform(2,3,CV_32F);
@@ -645,12 +645,12 @@ StackingResult openskystacker::ProcessConcurrent(StackingParams params, int *num
         qDebug() << k;
         cv::Mat targetImage = GetCalibratedImage(lights.at(k), masterDark, masterFlat, masterBias);
 
-        int ok = 0;
-        cv::Mat targetAligned = GenerateAlignedImage(ref, targetImage, tolerance, &ok);
+        int err = 0;
+        cv::Mat targetAligned = GenerateAlignedImage(ref, targetImage, tolerance, &err);
 
         *numCompleted = *numCompleted + 1;
 
-        if (ok != 0)
+        if (err)
             continue;
 
         cv::add(workingImage, targetAligned, workingImage, cv::noArray(), CV_32F);
@@ -660,7 +660,6 @@ StackingResult openskystacker::ProcessConcurrent(StackingParams params, int *num
     struct StackingResult result;
     result.image = workingImage;
     result.totalValidImages = totalValidImages;
-    result.status = 0;
 
     return result;
 }

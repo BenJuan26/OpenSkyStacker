@@ -43,7 +43,6 @@ enum ImageType {
 struct StackingResult {
     cv::Mat image;
     int totalValidImages;
-    int status;
 };
 
 struct StackingParams {
@@ -69,7 +68,7 @@ cv::Mat RawToMat(QString filename);
 cv::Mat ConvertAndScaleImage(cv::Mat image);
 std::vector<ImageRecord *> LoadImageList(QString filename, int *err);
 QImage Mat2QImage(const cv::Mat &src);
-cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *ok);
+cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *err);
 cv::Mat StackDarks(QStringList filenames, cv::Mat bias);
 cv::Mat StackDarkFlats(QStringList filenames, cv::Mat bias);
 cv::Mat StackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias);
