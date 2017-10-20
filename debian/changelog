@@ -1,3 +1,13 @@
+openskystacker (0.2.3-1) UNRELEASED; urgency=low
+
+ * Add ability to use threads
+
+ * Further optimizations in stacking algorithm
+
+ * Read EXIF data from JPEG files
+
+ * Read metadata from FITS files
+
 openskystacker (0.2.2-1) UNRELEASED; urgency=low
 
  * Added FITS image support
