@@ -1,5 +1,12 @@
 QT       += core gui
 
+QMAKE_CXXFLAGS -= -O2
+QMAKE_CXXFLAGS += -O0
+
+QMAKE_LFLAGS -= -O1
+QMAKE_LFLAGS -= -O2
+QMAKE_LFLAGS += -O0
+
 TRANSLATIONS += translations/openskystacker_es.ts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -28,41 +35,24 @@ QMAKE_DISTCLEAN += -r $$BUILD_DIR
 
 SOURCES += main.cpp\
     ui/mainwindow.cpp \
-    processing/imagestacker.cpp \
     ui/processingdialog.cpp \
-    model/star.cpp \
-    processing/stardetector.cpp \
-    model/pixel.cpp \
-    model/adjoiningpixel.cpp \
-    processing/focas.cpp \
     ui/stackergraphicsview.cpp \
-    model/triangle.cpp \
-    model/imagerecord.cpp \
-    model/imagetablemodel.cpp \
-    ui/optionsdialog.cpp \
-    processing/exif.cpp \
-    processing/util.cpp
+    ui/imagetablemodel.cpp \
+    ui/optionsdialog.cpp
 
 HEADERS  += ui/mainwindow.h \
-    processing/imagestacker.h \
     ui/processingdialog.h \
-    model/star.h \
-    processing/stardetector.h \
-    model/pixel.h \
-    model/adjoiningpixel.h \
-    processing/focas.h \
     ui/stackergraphicsview.h \
-    processing/hfti.h \
-    model/triangle.h \
-    model/imagerecord.h \
-    model/imagetablemodel.h \
-    ui/optionsdialog.h \
-    processing/exif.h \
-    processing/util.h
+    ui/imagetablemodel.h \
+    ui/optionsdialog.h
 
 FORMS    += ui/mainwindow.ui \
     ui/processingdialog.ui \
     ui/optionsdialog.ui
+
+INCLUDEPATH += ..
+
+LIBS += -L../bin -lstacker
 
 test {
     QT += testlib
@@ -125,9 +115,9 @@ win32 {
     LIBS += -lopencv_core$$OPENCV_VER
     LIBS += -lopencv_imgcodecs$$OPENCV_VER
     LIBS += -lopencv_imgproc$$OPENCV_VER
-    LIBS += $$PWD/3rdparty/focas/win64/hfti.o
-    LIBS += $$PWD/3rdparty/focas/win64/h12.o
-    LIBS += $$PWD/3rdparty/focas/win64/diff.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/win64/hfti.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/win64/h12.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/win64/diff.o
     LIBS += -L$$LIBRAW_DIR/lib
     LIBS += -llibraw
     LIBS += -lWS2_32
@@ -152,9 +142,9 @@ macx {
     LIBS += -lopencv_imgproc
 
     # FOCAS
-    LIBS += $$PWD/3rdparty/focas/macx/hfti.o
-    LIBS += $$PWD/3rdparty/focas/macx/h12.o
-    LIBS += $$PWD/3rdparty/focas/macx/diff.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/macx/hfti.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/macx/h12.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/macx/diff.o
 }
 
 linux {
@@ -171,9 +161,9 @@ linux {
     contains(opencv_libs,"imgcodecs"): LIBS += -lopencv_imgcodecs
     LIBS += -lopencv_imgproc
 
-    LIBS += $$PWD/3rdparty/focas/unix/hfti.o
-    LIBS += $$PWD/3rdparty/focas/unix/h12.o
-    LIBS += $$PWD/3rdparty/focas/unix/diff.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/unix/hfti.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/unix/h12.o
+    LIBS += $$PWD/../libstacker/3rdparty/focas/unix/diff.o
 
     snapcraft: {
         opencv.path = /usr/lib

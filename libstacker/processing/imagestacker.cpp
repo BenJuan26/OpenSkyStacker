@@ -1,4 +1,4 @@
-#include "imagestacker.h"
+#include "processing/imagestacker.h"
 
 using namespace openskystacker;
 using namespace CCfits;

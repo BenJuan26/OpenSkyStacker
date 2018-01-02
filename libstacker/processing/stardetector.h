@@ -1,6 +1,8 @@
 #ifndef STARDETECTOR_H
 #define STARDETECTOR_H
 
+#include "libstacker/libstacker_global.h"
+
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -19,7 +21,7 @@
 namespace openskystacker {
 
 //! Manages star analysis and detection.
-class StarDetector
+class LIBSTACKER_EXPORT StarDetector
 {
 public:
     //! Constructor (currently empty).

@@ -1,6 +1,8 @@
 #ifndef IMAGESTACKER_H
 #define IMAGESTACKER_H
 
+#include "libstacker/libstacker_global.h"
+
 #include "processing/stardetector.h"
 #include "processing/focas.h"
 #include "processing/exif.h"
@@ -36,7 +38,7 @@
 namespace openskystacker {
 
 //! The main class for handling the image processing.
-class ImageStacker : public QObject
+class LIBSTACKER_EXPORT ImageStacker : public QObject
 {
     Q_OBJECT
 

@@ -1,13 +1,15 @@
 #ifndef IMAGERECORD_H
 #define IMAGERECORD_H
 
+#include "libstacker/libstacker_global.h"
+
 #include <QString>
 #include <ctime>
 
 namespace openskystacker {
 
 //! Contains metadata regarding an image.
-class ImageRecord
+class LIBSTACKER_EXPORT ImageRecord
 {
 public:
     //! Constructor.

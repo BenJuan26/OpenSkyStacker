@@ -1,10 +1,12 @@
 #ifndef STAR_H
 #define STAR_H
 
+#include "libstacker/libstacker_global.h"
+
 namespace openskystacker {
 
 //! Represents a star as it appears in an image.
-class Star
+class LIBSTACKER_EXPORT Star
 {
 public:
     //! Constructor.

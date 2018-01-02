@@ -1,15 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "model/imagerecord.h"
-#include "model/imagetablemodel.h"
+#include "ui/imagetablemodel.h"
 #include "ui/processingdialog.h"
 #include "ui/optionsdialog.h"
 #include "ui_mainwindow.h"
-#include "processingdialog.h"
-#include "processing/stardetector.h"
-#include "processing/imagestacker.h"
-#include "processing/util.h"
+#include "libstacker/libstacker.h"
 
 #include <QFileDialog>
 #include <QMessageBox>

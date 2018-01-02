@@ -9,11 +9,11 @@ Makefile.*
 .coveralls.yml
 
 # Snapcraft
-src/*.snap
-src/parts
-src/stage
-src/prime
-src/images/samples
+openskystacker/*.snap
+openskystacker/parts
+openskystacker/stage
+openskystacker/prime
+openskystacker/images/samples
 
 build
 bin
