@@ -1,5 +1,8 @@
 #include "libstacker/util.h"
 
+#include "exif.h"
+#include "focas.h"
+
 using namespace openskystacker;
 using namespace CCfits;
 using namespace easyexif;

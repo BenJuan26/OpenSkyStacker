@@ -216,7 +216,7 @@ void MainWindow::imageSelectionChanged()
     ImageRecord *record = table_model_.At(rows.at(0).row());
 
     // Asynchronously read the image from disk
-    emit readQImage(record->filename;
+    emit readQImage(record->filename);
 }
 
 void MainWindow::setImage(QImage image)
@@ -681,7 +681,7 @@ void MainWindow::clearReferenceFrame()
 
     for (int i = 0; i < model->rowCount(); i++) {
         ImageRecord *record = model->At(i);
-        record->SetReference(false);
+        record->reference = false;
     }
 }
 
@@ -740,7 +740,7 @@ void MainWindow::loadImagesIntoStacker()
         if (!record->checked)
             continue;
 
-        QString filename = record->GetFilename();
+        QString filename = record->filename;
 
         switch (record->type) {
         case ImageRecord::LIGHT:

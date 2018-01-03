@@ -1,7 +1,7 @@
 #ifndef IMAGETABLEMODEL_H
 #define IMAGETABLEMODEL_H
 
-#include "libstacker/libstacker.h"
+#include "libstacker/model.h"
 
 #include <QAbstractTableModel>
 #include <QDebug>

@@ -2,23 +2,9 @@
 #define STARDETECTOR_H
 
 #include "libstacker/libstacker_global.h"
-
-#include "adjoiningpixel.h"
-#include "hfti.h"
+#include "libstacker/model.h"
 
 #include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/highgui/highgui.hpp"
-
-
-#include <QDebug>
-#include <QSettings>
-#include <QTime>
-
-#include <functional>
-#include <string>
-#include <string.h>
-#include <stack>
 
 namespace openskystacker {
 

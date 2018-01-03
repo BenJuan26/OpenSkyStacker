@@ -5,9 +5,6 @@
 #include "libstacker/model.h"
 #include "libstacker/stardetector.h"
 
-#include "exif.h"
-#include "focas.h"
-
 #include <QString>
 #include <QStringList>
 #include <QFile>

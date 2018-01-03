@@ -31,7 +31,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
         return QVariant(QBrush (QColor(Qt::white)));
 
     case Qt::FontRole:
-        if (list[index.row()]->IsReference()) {
+        if (list[index.row()]->reference) {
             QFont font;
             font.setBold(true);
             return font;
@@ -40,7 +40,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 
     case Qt::CheckStateRole:
         if (index.column() == 0) {
-            if (list[index.row()]->IsChecked() == true)
+            if (list[index.row()]->checked == true)
                 return Qt::Checked;
             return Qt::Unchecked;
         }
@@ -78,7 +78,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             if (image->iso <= 0)
                 return "-";
             else
-                return image->GetIso();
+                return image->iso;
         case 5: {
             std::time_t time = image->timestamp;
             if (time == -1) {
@@ -96,7 +96,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             if (image->width <= 0)
                 return "-";
             else
-                return image->GetWidth();
+                return image->width;
         case 7:
             if (image->height <= 0)
                 return "-";

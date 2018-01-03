@@ -1,5 +1,21 @@
 #include "libstacker/stardetector.h"
 
+#include "adjoiningpixel.h"
+#include "hfti.h"
+
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+
+
+#include <QDebug>
+#include <QSettings>
+#include <QTime>
+
+#include <functional>
+#include <string>
+#include <string.h>
+#include <stack>
+
 #define THRESHOLD_COEFF 20.0
 
 #define TOL		0.002   /* Default matching tolerance */

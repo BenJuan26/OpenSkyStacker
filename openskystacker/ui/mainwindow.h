@@ -5,7 +5,7 @@
 #include "ui/processingdialog.h"
 #include "ui/optionsdialog.h"
 #include "ui_mainwindow.h"
-#include "libstacker/libstacker.h"
+#include "libstacker/imagestacker.h"
 
 #include <QFileDialog>
 #include <QMessageBox>

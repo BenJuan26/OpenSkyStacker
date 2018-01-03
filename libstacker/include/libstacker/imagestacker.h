@@ -6,9 +6,6 @@
 #include "libstacker/stardetector.h"
 #include "libstacker/util.h"
 
-#include "focas.h"
-#include "exif.h"
-
 #include <QObject>
 #include <QMutex>
 #include <QImage>
