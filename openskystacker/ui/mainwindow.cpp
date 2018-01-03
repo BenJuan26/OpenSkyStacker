@@ -182,7 +182,7 @@ void MainWindow::setFrameAsReference()
     int i = rows.at(0).row();
     ImageRecord *record = table_model_.At(i);
 
-    if (record->GetType() != ImageRecord::LIGHT) {
+    if (record->type != ImageRecord::LIGHT) {
         QMessageBox msg;
         msg.setText(tr("Reference frame must be a light frame."));
         msg.exec();
@@ -191,7 +191,7 @@ void MainWindow::setFrameAsReference()
 
     clearReferenceFrame();
 
-    record->SetReference(true);
+    record->reference = true;
 }
 
 void MainWindow::removeSelectedImages()
@@ -216,7 +216,7 @@ void MainWindow::imageSelectionChanged()
     ImageRecord *record = table_model_.At(rows.at(0).row());
 
     // Asynchronously read the image from disk
-    emit readQImage(record->GetFilename());
+    emit readQImage(record->filename;
 }
 
 void MainWindow::setImage(QImage image)
@@ -234,7 +234,7 @@ void MainWindow::checkImages()
 
     for (int i = 0; i < rows.count(); i++) {
         ImageRecord *record = table_model_.At(rows.at(i).row());
-        record->SetChecked(true);
+        record->checked = true;
     }
 }
 
@@ -245,7 +245,7 @@ void MainWindow::uncheckImages()
 
     for (int i = 0; i < rows.count(); i++) {
         ImageRecord *record = table_model_.At(rows.at(i).row());
-        record->SetChecked(false);
+        record->checked = false;
     }
 
     checkTableData();
@@ -343,7 +343,7 @@ void MainWindow::handleButtonLightFrames() {
     for (int i = 0; i < targetImageFileNames.length(); i++) {
         ImageRecord *record = GetImageRecord(
                 targetImageFileNames.at(i));
-        record->SetType(ImageRecord::LIGHT);
+        record->type = ImageRecord::LIGHT;
         table_model_.Append(record);
     }
 
@@ -378,7 +378,7 @@ void MainWindow::handleButtonDarkFrames() {
     for (int i = 0; i < darkFrameFileNames.length(); i++) {
         ImageRecord *record = GetImageRecord(
                 darkFrameFileNames.at(i));
-        record->SetType(ImageRecord::DARK);
+        record->type = ImageRecord::DARK;
         table_model_.Append(record);
     }
 }
@@ -411,7 +411,7 @@ void MainWindow::handleButtonDarkFlatFrames() {
     for (int i = 0; i < darkFlatFrameFileNames.length(); i++) {
         ImageRecord *record = GetImageRecord(
                 darkFlatFrameFileNames.at(i));
-        record->SetType(ImageRecord::DARK_FLAT);
+        record->type = ImageRecord::DARK_FLAT;
         table_model_.Append(record);
     }
 }
@@ -444,7 +444,7 @@ void MainWindow::handleButtonFlatFrames() {
     for (int i = 0; i < flatFrameFileNames.length(); i++) {
         ImageRecord *record = GetImageRecord(
                 flatFrameFileNames.at(i));
-        record->SetType(ImageRecord::FLAT);
+        record->type = ImageRecord::FLAT;
         table_model_.Append(record);
     }
 }
@@ -478,7 +478,7 @@ void MainWindow::handleButtonBiasFrames()
     for (int i = 0; i < biasFrameFileNames.length(); i++) {
         ImageRecord *record = GetImageRecord(
                 biasFrameFileNames.at(i));
-        record->SetType(ImageRecord::BIAS);
+        record->type = ImageRecord::BIAS;
         table_model_.Append(record);
     }
 }
@@ -522,9 +522,9 @@ void MainWindow::handleButtonSaveList()
     for (int i = 0; i < table_model_.rowCount(); i++) {
         ImageRecord *record = table_model_.At(i);
         QJsonObject image;
-        image.insert("filename", record->GetFilename());
-        image.insert("type", record->GetType());
-        image.insert("checked", record->IsChecked());
+        image.insert("filename", record->filename);
+        image.insert("type", record->type);
+        image.insert("checked", record->checked);
 
         images.insert(images.size(), image);
     }
@@ -622,7 +622,7 @@ void MainWindow::checkTableData()
 {
     int lightsChecked = 0;
     for (int i = 0; i < table_model_.rowCount(); i++) {
-        if (table_model_.At(i)->IsChecked() && table_model_.At(i)->GetType() == ImageRecord::LIGHT) {
+        if (table_model_.At(i)->checked && table_model_.At(i)->type == ImageRecord::LIGHT) {
             lightsChecked++;
         }
     }
@@ -644,8 +644,8 @@ void MainWindow::detectStars(int threshold)
     QString refFileName;
     for (int i = 0; i < table_model_.rowCount(); i++) {
         ImageRecord *record = table_model_.At(i);
-        if (record->IsReference()) {
-            refFileName = record->GetFilename();
+        if (record->reference) {
+            refFileName = record->filename;
             break;
         }
     }
@@ -691,7 +691,7 @@ void MainWindow::setDefaultReferenceImage()
     bool referenceSet = false;
     for (int i = 0; i < table_model_.rowCount(); i++) {
         ImageRecord *record = table_model_.At(i);
-        if (record->IsReference()) referenceSet = true;
+        if (record->reference) referenceSet = true;
     }
 
     // Set first light frame as reference
@@ -699,8 +699,8 @@ void MainWindow::setDefaultReferenceImage()
         for (int i = 0; i < table_model_.rowCount(); i++) {
             ImageRecord *record = table_model_.At(i);
 
-            if (record->GetType() == ImageRecord::LIGHT && record->IsChecked()) {
-                record->SetReference(true);
+            if (record->type == ImageRecord::LIGHT && record->checked) {
+                record->reference = true;
                 QModelIndex index = ui_->imageListView->model()->index(i, 0);
                 ui_->imageListView->selectionModel()->select(index,
                         QItemSelectionModel::Select | QItemSelectionModel::Rows |
@@ -716,7 +716,7 @@ void MainWindow::selectReferenceImage()
     for (int i = 0; i < table_model_.rowCount(); i++) {
         ImageRecord *record = table_model_.At(i);
 
-        if (record->GetType() == ImageRecord::LIGHT && record->IsReference()) {
+        if (record->type == ImageRecord::LIGHT && record->reference) {
             QModelIndex index = ui_->imageListView->model()->index(i, 0);
             ui_->imageListView->selectionModel()->select(index,
                     QItemSelectionModel::Select | QItemSelectionModel::Rows |
@@ -737,14 +737,14 @@ void MainWindow::loadImagesIntoStacker()
     for (int i = 0; i < table_model_.rowCount(); i++) {
         ImageRecord *record = table_model_.At(i);
 
-        if (!record->IsChecked())
+        if (!record->checked)
             continue;
 
         QString filename = record->GetFilename();
 
-        switch (record->GetType()) {
+        switch (record->type) {
         case ImageRecord::LIGHT:
-            if (record->IsReference()) {
+            if (record->reference) {
                 stacker_->SetRefImageFileName(filename);
                 break;
             }

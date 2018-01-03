@@ -1,8 +1,7 @@
 #ifndef ADJOININGPIXEL_H
 #define ADJOININGPIXEL_H
 
-#include "model/pixel.h"
-#include "model/star.h"
+#include "libstacker/model.h"
 
 #include <vector>
 #include <math.h>

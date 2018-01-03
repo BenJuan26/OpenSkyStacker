@@ -30,8 +30,7 @@
 #ifndef FOCAS_H
 #define FOCAS_H
 
-#include "model/triangle.h"
-#include "model/star.h"
+#include "libstacker/model.h"
 #include "hfti.h"
 
 #include <qdebug.h>

@@ -52,10 +52,10 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 
         switch (index.column()) {
         case 1: {
-            return image->GetFilename();
+            return image->filename;
         }
         case 2:
-            switch(image->GetType()) {
+            switch(image->type) {
             case ImageRecord::LIGHT: default: return tr("Light");
             case ImageRecord::DARK: return tr("Dark");
             case ImageRecord::DARK_FLAT: return tr("Dark Flat");
@@ -64,23 +64,23 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             }
             break;
         case 3: {
-            float exp = image->GetShutter();
+            float exp = image->shutter;
             if (exp < 0) {
                 return "-";
             } else if (exp < 1) {
                 int inverted = round(1.0 / exp);
                 return "1/" + QString::number(inverted) + " s";
             } else {
-                return QString::number(image->GetShutter()) + " s";
+                return QString::number(image->shutter) + " s";
             }
         }
         case 4:
-            if (image->GetIso() <= 0)
+            if (image->iso <= 0)
                 return "-";
             else
                 return image->GetIso();
         case 5: {
-            std::time_t time = image->GetTimestamp();
+            std::time_t time = image->timestamp;
             if (time == -1) {
                 return "-";
             }
@@ -93,15 +93,15 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
             }
         }
         case 6:
-            if (image->GetWidth() <= 0)
+            if (image->width <= 0)
                 return "-";
             else
                 return image->GetWidth();
         case 7:
-            if (image->GetHeight() <= 0)
+            if (image->height <= 0)
                 return "-";
             else
-                return image->GetHeight();
+                return image->height;
         default: return {};
         }
     }
@@ -159,7 +159,7 @@ bool ImageTableModel::setData(const QModelIndex &index, const QVariant &value, i
         if (value.toInt() == Qt::Checked)
             checked = true;
         ImageRecord *record = list.at(index.row());
-        record->SetChecked(checked);
+        record->checked = checked;
     }
 
     emit dataChanged({},{});

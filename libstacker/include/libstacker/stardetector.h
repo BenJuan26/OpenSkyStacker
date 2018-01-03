@@ -3,11 +3,13 @@
 
 #include "libstacker/libstacker_global.h"
 
+#include "adjoiningpixel.h"
+#include "hfti.h"
+
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include "model/adjoiningpixel.h"
-#include "hfti.h"
+
 
 #include <QDebug>
 #include <QSettings>
@@ -66,8 +68,8 @@ public:
     void DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars);
 
 private:
-    std::vector<AdjoiningPixel> GetAdjoiningPixels(cv::Mat image, float threshold, float minPeak);
-    AdjoiningPixel DetectAdjoiningPixel(cv::Mat image, int x, int y, float threshold);
+    class StarDetectorImpl;
+    std::unique_ptr<StarDetectorImpl> d_ptr;
 };
 
 }

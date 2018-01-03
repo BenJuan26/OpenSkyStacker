@@ -14,7 +14,7 @@ AdjoiningPixel::~AdjoiningPixel()
 
 float AdjoiningPixel::GetPeakValue()
 {
-    return GetPeak().GetValue();
+    return GetPeak().value;
 }
 
 Pixel AdjoiningPixel::GetPeak()
@@ -24,9 +24,9 @@ Pixel AdjoiningPixel::GetPeak()
 
     for (ulong i = 0; i < pixels_.size(); i++) {
         Pixel p = pixels_.at(i);
-        if (i == 0  || max < p.GetValue()) {
+        if (i == 0  || max < p.value) {
             pixel = p;
-            max = p.GetValue();
+            max = p.value;
         }
     }
 
@@ -54,10 +54,10 @@ std::vector<AdjoiningPixel> AdjoiningPixel::Deblend(float base_step)
 
         // Extracts only pixels surrounding around the peak and
         // creates a new set of adjoining pixels.
-        current_threshold_ = peakPixel.GetValue() - base_step * sqrt(peakPixel.GetValue() / base_step + 1.0);
+        current_threshold_ = peakPixel.value - base_step * sqrt(peakPixel.value / base_step + 1.0);
 
         current_ap_ = new AdjoiningPixel();
-        Extract(peakPixel.GetX(), peakPixel.GetY());
+        Extract(peakPixel.x, peakPixel.y);
         cv::Point currentCenter = current_ap_->GetGravityCenter();
 
         // Determines if the current set of adjoining pixels is
@@ -109,9 +109,9 @@ cv::Point AdjoiningPixel::GetGravityCenter()
 
     for (ulong i = 0 ; i < pixels_.size() ; i++) {
         Pixel p = pixels_.at(i);
-        x += p.GetValue() * (float)p.GetX();
-        y += p.GetValue() * (float)p.GetY();
-        w += p.GetValue();
+        x += p.value * (float)p.x;
+        y += p.value * (float)p.y;
+        w += p.value;
     }
 
     return cv::Point(x / w, y / w);
@@ -120,14 +120,14 @@ cv::Point AdjoiningPixel::GetGravityCenter()
 Star AdjoiningPixel::CreateStar()
 {
     Star star;
-    star.SetArea(pixels_.size());
+    star.area = pixels_.size();
 
-    star.SetPeak(GetPeakValue());
+    star.peak = GetPeakValue();
     float starValue = 0.0;
     for (ulong i = 0; i < pixels_.size(); i++) {
-        starValue += pixels_.at(i).GetValue();
+        starValue += pixels_.at(i).value;
     }
-    star.SetValue(starValue);
+    star.value = starValue;
 
     std::vector<Pixel> sortedPixels(pixels_);
     std::sort(sortedPixels.begin(), sortedPixels.end());
@@ -138,13 +138,13 @@ Star AdjoiningPixel::CreateStar()
 
     for (ulong i = 0; i < pixels_.size(); i++) {
         Pixel pixel = sortedPixels.at(i);
-        xAmount += (pixel.GetX() + 0.5) * pixel.GetValue();
-        yAmount += (pixel.GetY() + 0.5) * pixel.GetValue();
-        weight += pixel.GetValue();
+        xAmount += (pixel.x + 0.5) * pixel.value;
+        yAmount += (pixel.y + 0.5) * pixel.value;
+        weight += pixel.value;
     }
 
-    star.SetX(xAmount / weight);
-    star.SetY(yAmount / weight);
+    star.x = xAmount / weight;
+    star.y = yAmount / weight;
 
     return star;
 }
@@ -174,7 +174,7 @@ void AdjoiningPixel::Extract(int x, int y)
     for (ulong i = 0 ; i < pixels_.size() ; i++) {
         Pixel pixel = pixels_.at(i);
 
-        if (pixel.GetX() == x  &&  pixel.GetY() == y  &&  pixel.GetValue() > current_threshold_) {
+        if (pixel.x == x  &&  pixel.y == y  &&  pixel.value > current_threshold_) {
             current_ap_->AddPixel(pixel);
             pixels_.erase(pixels_.begin() + i);
 
@@ -194,7 +194,7 @@ bool AdjoiningPixel::IsAdjoining(AdjoiningPixel ap)
         Pixel p1 = pixels_.at(i);
         for (ulong j = 0 ; j < ap.GetPixels().size() ; j++) {
             Pixel p2 = ap.GetPixels().at(j);
-            if (abs(p1.GetX() - p2.GetX()) + abs(p1.GetY() - p2.GetY()) <= 1)
+            if (abs(p1.x - p2.x) + abs(p1.y - p2.y) <= 1)
                 return true;
         }
     }

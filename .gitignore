@@ -17,6 +17,7 @@ openskystacker/images/samples
 
 build
 bin
+lib
 .vscode
 .qmake.stash
 doc

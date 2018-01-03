@@ -2,13 +2,11 @@
 #define UTIL_H
 
 #include "libstacker/libstacker_global.h"
+#include "libstacker/model.h"
+#include "libstacker/stardetector.h"
 
-#include "model/imagerecord.h"
-#include "model/star.h"
-#include "model/triangle.h"
-#include "processing/stardetector.h"
-#include "processing/exif.h"
-#include "processing/focas.h"
+#include "exif.h"
+#include "focas.h"
 
 #include <QString>
 #include <QStringList>

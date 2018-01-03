@@ -1,56 +1,15 @@
-#ifndef IMAGESTACKER_H
-#define IMAGESTACKER_H
-
-#include "libstacker/libstacker_global.h"
-
-#include "processing/stardetector.h"
-#include "processing/focas.h"
-#include "processing/exif.h"
-#include "processing/util.h"
-#include "model/imagerecord.h"
-
-#include <QObject>
-#include <QMutex>
-#include <QImage>
-#include <QDebug>
-#include <QTime>
-#include <QFileInfo>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QFuture>
-#include <QtConcurrent/QtConcurrent>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/video/video.hpp>
-
-#include <ctime>
-
-#ifdef WIN32
-#define LIBRAW_NODLL
-#endif
-#include <libraw.h>
-
-#include <CCfits/CCfits>
+#include "libstacker/imagestacker.h"
 
 namespace openskystacker {
 
-//! The main class for handling the image processing.
-class LIBSTACKER_EXPORT ImageStacker : public QObject
+class ImageStackerPrivate
 {
-    Q_OBJECT
+    Q_DISABLE_COPY(ImageStackerPrivate)
+    Q_DECLARE_PUBLIC(ImageStacker)
+    ImageStacker * const q_ptr;
 
-#ifdef TEST_OSS
-    friend class TestOSS;
-#endif
 public:
-    //! Constructor for ImageStacker.
-    explicit ImageStacker(QObject *parent = 0);
-
-    //! Flag set to asynchronously cancel processing.
-    bool cancel_;
+    ImageStackerPrivate(ImageStacker *parent = 0);
 
     // get/set
     QString GetRefImageFileName() const;
@@ -95,29 +54,7 @@ public:
     bool GetUseBias() const;
     void SetUseBias(bool value);
 
-signals:
-    //! Provides the final image and a message when processing is finished.
-    /*!
-        @param image The final processed image.
-        @param message The message to accompany the process completion.
-    */
-    void Finished(cv::Mat image, QString message);
-
-    //! Provides a percentage of completion and a description of what's happening.
-    /*!
-        @param message A description of the current section of processing.
-        @param percentComplete An integer, out of 100, representing the percentage of completion.
-    */
-    void UpdateProgress(QString message, int percentComplete);
-
-    //! Emits a QImage after asynchronously reading it.
-    void QImageReady(QImage image);
-
-    //! Emitted when an error occurs during processing.
-    void ProcessingError(QString message);
-
-    void doneDetectingStars(int);
-public slots:
+//public slots:
     //! The main method for processing the images.
     void Process(int tolerance, int threads);
 
@@ -157,8 +94,6 @@ private:
     cv::Mat ref_image_;
     cv::Mat final_image_;
 
-}; // class ImageStacker
+}; // class ImageStackerPrivate
 
 } // namespace openskystacker
-
-#endif // IMAGESTACKER_H

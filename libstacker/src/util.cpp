@@ -1,4 +1,4 @@
-#include "processing/util.h"
+#include "libstacker/util.h"
 
 using namespace openskystacker;
 using namespace CCfits;
@@ -26,7 +26,7 @@ cv::Mat openskystacker::GetBayerMatrix(QString filename) {
 ImageRecord *openskystacker::GetImageRecord(QString filename)
 {
     ImageRecord *record = new ImageRecord();
-    record->SetFilename(filename);
+    record->filename = filename;
 
     switch (GetImageType(filename)) {
     case RAW_IMAGE: {
@@ -36,11 +36,11 @@ ImageRecord *openskystacker::GetImageRecord(QString filename)
 
         libraw_imgother_t other = processor.imgdata.other;
 
-        record->SetIso(other.iso_speed);
-        record->SetShutter(other.shutter);
-        record->SetTimestamp(other.timestamp);
-        record->SetWidth(processor.imgdata.sizes.width);
-        record->SetHeight(processor.imgdata.sizes.height);
+        record->iso = other.iso_speed;
+        record->shutter = other.shutter;
+        record->timestamp = other.timestamp;
+        record->width = processor.imgdata.sizes.width;
+        record->height = processor.imgdata.sizes.height;
         break;
     }
     case FITS_IMAGE: {
@@ -66,11 +66,11 @@ ImageRecord *openskystacker::GetImageRecord(QString filename)
             date = "";
         }
 
-        record->SetIso(-1);
-        record->SetShutter(exp);
-        record->SetTimestamp(FITSTimeToCTime(date));
-        record->SetWidth(image.axis(0));
-        record->SetHeight(image.axis(1));
+        record->iso = -1;
+        record->shutter = exp;
+        record->timestamp = FITSTimeToCTime(date);
+        record->width = image.axis(0);
+        record->height = image.axis(1);
 
         break;
     }
@@ -81,23 +81,23 @@ ImageRecord *openskystacker::GetImageRecord(QString filename)
 
         EXIFInfo exif;
         if (!exif.parseFrom((unsigned char*)blob.constData(), blob.size())) {
-            record->SetIso(exif.ISOSpeedRatings);
-            record->SetShutter(exif.ExposureTime);
-            record->SetTimestamp(EXIFTimeToCTime(exif.DateTime));
-            record->SetWidth(exif.ImageWidth);
-            record->SetHeight(exif.ImageHeight);
+            record->iso = exif.ISOSpeedRatings;
+            record->shutter = exif.ExposureTime;
+            record->timestamp = EXIFTimeToCTime(exif.DateTime);
+            record->width = exif.ImageWidth;
+            record->height = exif.ImageHeight;
         } else {
-            record->SetIso(-1);
-            record->SetShutter(-1);
-            record->SetTimestamp(-1);
+            record->iso = -1;
+            record->shutter = -1;
+            record->timestamp = -1;
 
             cv::Mat image = cv::imread(filename.toUtf8().constData());
             if (image.data) {
-                record->SetWidth(image.cols);
-                record->SetHeight(image.rows);
+                record->width = image.cols;
+                record->height = image.rows;
             } else {
-                record->SetWidth(-1);
-                record->SetHeight(-1);
+                record->width = -1;
+                record->height = -1;
             }
         }
         break;
@@ -426,8 +426,8 @@ std::vector<ImageRecord *> openskystacker::LoadImageList(QString filename, int *
 
         bool checked = img.value("checked").toBool();
         ImageRecord *record = GetImageRecord(imageFileName);
-        record->SetType(static_cast<ImageRecord::FrameType>(type));
-        record->SetChecked(checked);
+        record->type = static_cast<ImageRecord::FrameType>(type);
+        record->checked = checked;
 
         result.push_back(record);
     }

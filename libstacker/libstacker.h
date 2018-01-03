@@ -2,10 +2,11 @@
 #define LIBSTACKER_H
 
 #include "libstacker/libstacker_global.h"
-#include "libstacker/processing/imagestacker.h"
-#include "libstacker/processing/stardetector.h"
-#include "libstacker/processing/util.h"
-#include "libstacker/model/imagerecord.h"
-#include "libstacker/model/star.h"
+
+#include "processing/imagestacker.h"
+#include "processing/stardetector.h"
+#include "processing/util.h"
+#include "model/imagerecord.h"
+#include "model/star.h"
 
 #endif // LIBSTACKER_H

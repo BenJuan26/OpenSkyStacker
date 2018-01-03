@@ -1,4 +1,4 @@
-#include "stardetector.h"
+#include "libstacker/stardetector.h"
 
 #define THRESHOLD_COEFF 20.0
 
@@ -11,9 +11,33 @@
 #define	CLIP		3	/* Sigma clipping factor */
 #define PM		57.2958 /* Radian to degree conversion */
 
+namespace openskystacker {
+
+class StarDetector::StarDetectorImpl
+{
+public:
+    StarDetectorImpl();
+    ~StarDetectorImpl();
+
+    std::vector<Star> GetStars(cv::Mat image, int thresholdCoeff);
+    std::vector<Star> GetStars(cv::Mat image);
+
+    float GetExtendedPixelValue(cv::Mat image, int x, int y);
+    cv::Mat GenerateSkyBackground(cv::Mat image);
+
+    using size_type = std::vector<Star>::size_type;
+    void DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars);
+
+private:
+    std::vector<AdjoiningPixel> GetAdjoiningPixels(cv::Mat image, float threshold, float minPeak);
+    AdjoiningPixel DetectAdjoiningPixel(cv::Mat image, int x, int y, float threshold);
+};
+
+}
+
 using namespace openskystacker;
 
-StarDetector::StarDetector()
+StarDetector::StarDetector() : d_ptr(new StarDetectorImpl)
 {
 
 }
@@ -24,6 +48,48 @@ StarDetector::~StarDetector()
 }
 
 std::vector<Star> StarDetector::GetStars(cv::Mat image, int thresholdCoeff)
+{
+    return d_ptr->GetStars(image, thresholdCoeff);
+}
+
+std::vector<Star> StarDetector::GetStars(cv::Mat image)
+{
+    return d_ptr->GetStars(image);
+}
+
+cv::Mat StarDetector::GenerateSkyBackground(cv::Mat image) {
+    return d_ptr->GenerateSkyBackground(image);
+}
+
+void StarDetector::DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars)
+{
+    d_ptr->DrawDetectedStars(path, width, height, limit, stars);
+}
+
+float StarDetector::GetExtendedPixelValue(cv::Mat image, int x, int y) {
+    return d_ptr->GetExtendedPixelValue(image, x, y);
+}
+
+
+
+
+
+
+
+
+
+
+StarDetector::StarDetectorImpl::StarDetectorImpl()
+{
+
+}
+
+StarDetector::StarDetectorImpl::~StarDetectorImpl()
+{
+
+}
+
+std::vector<Star> StarDetector::StarDetectorImpl::GetStars(cv::Mat image, int thresholdCoeff)
 {
     cv::Mat imageGray;
     if (image.channels() == 1) {
@@ -64,7 +130,7 @@ std::vector<Star> StarDetector::GetStars(cv::Mat image, int thresholdCoeff)
     return allStars;
 }
 
-std::vector<Star> StarDetector::GetStars(cv::Mat image)
+std::vector<Star> StarDetector::StarDetectorImpl::GetStars(cv::Mat image)
 {
     QSettings settings("OpenSkyStacker", "OpenSkyStacker");
     float thresholdCoeff = settings.value("StarDetector/thresholdCoeff", THRESHOLD_COEFF).toFloat();
@@ -73,7 +139,7 @@ std::vector<Star> StarDetector::GetStars(cv::Mat image)
 }
 
 // TODO: ASSUMING GRAYSCALE 32 BIT FOR NOW
-cv::Mat StarDetector::GenerateSkyBackground(cv::Mat image) {
+cv::Mat StarDetector::StarDetectorImpl::GenerateSkyBackground(cv::Mat image) {
     cv::Mat result = image.clone();
 
     cv::resize(result, result, cv::Size(result.cols/8, result.rows/8));
@@ -88,26 +154,26 @@ cv::Mat StarDetector::GenerateSkyBackground(cv::Mat image) {
     return result;
 }
 
-void StarDetector::DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars)
+void StarDetector::StarDetectorImpl::DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars)
 {
     cv::Mat output = cv::Mat::zeros(height, width, CV_8UC3);
     const int maxRadius = 30;
 
     std::sort(stars.begin(), stars.end(), std::greater<Star>());
-    float maxValue = stars.at(0).GetValue();
+    float maxValue = stars.at(0).value;
 
     for (size_type i = 0; i < stars.size() && i < limit; i++) {
         Star star = stars.at(i);
-        float ratio = star.GetValue() / maxValue;
+        float ratio = star.value / maxValue;
         int radius = maxRadius * ratio;
 
-        cv::circle(output, cv::Point(star.GetX(),star.GetY()),radius,cv::Scalar(255,255,255),-1);
+        cv::circle(output, cv::Point(star.x,star.y),radius,cv::Scalar(255,255,255),-1);
     }
 
     cv::imwrite(path, output);
 }
 
-std::vector<AdjoiningPixel> StarDetector::GetAdjoiningPixels(cv::Mat image, float threshold, float minPeak)
+std::vector<AdjoiningPixel> StarDetector::StarDetectorImpl::GetAdjoiningPixels(cv::Mat image, float threshold, float minPeak)
 {
     std::vector<AdjoiningPixel> list;
 
@@ -127,7 +193,7 @@ std::vector<AdjoiningPixel> StarDetector::GetAdjoiningPixels(cv::Mat image, floa
     return list;
 }
 
-AdjoiningPixel StarDetector::DetectAdjoiningPixel(cv::Mat image, int x, int y, float threshold)
+AdjoiningPixel StarDetector::StarDetectorImpl::DetectAdjoiningPixel(cv::Mat image, int x, int y, float threshold)
 {
     AdjoiningPixel ap;
     std::stack<Pixel> stack;
@@ -136,8 +202,8 @@ AdjoiningPixel StarDetector::DetectAdjoiningPixel(cv::Mat image, int x, int y, f
     while (stack.empty() == false) {
         Pixel pixel = stack.top(); stack.pop();
 
-        x = pixel.GetX();
-        y = pixel.GetY();
+        x = pixel.x;
+        y = pixel.y;
 
         if (image.at<float>(y, x) > threshold) {
             ap.AddPixel(pixel);
@@ -163,7 +229,7 @@ AdjoiningPixel StarDetector::DetectAdjoiningPixel(cv::Mat image, int x, int y, f
     return ap;
 }
 
-float StarDetector::GetExtendedPixelValue(cv::Mat image, int x, int y) {
+float StarDetector::StarDetectorImpl::GetExtendedPixelValue(cv::Mat image, int x, int y) {
     if (x < 0) x = 0;
     if (x >= image.cols) x = image.cols - 1;
     if (y < 0) y = 0;

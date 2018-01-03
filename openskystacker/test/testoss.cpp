@@ -71,12 +71,12 @@ void TestOSS::testStackImages()
     QStringList bias;
     bool referenceSet = false;
     for (ImageRecord *record : records) {
-        if (!record->IsChecked())
+        if (!record->checked)
             continue;
 
-        QString filename = record->GetFilename();
+        QString filename = record->filename;
 
-        switch(record->GetType()) {
+        switch(record->type {
         case ImageRecord::LIGHT:
             if (!referenceSet) {
                 ref = filename;

@@ -18,8 +18,8 @@ std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> Lis
     /* Minimize the number of triangle sides to compute */
     for (i = 0; i < nobjs; i++) {
         for (j = i + 1; j < nobjs; j++) {
-            h1 = (List[i].GetX() - List[j].GetX());
-            h2 = (List[i].GetY() - List[j].GetY());
+            h1 = (List[i].x - List[j].x);
+            h2 = (List[i].y - List[j].y);
             k = SidesPos(i, j, nobjs);
             sides[k] = sqrt(h1*h1 + h2*h2);
         }
@@ -61,8 +61,8 @@ std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> Lis
 
                 /* Include only triangles with b/a < 0.9 */
                 if ( b/a < 0.9 ) {
-                    List_triang[p].x_ = b/a;
-                    List_triang[p].y_ = c/a;
+                    List_triang[p].x = b/a;
+                    List_triang[p].y = c/a;
                     p++;
                 }
                 else {
@@ -101,7 +101,7 @@ std::vector<std::vector<int> > openskystacker::FindMatches(int nobjs, int *k_, s
 
     /* Find objects within tolerance distance in triangle space. */
     for (Triangle tri : List_triangA) {
-        BinSearchTriangles(tri.x_, &List_triangB, &first, &last);
+        BinSearchTriangles(tri.x, &List_triangB, &first, &last);
         CheckTolerance(nobjs, tri, &List_triangB, first, last, Table_match);
     }
 
@@ -153,56 +153,56 @@ void openskystacker::SortTriangles(std::vector<Triangle> *List_Triang_, int l, i
     int	i, j;
 
     if( r > l ) {
-        v.x_ = List_Triang[r].x_;
+        v.x = List_Triang[r].x;
         i = l-1;
         j = r;
 
         for(;;) {
-            while(List_Triang[++i].x_ < v.x_ );
-            while((j > 1) && (List_Triang[--j].x_ > v.x_));
+            while(List_Triang[++i].x < v.x );
+            while((j > 1) && (List_Triang[--j].x > v.x));
             if(i >= j)
                 break;
 
-            t.x_ = List_Triang[i].x_;
-            List_Triang[i].x_ = List_Triang[j].x_;
-            List_Triang[j].x_ = t.x_;
+            t.x = List_Triang[i].x;
+            List_Triang[i].x = List_Triang[j].x;
+            List_Triang[j].x = t.x;
 
-            t.y_ = List_Triang[i].y_;
-            List_Triang[i].y_ = List_Triang[j].y_;
-            List_Triang[j].y_ = t.y_;
+            t.y = List_Triang[i].y;
+            List_Triang[i].y = List_Triang[j].y;
+            List_Triang[j].y = t.y;
 
-            t.s1_ = List_Triang[i].s1_;
-            List_Triang[i].s1_ = List_Triang[j].s1_;
-            List_Triang[j].s1_ = t.s1_;
+            t.s1 = List_Triang[i].s1;
+            List_Triang[i].s1 = List_Triang[j].s1;
+            List_Triang[j].s1 = t.s1;
 
-            t.s2_ = List_Triang[i].s2_;
-            List_Triang[i].s2_ = List_Triang[j].s2_;
-            List_Triang[j].s2_ = t.s2_;
+            t.s2 = List_Triang[i].s2;
+            List_Triang[i].s2 = List_Triang[j].s2;
+            List_Triang[j].s2 = t.s2;
 
-            t.s3_ = List_Triang[i].s3_;
-            List_Triang[i].s3_ = List_Triang[j].s3_;
-            List_Triang[j].s3_ = t.s3_;
+            t.s3 = List_Triang[i].s3;
+            List_Triang[i].s3 = List_Triang[j].s3;
+            List_Triang[j].s3 = t.s3;
         }
 
-        t.x_ = List_Triang[i].x_;
-        List_Triang[i].x_ = List_Triang[r].x_;
-        List_Triang[r].x_ = t.x_;
+        t.x = List_Triang[i].x;
+        List_Triang[i].x = List_Triang[r].x;
+        List_Triang[r].x = t.x;
 
-        t.y_ = List_Triang[i].y_;
-        List_Triang[i].y_ = List_Triang[r].y_;
-        List_Triang[r].y_ = t.y_;
+        t.y = List_Triang[i].y;
+        List_Triang[i].y = List_Triang[r].y;
+        List_Triang[r].y = t.y;
 
-        t.s1_= List_Triang[i].s1_;
-        List_Triang[i].s1_ = List_Triang[r].s1_;
-        List_Triang[r].s1_ = t.s1_;
+        t.s1= List_Triang[i].s1;
+        List_Triang[i].s1 = List_Triang[r].s1;
+        List_Triang[r].s1 = t.s1;
 
-        t.s2_ = List_Triang[i].s2_;
-        List_Triang[i].s2_ = List_Triang[r].s2_;
-        List_Triang[r].s2_ = t.s2_;
+        t.s2 = List_Triang[i].s2;
+        List_Triang[i].s2 = List_Triang[r].s2;
+        List_Triang[r].s2 = t.s2;
 
-        t.s3_ = List_Triang[i].s3_;
-        List_Triang[i].s3_ = List_Triang[r].s3_;
-        List_Triang[r].s3_ = t.s3_;
+        t.s3 = List_Triang[i].s3;
+        List_Triang[i].s3 = List_Triang[r].s3;
+        List_Triang[r].s3 = t.s3;
 
         SortTriangles(&List_Triang, l, i-1);
         SortTriangles(&List_Triang, i+1, r);
@@ -219,11 +219,11 @@ void openskystacker::BinSearchTriangles(float key, std::vector<Triangle> *List_t
 
     while ((!found) && (max - min > 1)) {
         middle  = (min + max ) / 2;
-        if (fabs(List_triang[middle].x_ - key) < tolerance)
+        if (fabs(List_triang[middle].x - key) < tolerance)
         found = 1;
-        else if ( key < ( List_triang[middle ].x_ - tolerance))
+        else if ( key < ( List_triang[middle ].x - tolerance))
         max = middle ;
-        else if ( key > (List_triang[middle ].x_ + tolerance))
+        else if ( key > (List_triang[middle ].x + tolerance))
         min = middle;
     }
 
@@ -235,13 +235,13 @@ void openskystacker::BinSearchTriangles(float key, std::vector<Triangle> *List_t
     }
 
     for (i = middle; i > 0; i--) {
-        if (fabs (List_triang[i].x_ - key) > tolerance)
+        if (fabs (List_triang[i].x - key) > tolerance)
         break;
     }
     *first = i;
 
     for (i = middle; i < ntriang-1; i++) {
-        if (fabs (List_triang[i].x_ - key) > tolerance)
+        if (fabs (List_triang[i].x - key) > tolerance)
         break;
     }
     *last = i;
@@ -257,21 +257,21 @@ void openskystacker::CheckTolerance(int nobjs, Triangle List_triangA, std::vecto
     int	i, h1, h2;
 
     for (i = first ; i <= last; i++) {
-        temp2 = (List_triangA.y_ - List_triangB[i].y_);
+        temp2 = (List_triangA.y - List_triangB[i].y);
         if (temp2 < tolerance) {
-            temp1 = (List_triangA.x_ - List_triangB[i].x_);
+            temp1 = (List_triangA.x - List_triangB[i].x);
             distance = temp1 * temp1 + temp2 * temp2;
             if (distance < tolerance2) {
-                h1 = List_triangA.s1_;
-                h2 = List_triangB[i].s1_;
+                h1 = List_triangA.s1;
+                h2 = List_triangB[i].s1;
                 Table_match[h1*nobjs+h2]++;
 
-                h1 = List_triangA.s2_;
-                h2 = List_triangB[i].s2_;
+                h1 = List_triangA.s2;
+                h2 = List_triangB[i].s2;
                 Table_match[h1*nobjs+h2]++;
 
-                h1 = List_triangA.s3_;
-                h2 = List_triangB[i].s3_;
+                h1 = List_triangA.s3;
+                h2 = List_triangB[i].s3;
                 Table_match[h1*nobjs+h2]++;
             }
         }
@@ -302,11 +302,11 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
     /* Compute the initial transformation with the 12 best matches. */
     j = (m < 12) ? m : 12;
     for (i=0; i<j; i++) {
-        a[0][i] = List1[matches[0][i]].GetX();
-        a[1][i] = List1[matches[0][i]].GetY();
+        a[0][i] = List1[matches[0][i]].x;
+        a[1][i] = List1[matches[0][i]].y;
         a[2][i] = 1.;
-        b[0][i] = List2[matches[1][i]].GetX();
-        b[1][i] = List2[matches[1][i]].GetY();
+        b[0][i] = List2[matches[1][i]].x;
+        b[1][i] = List2[matches[1][i]].y;
     }
 
     hfti_(a, &mda, &j, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g, ip);
@@ -321,12 +321,12 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
         for (i=0; i<m; i++) {
             i1 = matches[0][i];
             i2 = matches[1][i];
-            r2 = List1[i1].GetX();
-            y = List1[i1].GetY();
+            r2 = List1[i1].x;
+            y = List1[i1].y;
             x = xfrm[0][0] * r2 + xfrm[0][1] * y + xfrm[0][2];
             y = xfrm[1][0] * r2 + xfrm[1][1] * y + xfrm[1][2];
-            x -= List2[i2].GetX();
-            y -= List2[i2].GetY();
+            x -= List2[i2].x;
+            y -= List2[i2].y;
             r2 = x * x + y * y;
             for (j=i; j>0 && r2<a[1][j-1]; j--)
                 a[1][j] = a[1][j-1];
@@ -351,11 +351,11 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
             i2 = matches[1][i];
             matches[0][j] = i1;
             matches[1][j] = i2;
-            a[0][j] = List1[i1].GetX();
-            a[1][j] = List1[i1].GetY();
+            a[0][j] = List1[i1].x;
+            a[1][j] = List1[i1].y;
             a[2][j] = 1.;
-            b[0][j] = List2[i2].GetX();
-            b[1][j] = List2[i2].GetY();
+            b[0][j] = List2[i2].x;
+            b[1][j] = List2[i2].y;
             j++;
         }
         }

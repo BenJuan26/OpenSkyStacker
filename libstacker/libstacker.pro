@@ -1,11 +1,7 @@
 QT       += core
 
-QMAKE_CXXFLAGS -= -O2
-QMAKE_CXXFLAGS += -O0
-
-QMAKE_LFLAGS -= -O1
-QMAKE_LFLAGS -= -O2
-QMAKE_LFLAGS += -O0
+INCLUDEPATH += $$PWD/include
+INCLUDEPATH += $$PWD/src
 
 win32: QT += winextras
 
@@ -17,7 +13,7 @@ CONFIG += c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS LIBSTACKER__
 
-DESTDIR = ../bin
+DESTDIR = ../lib
 BUILD_DIR = ../build/libstacker
 MOC_DIR = $$BUILD_DIR/moc
 RCC_DIR = $$BUILD_DIR/rcc
@@ -28,28 +24,22 @@ linux:OBJECTS_DIR = $$BUILD_DIR/o/linux
 
 QMAKE_DISTCLEAN += -r $$BUILD_DIR
 
-SOURCES += processing/imagestacker.cpp \
-    model/star.cpp \
-    processing/stardetector.cpp \
-    model/pixel.cpp \
-    model/adjoiningpixel.cpp \
-    processing/focas.cpp \
-    model/triangle.cpp \
-    model/imagerecord.cpp \
-    processing/exif.cpp \
-    processing/util.cpp
+SOURCES += src/adjoiningpixel.cpp \
+    src/exif.cpp \
+    src/focas.cpp \
+    src/imagestacker.cpp \
+    src/stardetector.cpp \
+    src/util.cpp
 
-HEADERS  += processing/imagestacker.h \
-    model/star.h \
-    processing/stardetector.h \
-    model/pixel.h \
-    model/adjoiningpixel.h \
-    processing/focas.h \
-    processing/hfti.h \
-    model/triangle.h \
-    model/imagerecord.h \
-    processing/exif.h \
-    processing/util.h
+HEADERS += include/libstacker/imagestacker.h \
+    include/libstacker/model.h \
+    include/libstacker/stardetector.h \
+    include/libstacker/util.h \
+    src/adjoiningpixel.h \
+    src/exif.h \
+    src/focas.h \
+    src/hfti.h
+    
 
 win32 {
     OPENCV_DIR = $$(OPENCV_DIR)
@@ -93,9 +83,9 @@ win32 {
     LIBS += -lopencv_core$$OPENCV_VER
     LIBS += -lopencv_imgcodecs$$OPENCV_VER
     LIBS += -lopencv_imgproc$$OPENCV_VER
-    LIBS += $$PWD/3rdparty/focas/win64/hfti.o
-    LIBS += $$PWD/3rdparty/focas/win64/h12.o
-    LIBS += $$PWD/3rdparty/focas/win64/diff.o
+    LIBS += $$PWD/src/3rdparty/focas/win64/hfti.o
+    LIBS += $$PWD/src/3rdparty/focas/win64/h12.o
+    LIBS += $$PWD/src/3rdparty/focas/win64/diff.o
     LIBS += -L$$LIBRAW_DIR/lib
     LIBS += -llibraw
     LIBS += -lWS2_32
@@ -118,9 +108,9 @@ macx {
     LIBS += -lopencv_imgproc
 
     # FOCAS
-    LIBS += $$PWD/3rdparty/focas/macx/hfti.o
-    LIBS += $$PWD/3rdparty/focas/macx/h12.o
-    LIBS += $$PWD/3rdparty/focas/macx/diff.o
+    LIBS += $$PWD/src/3rdparty/focas/macx/hfti.o
+    LIBS += $$PWD/src/3rdparty/focas/macx/h12.o
+    LIBS += $$PWD/src/3rdparty/focas/macx/diff.o
 }
 
 linux {
@@ -137,7 +127,7 @@ linux {
     contains(opencv_libs,"imgcodecs"): LIBS += -lopencv_imgcodecs
     LIBS += -lopencv_imgproc
 
-    LIBS += $$PWD/3rdparty/focas/unix/hfti.o
-    LIBS += $$PWD/3rdparty/focas/unix/h12.o
-    LIBS += $$PWD/3rdparty/focas/unix/diff.o
+    LIBS += $$PWD/src/3rdparty/focas/unix/hfti.o
+    LIBS += $$PWD/src/3rdparty/focas/unix/h12.o
+    LIBS += $$PWD/src/3rdparty/focas/unix/diff.o
 }
