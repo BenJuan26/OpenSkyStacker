@@ -3,6 +3,8 @@
 
 #include "libstacker/imagestacker.h"
 
+#include <QMutex>
+
 namespace openskystacker {
 
 class ImageStackerPrivate

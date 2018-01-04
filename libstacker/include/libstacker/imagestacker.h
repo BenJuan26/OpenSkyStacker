@@ -9,6 +9,8 @@
 #include <QObject>
 #include <QScopedPointer>
 
+#include <memory>
+
 
 namespace openskystacker {
 

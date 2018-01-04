@@ -45,7 +45,7 @@ FORMS    += ui/mainwindow.ui \
 
 INCLUDEPATH += ../libstacker/include
 
-LIBS += -L../bin -lstacker
+LIBS += -L../lib -lstacker
 
 test {
     QT += testlib

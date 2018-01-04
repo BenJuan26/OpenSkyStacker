@@ -6,6 +6,8 @@
 
 #include "opencv2/core/core.hpp"
 
+#include <memory>
+
 namespace openskystacker {
 
 //! Manages star analysis and detection.
