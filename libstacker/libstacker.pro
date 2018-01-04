@@ -40,6 +40,10 @@ HEADERS += include/libstacker/imagestacker.h \
     src/focas.h \
     src/hfti.h
     
+unix {
+    target.path = /usr/local/lib
+    INSTALLS += target
+}
 
 win32 {
     OPENCV_DIR = $$(OPENCV_DIR)

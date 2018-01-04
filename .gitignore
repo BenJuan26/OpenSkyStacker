@@ -21,5 +21,6 @@ lib
 .vscode
 .qmake.stash
 doc
+samples
 
 *.autosave

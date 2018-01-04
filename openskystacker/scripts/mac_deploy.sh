@@ -69,6 +69,8 @@ if [ "$deploy_bin" = "" ]; then
     exit 1
 fi
 
+LIBSTACKER_LIBPATH='-libpath="../../lib"'
+
 echo "Running macdeployqt..."
 OPENCV_LIBPATH=$(pkg-config --libs-only-L opencv | awk -v ORS=" " '{
     gsub("-L","");
@@ -82,7 +84,7 @@ LIBRAW_LIBPATH=$(pkg-config --libs-only-L libraw | awk -v ORS=" " '{
         print "-libpath="$i;
     }
 }')
-$deploy_bin $APP_PATH $OPENCV_LIBPATH $LIBRAW_LIBPATH || error_exit "Error running macdeployqt"
+$deploy_bin $APP_PATH $LIBSTACKER_LIBPATH $OPENCV_LIBPATH $LIBRAW_LIBPATH || error_exit "Error running macdeployqt"
 echo "Done"
 echo ""
 

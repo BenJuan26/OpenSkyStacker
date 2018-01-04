@@ -1,11 +1,13 @@
 #include "testoss.h"
+#include <libstacker/imagestacker.h>
+#include <QThread>
 
 using namespace openskystacker;
 
 void TestOSS::initTestCase()
 {
     appPath = qApp->applicationDirPath();
-    samplesPath = appPath + "/../src/images/samples";
+    samplesPath = appPath + "/../samples";
     qRegisterMetaType<cv::Mat>("cv::Mat");
 }
 

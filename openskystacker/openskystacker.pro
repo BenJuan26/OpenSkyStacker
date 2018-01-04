@@ -44,25 +44,7 @@ FORMS    += ui/mainwindow.ui \
     ui/optionsdialog.ui
 
 INCLUDEPATH += ../libstacker/include
-
 LIBS += -L../lib -lstacker
-
-test {
-    QT += testlib
-    TARGET = testoss
-    SOURCES -= main.cpp
-    SOURCES += test/testoss.cpp
-    HEADERS += test/testoss.h
-    DEFINES += TEST_OSS
-
-    # On macOS we don't want the app bundled; a standalone executable is fine.
-    CONFIG -= app_bundle
-
-    unix {
-        QMAKE_CXXFLAGS += --coverage
-        QMAKE_LFLAGS += --coverage
-    }
-}
 
 win32 {
     RC_ICONS = $$PWD/images/OpenSkyStacker.ico
@@ -157,15 +139,4 @@ linux {
     LIBS += $$PWD/../libstacker/src/3rdparty/focas/unix/hfti.o
     LIBS += $$PWD/../libstacker/src/3rdparty/focas/unix/h12.o
     LIBS += $$PWD/../libstacker/src/3rdparty/focas/unix/diff.o
-
-    snapcraft: {
-        opencv.path = /usr/lib
-        opencv.files = $$PWD/3rdparty/opencv/unix/lib/*
-
-        libraw.path = /usr/lib
-        libraw.files = $$PWD/3rdparty/libraw/unix/lib/*
-
-        target.path = /bin
-        INSTALLS += target opencv libraw
-    }
 }

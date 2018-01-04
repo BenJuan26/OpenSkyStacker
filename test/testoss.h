@@ -1,10 +1,7 @@
 #ifndef TESTOSS_H
 #define TESTOSS_H
 
-#include "processing/imagestacker.h"
-
 #include <QObject>
-#include <QThread>
 #include <QtTest/QtTest>
 
 namespace openskystacker {
@@ -13,6 +10,9 @@ namespace openskystacker {
 class TestOSS: public QObject
 {
     Q_OBJECT
+    QString appPath;
+    QString samplesPath;
+
 private slots:
     void initTestCase();
 
@@ -21,10 +21,6 @@ private slots:
 
     void testStackImages();
     void testStackImages_data();
-
-private:
-    QString appPath;
-    QString samplesPath;
 };
 
 }
