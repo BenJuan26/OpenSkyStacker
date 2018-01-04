@@ -7,31 +7,8 @@
 #include "libstacker/util.h"
 
 #include <QObject>
-#include <QMutex>
-#include <QImage>
-#include <QDebug>
-#include <QTime>
-#include <QFileInfo>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QFuture>
-#include <QtConcurrent/QtConcurrent>
 #include <QScopedPointer>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/video/video.hpp>
-
-#include <ctime>
-
-#ifdef WIN32
-#define LIBRAW_NODLL
-#endif
-#include <libraw.h>
-
-#include <CCfits/CCfits>
 
 namespace openskystacker {
 
@@ -49,7 +26,7 @@ class LIBSTACKER_EXPORT ImageStacker : public QObject
 #endif
 public:
     //! Constructor for ImageStacker.
-    explicit ImageStacker(QObject *parent = 0);
+    ImageStacker(QObject *parent = 0);
     ~ImageStacker();
 
     //! Flag set to asynchronously cancel processing.

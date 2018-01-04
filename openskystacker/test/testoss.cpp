@@ -76,7 +76,7 @@ void TestOSS::testStackImages()
 
         QString filename = record->filename;
 
-        switch(record->type {
+        switch(record->type) {
         case ImageRecord::LIGHT:
             if (!referenceSet) {
                 ref = filename;

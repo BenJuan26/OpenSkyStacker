@@ -1,5 +1,5 @@
-#ifndef IMAGERECORD_H
-#define IMAGERECORD_H
+#ifndef OSS_MODEL_H
+#define OSS_MODEL_H
 
 #include "libstacker/libstacker_global.h"
 
@@ -9,7 +9,7 @@
 namespace openskystacker {
 
 //! Contains metadata regarding an image.
-struct LIBSTACKER_EXPORT ImageRecord
+struct ImageRecord
 {
     //! Describes the type of frame (e.g. Light, Dark, etc.).
     enum FrameType {
@@ -31,7 +31,7 @@ struct LIBSTACKER_EXPORT ImageRecord
     int height;
 };
 
-struct LIBSTACKER_EXPORT Star
+struct Star
 {
     Star() {}
     Star(int x, int y, float value) : x(x), y(y), value(value) {}
@@ -116,4 +116,4 @@ struct Triangle
 
 }
 
-#endif // IMAGERECORD_H
+#endif // OSS_MODEL_H

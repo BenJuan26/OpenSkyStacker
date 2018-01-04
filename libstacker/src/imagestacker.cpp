@@ -4,6 +4,31 @@
 #include "focas.h"
 #include "exif.h"
 
+#include <QMutex>
+#include <QImage>
+#include <QDebug>
+#include <QTime>
+#include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QFuture>
+#include <QtConcurrent/QtConcurrent>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/video/video.hpp>
+
+#include <ctime>
+
+#ifdef WIN32
+#define LIBRAW_NODLL
+#endif
+#include <libraw.h>
+
+#include <CCfits/CCfits>
+
 using namespace openskystacker;
 using namespace CCfits;
 using namespace easyexif;

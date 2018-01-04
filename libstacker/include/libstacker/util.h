@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef OSS_UTIL_H
+#define OSS_UTIL_H
 
 #include "libstacker/libstacker_global.h"
 #include "libstacker/model.h"
@@ -37,12 +37,12 @@ enum ImageType {
     RGB_IMAGE
 };
 
-struct LIBSTACKER_EXPORT StackingResult {
+struct StackingResult {
     cv::Mat image;
     int totalValidImages;
 };
 
-struct LIBSTACKER_EXPORT StackingParams {
+struct StackingParams {
     QStringList lights;
     cv::Mat ref;
     cv::Mat masterDark;
@@ -73,4 +73,4 @@ LIBSTACKER_EXPORT cv::Mat StackBias(QStringList filenames);
 LIBSTACKER_EXPORT StackingResult ProcessConcurrent(StackingParams params, int *numCompleted);
 }
 
-#endif // UTIL_H
+#endif // OSS_UTIL_H

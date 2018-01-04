@@ -1,3 +1,6 @@
+#ifndef IMAGESTACKER_P_H
+#define IMAGESTACKER_P_H
+
 #include "libstacker/imagestacker.h"
 
 namespace openskystacker {
@@ -97,3 +100,5 @@ private:
 }; // class ImageStackerPrivate
 
 } // namespace openskystacker
+
+#endif
