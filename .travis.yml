@@ -9,12 +9,13 @@ script:
   - >
     docker run -it openskystacker /bin/sh -c '
     qmake -qt=qt5 &&
-    make'
+    make && make install'
 after_script:
   - >
     docker run -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN -e TRAVIS_BRANCH=$TRAVIS_BRANCH -it openskystacker /bin/sh -c '
-    qmake -qt=qt5 CONFIG+=test &&
+    cd test &&
+    qmake -qt=qt5 &&
     make &&
-    bin/testoss &&
+    ../bin/testoss &&
     coveralls -E ".*\/build\/.*" -b src > /dev/null'
 
