@@ -1,21 +1,28 @@
 language: c++
+dist: xenial
+sudo: false
 services:
   - docker
 env:
     secure: gvokWX2Dsv6OkEYjlCqZFbRtNYbhkEfUpNFmfKL6xHM2RMRzrzEc870ushQz7pEuAgjg9S/Hqw5Se3FUEvXjCCTjMWreSqwH8aq86QJpFHjvfi2aBlDi74f2xwu9vw8EkZXJsFNtxGaCMRvolAwqM31sMtV5QGYSITSmiy4CsHIzLX3azMo70mPYmjdVRX+q/FEUJrt7wQfVOmJxO9xhAOVz31WXm0diY9KACSTDU9nFSOe+fc+vJqt0wLVlgMTcZ8ZyHVT5yAr2MkEfxOOrSgwUcoK8kPVTC71nvLIx2n5C5VAzs5LjvVvRwj3LYDVIz3iJA0dnGj534W8emXuJd38yv8AmtE/4Cs5Zfsu7pwgkNZ9/4eKP4nNwCj08VAvm9ZD/qrpS6Z3zER0qXzX+/0O0Nd7lIfgW1DHK6mYIJJHYtHZFs8T2m9XgHhgF+bBlga7ypFhwfUh7AkQ6E0EVK10LPPnHY84u/NKZmg9KmyQT7RAAhKLJU5JvbbIJ0rpZlsan1wEtUsTuEWLBD2KtiQLf0SoauCS5Y3KnGK3Rf05LNV+7ergdFOFUnkRG7fseWKYqNZVQxAoU85czs07u9TY57iL5+eayxzpp/8tqtC+1xDWbVKQXumus6rw6Sku5q+49ffuKKYGKkdJy91w/DHKUdCrXwG68Rq8fEL2rgZ0=
+addons:
+  apt:
+    packages:
+    - git
+    - qt5-default
+    - libopencv-dev
+    - libraw-dev
+    - libccfits-dev
+    - wget
+    - python-pip
 install:
-  - docker build -t openskystacker .
+  - pip install --upgrade pip && pip install cpp-coveralls
+  - wget -q --no-check-certificate "https://onedrive.live.com/download?cid=EA3654387692D1CD&resid=EA3654387692D1CD%216873&authkey=AP8nVyDkhYtALXE" -O samples.tar.gz
+  - tar -zxvf samples.tar.gz
 script:
-  - >
-    docker run -it openskystacker /bin/sh -c '
-    qmake -qt=qt5 &&
-    make && make install'
+  - qmake -qt=qt5
+  - make && make install
 after_script:
-  - >
-    docker run -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN -e TRAVIS_BRANCH=$TRAVIS_BRANCH -it openskystacker /bin/sh -c '
-    cd test &&
-    qmake -qt=qt5 &&
-    make &&
-    ../bin/testoss &&
-    coveralls -E ".*\/build\/.*" -b src > /dev/null'
+  - bin/testoss
+  - coveralls -E ".*\/build\/.*" -b src > /dev/null
 
