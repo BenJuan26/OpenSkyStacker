@@ -5,6 +5,8 @@ SOURCES += testoss.cpp
 HEADERS += testoss.h
 DEFINES += TEST_OSS
 
+CONFIG += c++11
+
 DESTDIR = ../bin
 BUILD_DIR = ../build
 MOC_DIR = $$BUILD_DIR/moc

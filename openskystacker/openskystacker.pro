@@ -20,9 +20,7 @@ BUILD_DIR = ../build/openskystacker
 MOC_DIR = $$BUILD_DIR/moc
 RCC_DIR = $$BUILD_DIR/rcc
 UI_DIR = $$BUILD_DIR/ui
-win32:OBJECTS_DIR = $$BUILD_DIR/o/win32
-macx:OBJECTS_DIR = $$BUILD_DIR/o/macx
-linux:OBJECTS_DIR = $$BUILD_DIR/o/linux
+OBJECTS_DIR = $$BUILD_DIR/o/win32
 
 QMAKE_DISTCLEAN += -r $$BUILD_DIR
 
