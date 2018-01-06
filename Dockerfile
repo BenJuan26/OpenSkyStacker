@@ -9,4 +9,4 @@ ADD . OpenSkyStacker
 WORKDIR OpenSkyStacker
 
 RUN wget -q --no-check-certificate "https://onedrive.live.com/download?cid=EA3654387692D1CD&resid=EA3654387692D1CD%216873&authkey=AP8nVyDkhYtALXE" -O samples.tar.gz && \
-    tar -zxvf samples.tar.gz -C src/images
+    tar -zxvf samples.tar.gz

@@ -1,0 +1,12 @@
+#ifndef LIBSTACKER_GLOBAL_H
+#define LIBSTACKER_GLOBAL_H
+
+#include <QtCore/QtGlobal>
+
+#ifdef LIBSTACKER__
+#define LIBSTACKER_EXPORT Q_DECL_EXPORT
+#else
+#define LIBSTACKER_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // LIBSTACKER_GLOBAL_H

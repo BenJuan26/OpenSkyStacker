@@ -7,14 +7,8 @@ install:
   - docker build -t openskystacker .
 script:
   - >
-    docker run -it openskystacker /bin/sh -c '
-    qmake -qt=qt5 &&
-    make'
-after_script:
-  - >
     docker run -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN -e TRAVIS_BRANCH=$TRAVIS_BRANCH -it openskystacker /bin/sh -c '
-    qmake -qt=qt5 CONFIG+=test &&
-    make &&
-    bin/testoss &&
-    coveralls -E ".*\/build\/.*" -b src > /dev/null'
-
+    qmake -qt=qt5 &&
+    make && make install &&
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:$PWD/lib bin/testoss &&
+    coveralls -E ".*\/build\/libstacker\/.*" -b libstacker > /dev/null'
