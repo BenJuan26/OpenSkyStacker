@@ -87,7 +87,6 @@ void OptionsDialog::on_buttonBrowse_released()
     // Linux doesn't force the proper extension unlike Windows and Mac
     QRegularExpression regex("\\.tif$");
     if (!regex.match(saveFilePath).hasMatch()) {
-        qDebug() << "Filename was missing extension, adding it";
         saveFilePath += ".tif";
     }
 

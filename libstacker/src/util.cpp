@@ -645,7 +645,6 @@ StackingResult openskystacker::ProcessConcurrent(StackingParams params, int *num
     cv::Mat workingImage = cv::Mat::zeros(ref.rows, ref.cols, ref.type());
 
     for (int k = threadIndex; k < lights.length(); k += totalThreads) {
-        qDebug() << k;
         cv::Mat targetImage = GetCalibratedImage(lights.at(k), masterDark, masterFlat, masterBias);
 
         int err = 0;

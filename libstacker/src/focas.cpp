@@ -293,7 +293,6 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
 
     /* Require a minimum number of points. */
     if (m < MIN_MATCH) {
-        qDebug("Match not found: use more objects or larger tolerance\n");
         if (ok)
             *ok = -1;
         return xfrm;
@@ -362,7 +361,6 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
         m = j;
 
         if (m < MIN_MATCH) {
-            qDebug("Match not found: use more objects or larger tolerance\n");
             if (ok)
                 *ok = -1;
             return xfrm;
