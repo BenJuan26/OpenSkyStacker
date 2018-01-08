@@ -514,12 +514,13 @@ void MainWindow::handleButtonSaveList()
         filename += ".json";
     }
 
+    QStringList types = QStringList() << "light" << "dark" << "darkflat" << "flat" << "bias";
     QJsonArray images;
     for (int i = 0; i < table_model_.rowCount(); i++) {
         ImageRecord *record = table_model_.At(i);
         QJsonObject image;
         image.insert("filename", record->filename);
-        image.insert("type", record->type);
+        image.insert("type", types.at(record->type));
         image.insert("checked", record->checked);
 
         images.insert(images.size(), image);
@@ -572,16 +573,15 @@ void MainWindow::handleButtonLoadList()
         break;
     }
 
-    if (!err) {
-        for (int i = 0; i < table_model_.rowCount(); i++) {
-            table_model_.RemoveAt(0);
-        }
-
-        for (ImageRecord *record : records) {
-            table_model_.Append(record);
-        }
-    } else {
+    if (err)
         return;
+
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        table_model_.RemoveAt(0);
+    }
+
+    for (ImageRecord *record : records) {
+        table_model_.Append(record);
     }
 
     QFile file(filename);

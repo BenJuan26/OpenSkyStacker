@@ -11,6 +11,7 @@ class OSSBatch : public QObject
     Q_OBJECT
     ImageStacker *stacker_;
     int progress_bar_width_;
+    int max_message_length_ = 0;
     QString output_file_name_;
 
 public:
