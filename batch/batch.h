@@ -10,15 +10,18 @@ class OSSBatch : public QObject
 {
     Q_OBJECT
     ImageStacker *stacker_;
-    int argc_;
-    char **argv_;
     int progress_bar_width_;
+    QString output_file_name_;
+
 public:
-    OSSBatch(int argc, char *argv[], QObject *parent = 0);
+    OSSBatch(QObject *parent = 0);
+
 public slots:
     void PrintProgressBar(QString message, int percentage);
     void StackingFinished(cv::Mat, QString);
+    void StackingError(QString);
     void Run();
+
 signals:
     void Finished();
 };

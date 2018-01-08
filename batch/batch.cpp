@@ -1,10 +1,8 @@
 #include <batch.h>
 #include <stdio.h>
 
-OSSBatch::OSSBatch(int argc, char *argv[], QObject *parent) : QObject(parent),
+OSSBatch::OSSBatch(QObject *parent) : QObject(parent),
     stacker_(new ImageStacker),
-    argc_(argc),
-    argv_(argv),
     progress_bar_width_(30)
 {
     qRegisterMetaType<cv::Mat>("cv::Mat");
@@ -15,7 +13,7 @@ OSSBatch::OSSBatch(int argc, char *argv[], QObject *parent) : QObject(parent),
 
 void OSSBatch::PrintProgressBar(QString message, int percentage)
 {
-    std::printf("\r %3d%% [", percentage);
+    std::printf(" %3d%% [", percentage);
     float progress = percentage / 100.0f;
 
     int pos = progress * progress_bar_width_;
@@ -24,19 +22,69 @@ void OSSBatch::PrintProgressBar(QString message, int percentage)
         else if (i == pos) std::printf(">");
         else std::printf(" ");
     }
-    std::printf("] %s", message.toUtf8().constData());
+    std::printf("] %s                    \r", message.toUtf8().constData());
 }
 
 void OSSBatch::Run()
 {
-//    PrintProgressBar("Testing", 50);
-//    QThread::sleep(2);
-//    PrintProgressBar("Testing again", 75);
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Multi-platform astroimaging stacker");
+    parser.addHelpOption();
+
+    QCommandLineOption listOption("f", tr("Image list JSON file."), "list");
+    parser.addOption(listOption);
+
+    QCommandLineOption outputOption("o", tr("Output image file."), "output");
+    parser.addOption(outputOption);
+
+    QCommandLineOption thresholdOption("t", tr("Star detection threshold (1-100). Default: 20"), "threshold", "20");
+    parser.addOption(thresholdOption);
+
+    QCommandLineOption threadsOption("j", tr("Number of processing threads. Default: 1"), "threads", "1");
+    parser.addOption(threadsOption);
+
+    parser.process(QCoreApplication::arguments());
+
+    if (!parser.isSet(listOption)) {
+        std::printf("Error: Must specify an image list");
+        QCoreApplication::exit(1);
+        return;
+    }
+    QString listFile = parser.value(listOption);
+
+    if (!parser.isSet(outputOption)) {
+        std::printf("Error: Must specify an output image");
+        QCoreApplication::exit(1);
+        return;
+    }
+    output_file_name_ = parser.value(outputOption);
+    QRegularExpression regex("\\.tif$");
+    if (!regex.match(output_file_name_).hasMatch()) {
+        output_file_name_ += ".tif";
+    }
+
+    bool intParsingOk = true;
+    int threshold = parser.value(thresholdOption).toInt(&intParsingOk);
+    if (!intParsingOk) {
+        std::printf("Error: Thread count argument must be an integer\n");
+        QCoreApplication::exit(1);
+        return;
+    }
+
+    intParsingOk = true;
+    int threads = parser.value(threadsOption).toInt(&intParsingOk);
+    if (!intParsingOk) {
+        std::printf("Error: Thread count argument must be an integer\n");
+        QCoreApplication::exit(1);
+        return;
+    }
 
     int err = 0;
-    std::vector<ImageRecord *> records = LoadImageList("F:/Astro/Samples/M42/all.json", &err);
+    std::vector<ImageRecord *> records = LoadImageList(listFile, &err);
+    //std::vector<ImageRecord *> records = LoadImageList("F:/Astro/Samples/M42/all.json", &err);
     if (err) {
-        std::printf("Error: Couldn't load image list");
+        std::printf("Error: Couldn't load image list\n");
         QCoreApplication::exit(1);
         return;
     }
@@ -91,9 +139,9 @@ void OSSBatch::Run()
 
     try {
         //stacker_->Process(threshold, 1);
-        stacker_->Process(18, 1);
+        stacker_->Process(threshold, threads);
     } catch (std::exception) {
-        std::printf("Error: Got exception while stacking");
+        std::printf("Error: Got exception while stacking\n");
         QCoreApplication::exit(1);
         return;
     }
@@ -106,11 +154,17 @@ void OSSBatch::StackingFinished(cv::Mat image, QString message)
     PrintProgressBar(message, 100);
     std::printf("\n");
     try {
-        cv::imwrite("F:/Astro/Samples/M42/consoletest.tif", image);
+        cv::imwrite(output_file_name_.toUtf8().constData(), image);
     } catch (std::exception) {
-        std::printf("Error: Couldn't write resulting image");
+        std::printf("Error: Couldn't write resulting image\n");
         QCoreApplication::exit(1);
         return;
     }
     emit Finished();
+}
+
+void OSSBatch::StackingError(QString message)
+{
+    printf("Error: %s\n", message.toUtf8().constData());
+    QCoreApplication::exit(1);
 }
