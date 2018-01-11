@@ -3,17 +3,19 @@ CONFIG -= app_bundle
 DEFINES += QT_DEPRECATED_WARNINGS
 
 HEADERS += \
-    batch.h
+    cl.h
 
 SOURCES += main.cpp \
-    batch.cpp
+    cl.cpp
 
 DESTDIR = ../bin
-BUILD_DIR = ../build/batch
+BUILD_DIR = ../build/cl
 MOC_DIR = $$BUILD_DIR/moc
 RCC_DIR = $$BUILD_DIR/rcc
 UI_DIR = $$BUILD_DIR/ui
 OBJECTS_DIR = $$BUILD_DIR/o
+
+TARGET = oss_cl
 
 # On macOS we don't want the app bundled; a standalone executable is fine.
 CONFIG -= app_bundle

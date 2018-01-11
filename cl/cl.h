@@ -1,21 +1,23 @@
-#ifndef OSS_BATCH_H
-#define OSS_BATCH_H
+#ifndef OSS_CL_H
+#define OSS_CL_H
 
 #include <libstacker/imagestacker.h>
 #include <QtCore>
 
 using namespace openskystacker;
 
-class OSSBatch : public QObject
+class OSS : public QObject
 {
     Q_OBJECT
     ImageStacker *stacker_;
+    QThread *worker_thread_;
     int progress_bar_width_;
     int max_message_length_ = 0;
     QString output_file_name_;
 
 public:
-    OSSBatch(QObject *parent = 0);
+    OSS(QObject *parent = 0);
+    ~OSS();
 
 public slots:
     void PrintProgressBar(QString message, int percentage);
@@ -24,8 +26,9 @@ public slots:
     void Run();
 
 signals:
+    void StackImages(int, int);
     void Finished();
 };
 
 
-#endif // OSS_BATCH_H
+#endif // OSS_CL_H

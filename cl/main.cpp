@@ -1,4 +1,4 @@
-#include "batch.h"
+#include "cl.h"
 #include <libstacker/imagestacker.h>
 
 #include <QtCore>
@@ -10,12 +10,13 @@ using std::printf;
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+    QCoreApplication::setApplicationVersion("0.1.0");
     QCoreApplication::setApplicationName("OpenSkyStacker");
 
-    OSSBatch *batch = new OSSBatch(&a);
-    QObject::connect(batch, SIGNAL(Finished()), &a, SLOT(quit()));
+    OSS *oss = new OSS(&a);
+    QObject::connect(oss, SIGNAL(Finished()), &a, SLOT(quit()));
 
-    QTimer::singleShot(0, batch, SLOT(Run()));
+    QTimer::singleShot(0, oss, SLOT(Run()));
 
     return a.exec();
 }

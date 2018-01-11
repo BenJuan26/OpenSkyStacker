@@ -1,17 +1,33 @@
-#include <batch.h>
+#include <cl.h>
 #include <stdio.h>
+#include <iostream>
 
-OSSBatch::OSSBatch(QObject *parent) : QObject(parent),
+using namespace std;
+
+OSS::OSS(QObject *parent) : QObject(parent),
     stacker_(new ImageStacker),
+    worker_thread_(new QThread),
     progress_bar_width_(30)
 {
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
+    stacker_->moveToThread(worker_thread_);
+    worker_thread_->start();
+
+    connect(this, SIGNAL(StackImages(int,int)), stacker_, SLOT(Process(int,int)));
     connect(stacker_, SIGNAL(UpdateProgress(QString,int)), this, SLOT(PrintProgressBar(QString,int)));
     connect(stacker_, SIGNAL(Finished(cv::Mat,QString)), this, SLOT(StackingFinished(cv::Mat,QString)));
 }
 
-void OSSBatch::PrintProgressBar(QString message, int percentage)
+OSS::~OSS()
+{
+    worker_thread_->quit();
+    worker_thread_->wait();
+    delete worker_thread_;
+    delete stacker_;
+}
+
+void OSS::PrintProgressBar(QString message, int percentage)
 {
     QString p = QString(" %1% [").arg(QString::number(percentage).rightJustified(3, ' '));
 
@@ -27,13 +43,15 @@ void OSSBatch::PrintProgressBar(QString message, int percentage)
     if (p.size() > max_message_length_) {
         max_message_length_ = p.size();
     }
-    printf("\r%s", p.leftJustified(max_message_length_, ' ').toUtf8().constData());
+
+    cout << p.leftJustified(max_message_length_, ' ').toUtf8().constData() << "\r" << flush;
 }
 
-void OSSBatch::Run()
+void OSS::Run()
 {
 
     QCommandLineParser parser;
+    parser.addVersionOption();
     parser.setApplicationDescription("Multi-platform astroimaging stacker");
     parser.addHelpOption();
 
@@ -86,7 +104,7 @@ void OSSBatch::Run()
     }
 
     int err = 0;
-    std::vector<ImageRecord *> records = LoadImageList(listFile, &err);
+    vector<ImageRecord *> records = LoadImageList(listFile, &err);
     if (err) {
         printf("Error %d: Couldn't load image list\n", err);
         QCoreApplication::exit(1);
@@ -141,33 +159,25 @@ void OSSBatch::Run()
     stacker_->SetFlatFrameFileNames(flats);
     stacker_->SetBiasFrameFileNames(bias);
 
-    try {
-        //stacker_->Process(threshold, 1);
-        stacker_->Process(threshold, threads);
-    } catch (std::exception) {
-        printf("Error: Got exception while stacking\n");
-        QCoreApplication::exit(1);
-        return;
-    }
-
-    //emit Finished();
+    emit StackImages(threshold, threads);
 }
 
-void OSSBatch::StackingFinished(cv::Mat image, QString message)
+void OSS::StackingFinished(cv::Mat image, QString message)
 {
     PrintProgressBar(message, 100);
     printf("\n");
     try {
         cv::imwrite(output_file_name_.toUtf8().constData(), image);
-    } catch (std::exception) {
+    } catch (exception) {
         printf("Error: Couldn't write resulting image\n");
         QCoreApplication::exit(1);
         return;
     }
+    printf("File saved to %s\n", output_file_name_.toUtf8().constData());
     emit Finished();
 }
 
-void OSSBatch::StackingError(QString message)
+void OSS::StackingError(QString message)
 {
     printf("Error: %s\n", message.toUtf8().constData());
     QCoreApplication::exit(1);

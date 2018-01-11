@@ -1,6 +1,6 @@
 SUBDIRS += libstacker \
     openskystacker \
     test \
-    batch
+    cl
 TEMPLATE = subdirs
 CONFIG += ordered warn_on qt debug_and_release
