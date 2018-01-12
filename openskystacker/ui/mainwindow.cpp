@@ -109,8 +109,6 @@ void MainWindow::finishedStacking(cv::Mat image) {
     }
 
     setMemImage(Mat2QImage(image));
-
-    qDebug() << "Done stacking";
 }
 
 // For the main window this is only used to update the progress indicator
@@ -302,7 +300,6 @@ void MainWindow::handleButtonStack() {
     emit stackImages(threshold, threads);
 
     if (!processing_dialog_->exec()) {
-        qDebug() << "Cancelling...";
         stacker_->cancel_ = true;
     }
 
@@ -514,16 +511,16 @@ void MainWindow::handleButtonSaveList()
     // Linux doesn't force the proper extension unlike Windows and Mac
     QRegularExpression regex("\\.json$");
     if (!regex.match(filename).hasMatch()) {
-        qDebug() << "Filename was missing extension, adding it";
         filename += ".json";
     }
 
+    QStringList types = QStringList() << "light" << "dark" << "darkflat" << "flat" << "bias";
     QJsonArray images;
     for (int i = 0; i < table_model_.rowCount(); i++) {
         ImageRecord *record = table_model_.At(i);
         QJsonObject image;
         image.insert("filename", record->filename);
-        image.insert("type", record->type);
+        image.insert("type", types.at(record->type));
         image.insert("checked", record->checked);
 
         images.insert(images.size(), image);
@@ -576,16 +573,15 @@ void MainWindow::handleButtonLoadList()
         break;
     }
 
-    if (!err) {
-        for (int i = 0; i < table_model_.rowCount(); i++) {
-            table_model_.RemoveAt(0);
-        }
-
-        for (ImageRecord *record : records) {
-            table_model_.Append(record);
-        }
-    } else {
+    if (err)
         return;
+
+    for (int i = 0; i < table_model_.rowCount(); i++) {
+        table_model_.RemoveAt(0);
+    }
+
+    for (ImageRecord *record : records) {
+        table_model_.Append(record);
     }
 
     QFile file(filename);

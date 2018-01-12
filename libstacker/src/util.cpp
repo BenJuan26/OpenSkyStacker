@@ -400,6 +400,7 @@ std::vector<ImageRecord *> openskystacker::LoadImageList(QString filename, int *
         return result;
     }
 
+    QStringList types = QStringList() << "light" << "dark" << "darkflat" << "flat" << "bias";
     QJsonArray list = doc.array();
     for (int i = 0; i < list.size(); i++) {
         QJsonValue val = list.at(i);
@@ -420,16 +421,18 @@ std::vector<ImageRecord *> openskystacker::LoadImageList(QString filename, int *
         if (imageInfo.isRelative())
             imageFileName = absolutePathToJson + "/" + imageFileName;
 
-        int type = img.value("type").toInt(-1);
-        if (type < 0) {
+        QString type = img.value("type").toString();
+
+        bool checked = img.value("checked").toBool();
+        ImageRecord *record = GetImageRecord(imageFileName);
+
+        int typeIndex = types.indexOf(QRegExp(QString("^%1$").arg(type)));
+        if (typeIndex < 0) {
             if (err)
                 *err = -4;
             return result;
         }
-
-        bool checked = img.value("checked").toBool();
-        ImageRecord *record = GetImageRecord(imageFileName);
-        record->type = static_cast<ImageRecord::FrameType>(type);
+        record->type = static_cast<ImageRecord::FrameType>(typeIndex);
         record->checked = checked;
 
         result.push_back(record);
@@ -645,7 +648,6 @@ StackingResult openskystacker::ProcessConcurrent(StackingParams params, int *num
     cv::Mat workingImage = cv::Mat::zeros(ref.rows, ref.cols, ref.type());
 
     for (int k = threadIndex; k < lights.length(); k += totalThreads) {
-        qDebug() << k;
         cv::Mat targetImage = GetCalibratedImage(lights.at(k), masterDark, masterFlat, masterBias);
 
         int err = 0;

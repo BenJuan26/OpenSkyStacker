@@ -231,8 +231,6 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
     time_t now;
     time(&now);
 
-    qDebug() << "Path:" << save_file_path_;
-
     ImageType refType = GetImageType(ref_image_file_name_);
 
     for (int i = 0; i < target_image_file_names_.length(); i++) {
@@ -312,7 +310,7 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
         }
 
         emit q->UpdateProgress(QObject::tr("Stacking light frames..."), 100 * op / total_operations_);
-        QThread::msleep(30);
+        QThread::msleep(250);
     }
 
     for (QFuture<StackingResult> future : futures) {
@@ -333,8 +331,6 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
 
     time_t doneStacking;
     time(&doneStacking);
-
-    qDebug() << "Stacking took" << difftime(doneStacking, now) << "seconds";
 
     emit q->Finished(working_image_, QObject::tr("Stacking completed in %1 seconds.").arg(difftime(doneStacking, now)));
 }
