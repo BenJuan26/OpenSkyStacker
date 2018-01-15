@@ -43,6 +43,11 @@ unix {
     INSTALLS += target
 }
 
+unix:coverage {
+    QMAKE_CXXFLAGS += --coverage
+    QMAKE_LFLAGS += --coverage
+}
+
 win32: include(win32.pri)
 macx: include(mac.pri)
 linux: include(linux.pri)

@@ -2,7 +2,7 @@
 
 Multi-platform deep-sky stacker for astrophotography.
 
-[![Build Status](https://travis-ci.org/BenJuan26/OpenSkyStacker.svg?branch=master)](https://travis-ci.org/BenJuan26/OpenSkyStacker) [![Documentation](https://codedocs.xyz/BenJuan26/OpenSkyStacker.svg)](https://codedocs.xyz/BenJuan26/OpenSkyStacker/) [![Coverage Status](https://coveralls.io/repos/github/BenJuan26/OpenSkyStacker/badge.svg?branch=unittest)](https://coveralls.io/github/BenJuan26/OpenSkyStacker?branch=unittest)
+[![Build Status](https://travis-ci.org/BenJuan26/OpenSkyStacker.svg?branch=master)](https://travis-ci.org/BenJuan26/OpenSkyStacker) [![Documentation](https://codedocs.xyz/BenJuan26/OpenSkyStacker.svg)](https://codedocs.xyz/BenJuan26/OpenSkyStacker/) [![Coverage Status](https://coveralls.io/repos/github/BenJuan26/OpenSkyStacker/badge.svg)](https://coveralls.io/github/BenJuan26/OpenSkyStacker)
 
 OpenSkyStacker assists in the processing of deep-sky images. *Stacking* in this context means taking the average of several exposures of the same object to reduce the noise and boost the signal-to-noise ratio. This is especially helpful in the field of astrophotography because many objects of interest are so dim that, without processing, they might be indistinguishable from noise.
 
