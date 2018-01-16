@@ -9,4 +9,4 @@ Homepage: https://github.com/BenJuan26/OpenSkyStacker
 Package: openskystacker
 Architecture: any
 Depends: qt5-default, libopencv-dev, libraw-dev, libccfits-dev
-Description: OpenSkyStacker is a multi-platform astroimaging stacker.
+Description: OpenSkyStacker is a multi-platform imaging stacker for deep-sky astrophotography.

@@ -38,10 +38,10 @@ HEADERS += include/libstacker/imagestacker.h \
     src/focas.h \
     src/hfti.h
     
-unix {
-    target.path = /usr/local/lib
-    INSTALLS += target
-}
+includes.files = include/libstacker/*
+includes.path = /usr/include/libstacker
+target.path = /usr/lib
+unix:INSTALLS += target includes
 
 unix:coverage {
     QMAKE_CXXFLAGS += --coverage

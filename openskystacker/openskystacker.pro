@@ -44,6 +44,9 @@ FORMS    += ui/mainwindow.ui \
 INCLUDEPATH += ../libstacker/include
 LIBS += -L../lib -lstacker
 
+target.path = /usr/bin
+unix:INSTALLS += target
+
 win32: include(../libstacker/win32.pri)
 macx: include(../libstacker/mac.pri)
 linux: include(../libstacker/linux.pri)

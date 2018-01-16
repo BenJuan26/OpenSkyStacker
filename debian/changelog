@@ -1,25 +1,27 @@
 openskystacker (0.2.3-1) UNRELEASED; urgency=low
 
- * Add ability to use threads
+  * Add ability to use threads
 
- * Further optimizations in stacking algorithm
+  * Further optimizations in stacking algorithm
 
- * Read EXIF data from JPEG files
+  * Read EXIF data from JPEG files
 
- * Read metadata from FITS files
+  * Read metadata from FITS files
+
+ -- Benjamin Schubert <brm.schubert@gmail.com>  Fri, 15 Oct 2017 10:54:24 -0400
 
 openskystacker (0.2.2-1) UNRELEASED; urgency=low
 
- * Added FITS image support
+  * Added FITS image support
 
- * Fixed bug on linux where file extensions could be left out
+  * Fixed bug on linux where file extensions could be left out
 
- * Added support for relative paths in image list JSON files
+  * Added support for relative paths in image list JSON files
 
  -- Benjamin Schubert <brm.schubert@gmail.com>  Fri, 29 Sep 2017 11:24:53 -0400
 
 openskystacker (0.1.1-1) UNRELEASED; urgency=low
 
- * Initial Release
+  * Initial Release
 
  -- Benjamin Schubert <brm.schubert@gmail.com>  Tue, 12 Sep 2017 23:06:00 -0400
