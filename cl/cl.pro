@@ -23,7 +23,8 @@ CONFIG -= app_bundle
 INCLUDEPATH += ../libstacker/include
 LIBS += -L../lib -lstacker
 
-target.path = /usr/bin
+isEmpty(PREFIX): PREFIX=/usr/local
+target.path = $${PREFIX}/bin
 unix:INSTALLS += target
 
 win32: include(../libstacker/win32.pri)

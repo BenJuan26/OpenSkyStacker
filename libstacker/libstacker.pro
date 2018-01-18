@@ -37,10 +37,12 @@ HEADERS += include/libstacker/imagestacker.h \
     src/exif.h \
     src/focas.h \
     src/hfti.h
-    
+
+isEmpty(PREFIX): PREFIX=/usr/local
+
 includes.files = include/libstacker/*
-includes.path = /usr/include/libstacker
-target.path = /usr/lib
+includes.path = $${PREFIX}/include/libstacker
+target.path = $${PREFIX}/lib
 unix:INSTALLS += target includes
 
 unix:coverage {

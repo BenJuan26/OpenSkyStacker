@@ -44,8 +44,16 @@ FORMS    += ui/mainwindow.ui \
 INCLUDEPATH += ../libstacker/include
 LIBS += -L../lib -lstacker
 
-target.path = /usr/bin
-unix:INSTALLS += target
+isEmpty(PREFIX): PREFIX = /usr/local
+
+target.path = $${PREFIX}/bin
+unix: INSTALLS += target
+
+desktop.files = ../openskystacker.desktop
+desktop.path = $${PREFIX}/share/applications
+icon.files = images/OpenSkyStacker.ico
+icon.path = $${PREFIX}/share/pixmaps
+linux: INSTALLS += desktop icon
 
 win32: include(../libstacker/win32.pri)
 macx: include(../libstacker/mac.pri)
