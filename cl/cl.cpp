@@ -52,7 +52,7 @@ void OSS::Run()
 
     QCommandLineParser parser;
     parser.addVersionOption();
-    parser.setApplicationDescription("Multi-platform astroimaging stacker");
+    parser.setApplicationDescription("Multi-platform deep-sky stacker for astrophotography.");
     parser.addHelpOption();
 
     QCommandLineOption listOption("f", tr("Image list JSON file."), "list");
@@ -70,15 +70,15 @@ void OSS::Run()
     parser.process(QCoreApplication::arguments());
 
     if (!parser.isSet(listOption)) {
-        printf("Error: Must specify an image list");
-        QCoreApplication::exit(1);
+        printf("Error: Must specify an image list\n\n");
+        parser.showHelp(1);
         return;
     }
     QString listFile = parser.value(listOption);
 
     if (!parser.isSet(outputOption)) {
-        printf("Error: Must specify an output image");
-        QCoreApplication::exit(1);
+        printf("Error: Must specify an output image\n\n");
+        parser.showHelp(1);
         return;
     }
     output_file_name_ = parser.value(outputOption);
@@ -90,16 +90,16 @@ void OSS::Run()
     bool intParsingOk = true;
     int threshold = parser.value(thresholdOption).toInt(&intParsingOk);
     if (!intParsingOk) {
-        printf("Error: Thread count argument must be an integer\n");
-        QCoreApplication::exit(1);
+        printf("Error: Thread count argument must be an integer\n\n");
+        parser.showHelp(1);
         return;
     }
 
     intParsingOk = true;
     int threads = parser.value(threadsOption).toInt(&intParsingOk);
     if (!intParsingOk) {
-        printf("Error: Thread count argument must be an integer\n");
-        QCoreApplication::exit(1);
+        printf("Error: Thread count argument must be an integer\n\n");
+        parser.showHelp(1);
         return;
     }
 
@@ -117,7 +117,13 @@ void OSS::Run()
     QStringList darkFlats;
     QStringList flats;
     QStringList bias;
+
     bool referenceSet = false;
+    for (ImageRecord *record : records) {
+        if (record->reference)
+            referenceSet = true;
+    }
+
     for (ImageRecord *record : records) {
         if (!record->checked)
             continue;
@@ -126,7 +132,7 @@ void OSS::Run()
 
         switch(record->type) {
         case ImageRecord::LIGHT:
-            if (!referenceSet) {
+            if (!referenceSet || record->reference) {
                 ref = filename;
                 referenceSet = true;
             } else {

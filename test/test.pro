@@ -1,5 +1,5 @@
 QT += testlib
-TARGET = oss_test
+TARGET = oss-test
 SOURCES -= main.cpp
 SOURCES += testoss.cpp
 HEADERS += testoss.h
