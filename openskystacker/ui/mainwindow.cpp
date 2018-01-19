@@ -520,7 +520,11 @@ void MainWindow::handleButtonSaveList()
         ImageRecord *record = table_model_.At(i);
         QJsonObject image;
         image.insert("filename", record->filename);
-        image.insert("type", types.at(record->type));
+        if (record->reference) {
+            image.insert("type", "ref");
+        } else {
+            image.insert("type", types.at(record->type));
+        }
         image.insert("checked", record->checked);
 
         images.insert(images.size(), image);

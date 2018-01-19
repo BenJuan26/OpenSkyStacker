@@ -22,11 +22,13 @@ public:
 public slots:
     void PrintProgressBar(QString message, int percentage);
     void StackingFinished(cv::Mat, QString);
+    void StarDetectionFinished(int stars);
     void StackingError(QString);
     void Run();
 
 signals:
     void StackImages(int, int);
+    void DetectStars(QString, int);
     void Finished();
 };
 

@@ -4,10 +4,10 @@
 
 using namespace openskystacker;
 
+TestOSS::TestOSS(QString dir) : samplesPath(dir) {}
+
 void TestOSS::initTestCase()
 {
-    appPath = qApp->applicationDirPath();
-    samplesPath = appPath + "/../samples";
     qRegisterMetaType<cv::Mat>("cv::Mat");
 }
 
@@ -130,4 +130,29 @@ void TestOSS::testStackImages()
     QCOMPARE(stackSpy.count(), 1);
 }
 
-QTEST_GUILESS_MAIN(TestOSS)
+// QTEST_GUILESS_MAIN(TestOSS)
+
+// HACKS
+int main(int argc, char *argv[]) {
+    QStringList args;
+    for (int i = 0; i < argc; i++) {
+        args << argv[i];
+    }
+
+    int dirIndex = -1;
+    for (int i = 0; i < args.length(); i++) {
+        QString arg = args.at(i);
+        if (arg == "-d")
+            dirIndex = i;
+    }
+
+    if (dirIndex < 0) {
+        printf("Error: Must specify sample images directory with '-d <dir>'\n");
+        return 1;
+    }
+
+    QString dir = args.at(dirIndex + 1);
+    args.removeAt(dirIndex);
+    args.removeAt(dirIndex);
+    return QTest::qExec(new TestOSS(dir), args);
+}

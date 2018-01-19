@@ -10,7 +10,6 @@ namespace openskystacker {
 class TestOSS: public QObject
 {
     Q_OBJECT
-    QString appPath;
     QString samplesPath;
 
 private slots:
@@ -21,6 +20,9 @@ private slots:
 
     void testStackImages();
     void testStackImages_data();
+
+public:
+    TestOSS(QString);
 };
 
 }

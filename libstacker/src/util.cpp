@@ -426,13 +426,18 @@ std::vector<ImageRecord *> openskystacker::LoadImageList(QString filename, int *
         bool checked = img.value("checked").toBool();
         ImageRecord *record = GetImageRecord(imageFileName);
 
-        int typeIndex = types.indexOf(QRegExp(QString("^%1$").arg(type)));
-        if (typeIndex < 0) {
-            if (err)
-                *err = -4;
-            return result;
+        if (type == "ref") {
+            record->type = ImageRecord::FrameType::LIGHT;
+            record->reference = true;
+        } else {
+            int typeIndex = types.indexOf(QRegExp(QString("^%1$").arg(type)));
+            if (typeIndex < 0) {
+                if (err)
+                    *err = -4;
+                return result;
+            }
+            record->type = static_cast<ImageRecord::FrameType>(typeIndex);
         }
-        record->type = static_cast<ImageRecord::FrameType>(typeIndex);
         record->checked = checked;
 
         result.push_back(record);

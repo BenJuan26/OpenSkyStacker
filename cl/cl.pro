@@ -15,9 +15,9 @@ RCC_DIR = $$BUILD_DIR/rcc
 UI_DIR = $$BUILD_DIR/ui
 OBJECTS_DIR = $$BUILD_DIR/o
 
-TARGET = oss_cl
+TARGET = openskystacker-cl
 
-# On macOS we don't want the app bundled; a standalone executable is fine.
+# On macOS we don't want the app bundled
 CONFIG -= app_bundle
 
 INCLUDEPATH += ../libstacker/include
