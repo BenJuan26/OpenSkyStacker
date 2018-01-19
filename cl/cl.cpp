@@ -1,4 +1,5 @@
 #include <cl.h>
+
 #include <stdio.h>
 #include <iostream>
 
@@ -17,6 +18,8 @@ OSS::OSS(QObject *parent) : QObject(parent),
     connect(this, SIGNAL(StackImages(int,int)), stacker_, SLOT(Process(int,int)));
     connect(stacker_, SIGNAL(UpdateProgress(QString,int)), this, SLOT(PrintProgressBar(QString,int)));
     connect(stacker_, SIGNAL(Finished(cv::Mat,QString)), this, SLOT(StackingFinished(cv::Mat,QString)));
+    connect(this, SIGNAL(DetectStars(QString,int)), stacker_, SLOT(detectStars(QString,int)));
+    connect(stacker_, SIGNAL(doneDetectingStars(int)), this, SLOT(StarDetectionFinished(int)));
 }
 
 OSS::~OSS()
@@ -58,6 +61,10 @@ void OSS::Run()
     QCommandLineOption listOption("f", tr("Image list JSON file."), "list");
     parser.addOption(listOption);
 
+    QCommandLineOption detectOption("s", tr("Detect and print the number of stars in the reference image "
+            "with the given threshold, then exit. Ignores all other options except -f and -t."));
+    parser.addOption(detectOption);
+
     QCommandLineOption outputOption("o", tr("Output image file."), "output");
     parser.addOption(outputOption);
 
@@ -76,29 +83,10 @@ void OSS::Run()
     }
     QString listFile = parser.value(listOption);
 
-    if (!parser.isSet(outputOption)) {
-        printf("Error: Must specify an output image\n\n");
-        parser.showHelp(1);
-        return;
-    }
-    output_file_name_ = parser.value(outputOption);
-    QRegularExpression regex("\\.tif$");
-    if (!regex.match(output_file_name_).hasMatch()) {
-        output_file_name_ += ".tif";
-    }
-
     bool intParsingOk = true;
     int threshold = parser.value(thresholdOption).toInt(&intParsingOk);
-    if (!intParsingOk) {
-        printf("Error: Thread count argument must be an integer\n\n");
-        parser.showHelp(1);
-        return;
-    }
-
-    intParsingOk = true;
-    int threads = parser.value(threadsOption).toInt(&intParsingOk);
-    if (!intParsingOk) {
-        printf("Error: Thread count argument must be an integer\n\n");
+    if (!intParsingOk || threshold < 1 || threshold > 100) {
+        printf("Error: Thread count argument must be an integer between 1 and 100\n");
         parser.showHelp(1);
         return;
     }
@@ -158,6 +146,30 @@ void OSS::Run()
         }
     }
 
+    if (parser.isSet(detectOption)) {
+        emit DetectStars(ref, threshold);
+        return;
+    }
+
+    if (!parser.isSet(outputOption)) {
+        printf("Error: Must specify an output image\n");
+        parser.showHelp(1);
+        return;
+    }
+    output_file_name_ = parser.value(outputOption);
+    QRegularExpression regex("\\.tif$");
+    if (!regex.match(output_file_name_).hasMatch()) {
+        output_file_name_ += ".tif";
+    }
+
+    intParsingOk = true;
+    int threads = parser.value(threadsOption).toInt(&intParsingOk);
+    if (!intParsingOk || threads < 1) {
+        printf("Error: Thread count argument must be a positive non-zero integer\n");
+        parser.showHelp(1);
+        return;
+    }
+
     stacker_->SetRefImageFileName(ref);
     stacker_->SetTargetImageFileNames(lights);
     stacker_->SetDarkFrameFileNames(darks);
@@ -180,6 +192,12 @@ void OSS::StackingFinished(cv::Mat image, QString message)
         return;
     }
     printf("File saved to %s\n", output_file_name_.toUtf8().constData());
+    emit Finished();
+}
+
+void OSS::StarDetectionFinished(int stars)
+{
+    printf("%d\n", stars);
     emit Finished();
 }
 

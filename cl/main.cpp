@@ -10,7 +10,7 @@ using std::printf;
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    QCoreApplication::setApplicationVersion("0.1.0");
+    QCoreApplication::setApplicationVersion("0.2.4");
     QCoreApplication::setApplicationName("OpenSkyStacker");
 
     OSS *oss = new OSS(&a);

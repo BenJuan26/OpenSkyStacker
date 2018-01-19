@@ -1,3 +1,13 @@
+openskystacker (0.2.4-1) UNRELEASED; urgency=low
+
+  * Added command line application
+
+  * Moved the backend into a shared library, libstacker
+
+  * Fixed a bug where OpenCV 2 could be used to output the wrong bit depth
+
+ -- Benjamin Schubert <brm.schubert@gmail.com>  Fri, 19 Jan 2018 11:10:40 -0400
+
 openskystacker (0.2.3-1) UNRELEASED; urgency=low
 
   * Add ability to use threads
@@ -8,7 +18,7 @@ openskystacker (0.2.3-1) UNRELEASED; urgency=low
 
   * Read metadata from FITS files
 
- -- Benjamin Schubert <brm.schubert@gmail.com>  Fri, 15 Oct 2017 10:54:24 -0400
+ -- Benjamin Schubert <brm.schubert@gmail.com>  Sun, 15 Oct 2017 10:54:24 -0400
 
 openskystacker (0.2.2-1) UNRELEASED; urgency=low
 

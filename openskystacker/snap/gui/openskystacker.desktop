@@ -1,7 +1,0 @@
-[Desktop Entry]
-Version=0.1.0
-Name=OpenSkyStacker
-Comment=OpenSkyStacker is an open-source, multi-platform astroimaging stacker.
-Exec=qt5-launch bin/OpenSkyStacker
-Terminal=false
-Type=Application
