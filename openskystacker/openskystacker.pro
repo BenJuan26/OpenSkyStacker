@@ -4,7 +4,10 @@ TRANSLATIONS += translations/openskystacker_es.ts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-win32: QT += winextras
+win32 {
+    QT += winextras
+    RC_ICONS = $$PWD/images/OpenSkyStacker.ico
+}
 
 TARGET = OpenSkyStacker
 linux:TARGET = openskystacker
