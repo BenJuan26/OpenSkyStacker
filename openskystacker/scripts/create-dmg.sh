@@ -11,7 +11,7 @@ fi
 
 # set up your app name, version number, and background image file name
 APP_NAME="OpenSkyStacker"
-VERSION="0.2.4"
+VERSION="0.3.0"
 DMG_BACKGROUND_PATH="../images"
 DMG_BACKGROUND_IMG="dng-background.png"
 APP_PATH="../../bin"
