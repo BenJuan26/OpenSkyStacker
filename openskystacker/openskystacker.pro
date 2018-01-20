@@ -9,6 +9,8 @@ win32 {
     RC_ICONS = $$PWD/images/OpenSkyStacker.ico
 }
 
+macx: ICON = $$PWD/images/OpenSkyStacker.icns
+
 TARGET = OpenSkyStacker
 linux:TARGET = openskystacker
 

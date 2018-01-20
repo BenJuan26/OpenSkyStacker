@@ -26,6 +26,34 @@ If you're met with an error or if the resulting image looks skewed or undesirabl
 
 **Note**: OpenSkyStacker uses stars for alignment, so it is unsuitable for planetary, lunar, or solar stacking.
 
+## Command Line
+
+The command line program is `openskystacker-cl`.
+
+```
+Usage: openskystacker-cl [options]
+Multi-platform deep-sky stacker for astrophotography.
+
+Options:
+  -v, --version   Displays version information.
+  -h, --help      Displays this help.
+  -f <list>       Image list JSON file.
+  -s              Detect and print the number of stars in the reference image
+                  with the given threshold, then exit. Ignores all other options
+                  except -f and -t.
+  -o <output>     Output image file.
+  -t <threshold>  Star detection threshold (1-100). Default: 20
+  -j <threads>    Number of processing threads. Default: 1
+```
+
+On Mac, the command-line binary is located inside the application package at `OpenSkyStacker.app/Contents/bin/openskystacker-cl`. To make it more portable to run, you might want to put a symbolic link into a system directory. Exmaple:
+
+```bash
+ln -s OpenSkyStacker.app/Contents/bin/openskystacker-cl /usr/local/bin/openskystacker-cl
+```
+
+It can then be run anywhere with `openskystacker-cl`.
+
 ## Build from source
 
 See the [wiki page](https://github.com/BenJuan26/OpenSkyStacker/wiki/Build-from-source) for instructions to build OpenSkyStacker from the source code.
