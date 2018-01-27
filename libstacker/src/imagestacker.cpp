@@ -304,10 +304,11 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
     while (!done) {
         done = true;
         int op = current_operation_;
-        for (int i = 0; i < futures.size(); i++) {
-            QFuture<StackingResult> future = futures.at(i);
+        int i = 0;
+        for (auto &future : futures) {
             op += *completes.at(i);
             done = done && future.isFinished();
+            i++;
         }
 
         emit q->UpdateProgress(QObject::tr("Stacking light frames..."), 100 * op / total_operations_);

@@ -47,7 +47,7 @@ ImageRecord *openskystacker::GetImageRecord(QString filename)
         break;
     }
     case FITS_IMAGE: {
-        std::auto_ptr<FITS> pInFile(new FITS(filename.toUtf8().constData(), Read));
+        std::unique_ptr<FITS> pInFile(new FITS(filename.toUtf8().constData(), Read));
         PHDU &image = pInFile->pHDU();
         image.readAllKeys();
 
@@ -259,7 +259,7 @@ cv::Mat openskystacker::ReadImage(QString filename)
 
 cv::Mat openskystacker::FITSToMat(QString filename)
 {
-    std::auto_ptr<FITS> pInFile(new FITS(filename.toUtf8().constData(), Read, true));
+    std::unique_ptr<FITS> pInFile(new FITS(filename.toUtf8().constData(), Read, true));
     PHDU &image = pInFile->pHDU();
     image.readAllKeys();
 

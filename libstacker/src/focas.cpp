@@ -342,6 +342,8 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
             break;
         }
 
+        Q_UNUSED(rms);
+
         /* Clip outliers and redo the fit. */
         j = 0;
         for (i=0; i<m; i++) {
