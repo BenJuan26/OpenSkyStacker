@@ -46,7 +46,7 @@ Options:
   -j <threads>    Number of processing threads. Default: 1
 ```
 
-On Mac, the command-line binary is located inside the application package at `OpenSkyStacker.app/Contents/bin/openskystacker-cl`. To make it more portable to run, you might want to put a symbolic link into a system directory. Exmaple:
+On Mac, the command-line binary is located inside the application package at `OpenSkyStacker.app/Contents/bin/openskystacker-cl`. To make it more portable to run, you might want to put a symbolic link into a system directory. Example:
 
 ```bash
 ln -s OpenSkyStacker.app/Contents/bin/openskystacker-cl /usr/local/bin/openskystacker-cl
