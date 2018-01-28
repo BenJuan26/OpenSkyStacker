@@ -304,10 +304,11 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
     while (!done) {
         done = true;
         int op = current_operation_;
-        for (int i = 0; i < futures.size(); i++) {
-            QFuture<StackingResult> future = futures.at(i);
+        int i = 0;
+        for (auto &future : futures) {
             op += *completes.at(i);
             done = done && future.isFinished();
+            i++;
         }
 
         emit q->UpdateProgress(QObject::tr("Stacking light frames..."), 100 * op / total_operations_);
@@ -357,7 +358,7 @@ void ImageStackerPrivate::detectStars(QString filename, int threshold)
     StarDetector sd;
     std::vector<Star> list = sd.GetStars(image, threshold);
 
-    emit q->doneDetectingStars(list.size());
+    emit q->doneDetectingStars(static_cast<int>(list.size()));
 }
 
 int ImageStackerPrivate::ValidateImageSizes()

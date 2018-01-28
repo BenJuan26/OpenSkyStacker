@@ -116,6 +116,7 @@ void MainWindow::finishedStacking(cv::Mat image) {
 void MainWindow::updateProgress(QString message, int percentComplete)
 {
     Q_UNUSED(message);
+    Q_UNUSED(percentComplete);
 #ifdef WIN32
     QWinTaskbarProgress *progress = taskbar_button_->progress();
     progress->setVisible(true);
