@@ -5,7 +5,7 @@ using namespace openskystacker;
 std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> List)
 {
     int nobjs = NOBJS;
-    if (List.size() < NOBJS) nobjs = List.size();
+    if (List.size() < NOBJS) nobjs = static_cast<int>(List.size());
 
     //ntriang = (nobjs - 2) * (nobjs - 1) * nobjs / 6;
     std::vector<Triangle> List_triang; //(ntriang);
@@ -97,7 +97,7 @@ std::vector<std::vector<int> > openskystacker::FindMatches(int nobjs, int *k_, s
     }
 
     /* Sort List_triangB by x coordinate. */
-    SortTriangles(&List_triangB, 0, List_triangB.size() - 1);
+    SortTriangles(&List_triangB, 0, static_cast<int>(List_triangB.size()) - 1);
 
     /* Find objects within tolerance distance in triangle space. */
     for (Triangle tri : List_triangA) {
@@ -212,10 +212,10 @@ void openskystacker::SortTriangles(std::vector<Triangle> *List_Triang_, int l, i
 void openskystacker::BinSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last)
 {
     std::vector<Triangle> &List_triang = *List_triang_;
-    int ntriang = List_triang.size();
+    int ntriang = static_cast<int>(List_triang.size());
     int	min = 0, max = ntriang - 1, middle ;
     int	found = 0, i;
-    float tolerance = TOL;
+    double tolerance = TOL;
 
     while ((!found) && (max - min > 1)) {
         middle  = (min + max ) / 2;
@@ -251,8 +251,8 @@ void openskystacker::BinSearchTriangles(float key, std::vector<Triangle> *List_t
 void openskystacker::CheckTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_, int first, int last, int Table_match[])
 {
     std::vector<Triangle> &List_triangB = *List_triangB_;
-    float tolerance = TOL;
-    float tolerance2 = TOL * TOL;
+    double tolerance = TOL;
+    double tolerance2 = TOL * TOL;
     float	temp1, temp2, distance;
     int	i, h1, h2;
 
@@ -287,7 +287,7 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
     int	i, j, i1, i2;
     int	mda = MAX_MATCH, mdb = MAX_MATCH, n = 3, nb = 2;
     int	krank, ip[3];
-    float	tau = 0.1, rnorm[2], h[3], g[3];
+    float	tau = 0.1f, rnorm[2], h[3], g[3];
     float	a[3][MAX_MATCH], b[2][MAX_MATCH];
     float	x, y, r2, sum, rms;
 

@@ -120,7 +120,7 @@ cv::Point AdjoiningPixel::GetGravityCenter()
 Star AdjoiningPixel::CreateStar()
 {
     Star star;
-    star.area = pixels_.size();
+    star.area = static_cast<int>(pixels_.size());
 
     star.peak = GetPeakValue();
     float starValue = 0.0;

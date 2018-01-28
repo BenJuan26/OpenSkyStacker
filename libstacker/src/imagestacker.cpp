@@ -358,7 +358,7 @@ void ImageStackerPrivate::detectStars(QString filename, int threshold)
     StarDetector sd;
     std::vector<Star> list = sd.GetStars(image, threshold);
 
-    emit q->doneDetectingStars(list.size());
+    emit q->doneDetectingStars(static_cast<int>(list.size()));
 }
 
 int ImageStackerPrivate::ValidateImageSizes()
