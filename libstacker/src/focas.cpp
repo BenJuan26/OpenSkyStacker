@@ -1,5 +1,7 @@
 #include "focas.h"
 
+#include "focas_fortran.cpp"
+
 using namespace openskystacker;
 
 std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> List)
@@ -308,7 +310,7 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
         b[1][i] = List2[matches[1][i]].y;
     }
 
-    hfti_(a, &mda, &j, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g, ip);
+    hfti(a, mda, j, n, b, mdb, nb, tau, krank, rnorm, h, g, ip);
     for (i=0; i<2; i++)
         for (j=0; j<3; j++)
         xfrm[i][j] = b[i][j];
@@ -368,7 +370,7 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
             return xfrm;
         }
 
-        hfti_(a, &mda, &m, &n, b, &mdb, &nb, &tau, &krank, rnorm, h, g,ip);
+        hfti(a, mda, m, n, b, mdb, nb, tau, krank, rnorm, h, g,ip);
 
         for (i=0; i<2; i++)
             for (j=0; j<3; j++)

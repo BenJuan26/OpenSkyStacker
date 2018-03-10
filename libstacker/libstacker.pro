@@ -27,7 +27,8 @@ SOURCES += src/adjoiningpixel.cpp \
     src/focas.cpp \
     src/imagestacker.cpp \
     src/stardetector.cpp \
-    src/util.cpp
+    src/util.cpp \
+    src/focas_fortran.cpp
 
 HEADERS += include/libstacker/imagestacker.h \
     include/libstacker/model.h \
