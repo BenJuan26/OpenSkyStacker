@@ -349,18 +349,18 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
         /* Clip outliers and redo the fit. */
         j = 0;
         for (i=0; i<m; i++) {
-        if (a[0][i] < r2) {
-            i1 = matches[0][i];
-            i2 = matches[1][i];
-            matches[0][j] = i1;
-            matches[1][j] = i2;
-            a[0][j] = List1[i1].x;
-            a[1][j] = List1[i1].y;
-            a[2][j] = 1.;
-            b[0][j] = List2[i2].x;
-            b[1][j] = List2[i2].y;
-            j++;
-        }
+            if (a[0][i] < r2) {
+                i1 = matches[0][i];
+                i2 = matches[1][i];
+                matches[0][j] = i1;
+                matches[1][j] = i2;
+                a[0][j] = List1[i1].x;
+                a[1][j] = List1[i1].y;
+                a[2][j] = 1.;
+                b[0][j] = List2[i2].x;
+                b[1][j] = List2[i2].y;
+                j++;
+            }
         }
         m = j;
 

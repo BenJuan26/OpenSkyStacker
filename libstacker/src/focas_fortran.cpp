@@ -1,6 +1,6 @@
 void hfti(float a[][MAX_MATCH], int mda, int m, int n, float b[][MAX_MATCH], int mdb, int nb, float tau, int &krank, float rnorm[], float h[], float g[], int ip[])
 {
-    float sm, hmax;
+    float hmax = 0.0f;
     float factor = 0.001f;
     int lmax;
 
@@ -14,9 +14,10 @@ void hfti(float a[][MAX_MATCH], int mda, int m, int n, float b[][MAX_MATCH], int
 
     for (int j = 0; j < ldiag; j++) {
         if (j != 0) {
+            // update squared column lengths and find lmax
             lmax = j;
             for (int l=j; l < n; l++) {
-                  h[l] -= pow(a[l][j-1], 2);
+                  h[l] -= pow(a[j-1][l], 2);
                   if (h[l] > h[lmax]) lmax = l;
             }
         }
@@ -28,7 +29,7 @@ void hfti(float a[][MAX_MATCH], int mda, int m, int n, float b[][MAX_MATCH], int
                 h[l] = 0.0;
 
                 for (int i=j; i <= m; i++) {
-                    h[l] += pow(a[l][i], 2);
+                    h[l] += pow(a[i][l], 2);
                 }
 
                 if (h[l] > h[lmax]) lmax = l;
@@ -36,23 +37,27 @@ void hfti(float a[][MAX_MATCH], int mda, int m, int n, float b[][MAX_MATCH], int
 
             hmax = h[lmax];
         }
+
+        // lmax has been determined
+        // do column interchanges if needed.
         ip[j] = lmax;
 
         if (ip[j] != j) {
             for (int i = 0; i < m; i++) {
-                float tmp = a[j][i];
-                a[j][i] = a[lmax][i];
-                a[lmax][i] = tmp;
+                float tmp = a[i][j];
+                a[i][j] = a[i][lmax];
+                a[i][lmax] = tmp;
             }
             h[lmax] = h[j];
 
         }
 
-        // TODO: THESE NUMBERS ARE STILL 1-INDEXED
         // compute the j-th transformation and apply it to a and b
-        h12_(1, j, j+1, m, &a[j][1], 1, &h[j], &a[j+1][1], 1, mda, n-j);
-        h12_(2, j, j+1, m, &a[j][1], 1, &h[j], &b[0][0], 1, mdb, nb);
+        h12_(1, j, j+1, m, &a[0][j], 1, &h[j], &a[0][j+1], 1, mda, n-j);
+        h12_(2, j, j+1, m, &a[0][j], 1, &h[j], &b[0][0], 1, mdb, nb);
     }
+
+    // determine the pseudorank, k, using the tolerance, tau.
     int j;
     for (j = 0; j < ldiag; j++) {
         if (fabs(a[j][j]) > tau) {
@@ -66,18 +71,20 @@ void hfti(float a[][MAX_MATCH], int mda, int m, int n, float b[][MAX_MATCH], int
 
     int kp1 = k + 1;
 
+    // compute the norms of the residual vectors.
     if (nb > 0) {
         for (int jb = 0; jb < nb; jb++) {
             float tmp = 0.0f;
             if (kp1 <= m) {
                 for (int i = kp1; i < m; i++) {
-                    tmp += pow(b[jb][i],2);
+                    tmp += pow(b[i][jb],2);
                 }
                 rnorm[jb] = sqrt(tmp);
             }
         }
     }
 
+    // special for pseudorank = 0
     if (k <= 0) {
         if (nb <= 0) {
             krank = k;
@@ -85,18 +92,20 @@ void hfti(float a[][MAX_MATCH], int mda, int m, int n, float b[][MAX_MATCH], int
         }
         for (int jb = 0; jb < nb; jb++) {
             for (int i = 0; i < n; i++) {
-                b[jb][i] = 0.0f;
+                b[i][jb] = 0.0f;
             }
         }
         krank = k;
         return;
     }
 
+    // if the pseudorank is less than n, compute householder
+    // decomposition of first k rows.
     if (k != n) {
         for (int ii = 0; ii < k; ii++) {
             int i = kp1 - ii;
             // TODO: THESE NUMBERS ARE STILL 1-INDEXED
-            h12_(1, i, kp1, n, &a[1][i], mda, &g[i], &a[0][0], mda, 1, i-1);
+            h12_(1, i, kp1, n, &a[i][0], mda, &g[i], &a[0][0], mda, 1, i-1);
         }
     }
 
@@ -106,38 +115,43 @@ void hfti(float a[][MAX_MATCH], int mda, int m, int n, float b[][MAX_MATCH], int
     }
 
     for (int jb = 0; jb < nb; jb++) {
+        // solve the k by k triangular system.
         for (int l = 0; l < k; l++) {
             double sm = 0.0;
             int i = kp1 - l;
             if (i != k) {
                 int ip1 = i+1;
                 for (int j = ip1; j < k; j++) {
-                    sm += a[j][i] * b[jb][j];
+                    sm += a[i][j] * b[j][jb];
                 }
             }
             int sm1 = m;
-            b[jb][i] = (b[jb][i] - sm1) / a[i][i];
+            b[i][jb] = (b[i][jb] - sm1) / a[i][i];
         }
 
+        // complete computation of solution vector
         if (k != n) {
             for (int j = kp1; j < n; j++)
-                b[jb][j] = 0.0f;
+                b[j][jb] = 0.0f;
             for (int i = 0; i < k; i++)
-                // TODO: THESE NUMBERS ARE STILL 1-INDEXED
-                h12_(2, i, kp1, n, &a[i][1], mda, &g[i], &b[jb][1], 1, mdb, 1);
+                h12_(2, i, kp1, n, &a[0][i], mda, &g[i], &b[0][jb], 1, mdb, 1);
         }
 
+        // re-order the solution vector to compensate for the
+        // column interchanges.
         for (int jj = 0; jj < ldiag; jj++) {
             int j = ldiag + 1 - jj;
             if (ip[j] == j)
                 break;
             int l = ip[j];
-            float tmp = b[jb][l];
-            b[jb][l] = b[jb][j];
-            b[jb][j] = tmp;
+            float tmp = b[l][jb];
+            b[l][jb] = b[j][jb];
+            b[j][jb] = tmp;
         }
     }
 
+    // the solution vectors, x, are now
+    // in the first  n  rows of the array b(,).
     krank = k;
 }
 
