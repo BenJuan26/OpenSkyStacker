@@ -3,4 +3,4 @@ SUBDIRS += libstacker \
     test \
     cl
 TEMPLATE = subdirs
-CONFIG += ordered warn_on qt debug_and_release
+CONFIG += ordered warn_on qt

@@ -1,7 +1,5 @@
 #include "focas.h"
 
-#include "focas_fortran.cpp"
-
 using namespace openskystacker;
 
 std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> List)
@@ -287,10 +285,10 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
     std::vector<std::vector<float> > xfrm(2, std::vector<float>(3,0));
 
     int	i, j, i1, i2;
-    int	mda = MAX_MATCH, mdb = MAX_MATCH, n = 3, nb = 2;
     int	krank, ip[3];
     float	tau = 0.1f, rnorm[2], h[3], g[3];
-    float	a[3][MAX_MATCH], b[2][MAX_MATCH];
+    cv::Mat	a(3, MAX_MATCH, CV_32FC1);
+    cv::Mat b(2, MAX_MATCH, CV_32FC1);
     float	x, y, r2, sum, rms;
 
     /* Require a minimum number of points. */
@@ -303,14 +301,14 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
     /* Compute the initial transformation with the 12 best matches. */
     j = (m < 12) ? m : 12;
     for (i=0; i<j; i++) {
-        a[0][i] = List1[matches[0][i]].x;
-        a[1][i] = List1[matches[0][i]].y;
-        a[2][i] = 1.;
-        b[0][i] = List2[matches[1][i]].x;
-        b[1][i] = List2[matches[1][i]].y;
+        a.at<float>(0,i) = List1[matches[0][i]].x;
+        a.at<float>(1,i) = List1[matches[0][i]].y;
+        a.at<float>(2,i) = 1.;
+        b.at<float>(0,i) = List2[matches[1][i]].x;
+        b.at<float>(1,i) = List2[matches[1][i]].y;
     }
 
-    hfti(a, mda, j, n, b, mdb, nb, tau, krank, rnorm, h, g, ip);
+    hfti(a, j, b, tau, krank, rnorm, h, g, ip);
     for (i=0; i<2; i++)
         for (j=0; j<3; j++)
         xfrm[i][j] = b[i][j];
@@ -329,17 +327,17 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
             x -= List2[i2].x;
             y -= List2[i2].y;
             r2 = x * x + y * y;
-            for (j=i; j>0 && r2<a[1][j-1]; j--)
-                a[1][j] = a[1][j-1];
-            a[0][i] = r2;
-            a[1][j] = r2;
+            for (j=i; j>0 && r2<a.at<float>(1,j-1); j--)
+                a.at<float>(1,j) = a.at<float>(1,j-1);
+            a.at<float>(0,i) = r2;
+            a.at<float>(1,j) = r2;
             sum += r2;
         }
 
         /* Set clipping limit and quit when no points are clipped. */
         i = 0.6 * m;
-        r2 = CLIP * a[1][i];
-        if (r2 >= a[1][m-1]) {
+        r2 = CLIP * a.at<float>(1,i);
+        if (r2 >= a.at<float>(1,m-1)) {
             rms = sqrt(sum / m);
             break;
         }
@@ -349,16 +347,16 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
         /* Clip outliers and redo the fit. */
         j = 0;
         for (i=0; i<m; i++) {
-            if (a[0][i] < r2) {
+            if (a.at<float>(0,i) < r2) {
                 i1 = matches[0][i];
                 i2 = matches[1][i];
                 matches[0][j] = i1;
                 matches[1][j] = i2;
-                a[0][j] = List1[i1].x;
-                a[1][j] = List1[i1].y;
-                a[2][j] = 1.;
-                b[0][j] = List2[i2].x;
-                b[1][j] = List2[i2].y;
+                a.at<float>(0,j) = List1[i1].x;
+                a.at<float>(1,j) = List1[i1].y;
+                a.at<float>(2,j) = 1.;
+                b.at<float>(0,j) = List2[i2].x;
+                b.at<float>(1,j) = List2[i2].y;
                 j++;
             }
         }
@@ -370,7 +368,7 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
             return xfrm;
         }
 
-        hfti(a, mda, m, n, b, mdb, nb, tau, krank, rnorm, h, g,ip);
+        hfti(a, m, b, tau, krank, rnorm, h, g,ip);
 
         for (i=0; i<2; i++)
             for (j=0; j<3; j++)
@@ -379,3 +377,229 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
 
     return xfrm;
 }
+
+
+
+void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, int &krank, float rnorm[], float h[], float g[], int ip[])
+{
+    float hmax = 0.0f;
+    float factor = 0.001f;
+    int lmax;
+
+    int mda = a.rows;
+    int n = a.cols;
+
+    int mdb = b.rows;
+    int nb = a.cols;
+
+    int k = 0;
+    int ldiag = std::min(m,n);
+
+    if (ldiag <= 0) {
+        krank = k;
+        return;
+    }
+
+    for (int j = 0; j < ldiag; j++) {
+        if (j != 0) {
+            // update squared column lengths and find lmax
+            lmax = j;
+            for (int l=j; l < n; l++) {
+                  h[l] -= pow(a.at<float>(j-1,l), 2);
+                  if (h[l] > h[lmax]) lmax = l;
+            }
+        }
+
+        if (hmax + factor*h[lmax] <= hmax) {
+            // compute squared column lengths and find lmax
+            lmax = j;
+            for (int l=j; l <= n; l++) {
+                h[l] = 0.0;
+
+                for (int i=j; i <= m; i++) {
+                    h[l] += pow(a.at<float>(i,l), 2);
+                }
+
+                if (h[l] > h[lmax]) lmax = l;
+            }
+
+            hmax = h[lmax];
+        }
+
+        // lmax has been determined
+        // do column interchanges if needed.
+        ip[j] = lmax;
+
+        if (ip[j] != j) {
+            for (int i = 0; i < m; i++) {
+                float tmp = a.at<float>(i,j);
+                a.at<float>(i,j) = a.at<float>(i,lmax);
+                a.at<float>(i,lmax) = tmp;
+            }
+            h[lmax] = h[j];
+
+        }
+
+        // compute the j-th transformation and apply it to a and b
+        h12(1, j, j+1, m, a(cv::Rect(0,j,0,a.cols-1)), &h[j], a(cv::Rect(0,j+1,0,a.cols-1)), 1, mda, n-j);
+        h12(2, j, j+1, m, a(cv::Rect(0,j,0,a.cols-1)), &h[j], b, 1, mdb, nb);
+    }
+
+    // determine the pseudorank, k, using the tolerance, tau.
+    int j;
+    for (j = 0; j < ldiag; j++) {
+        if (fabs(a.at<float>(j,j)) > tau) {
+            break;
+        }
+    }
+    if (fabs(a.at<float>(j,j)) <= tau)
+        k = j - 1;
+    else
+        k = ldiag;
+
+    int kp1 = k + 1;
+
+    // compute the norms of the residual vectors.
+    if (nb > 0) {
+        for (int jb = 0; jb < nb; jb++) {
+            float tmp = 0.0f;
+            if (kp1 <= m) {
+                for (int i = kp1; i < m; i++) {
+                    tmp += pow(b.at<float>(i,jb),2);
+                }
+                rnorm[jb] = sqrt(tmp);
+            }
+        }
+    }
+
+    // special for pseudorank = 0
+    if (k <= 0) {
+        if (nb <= 0) {
+            krank = k;
+            return;
+        }
+        for (int jb = 0; jb < nb; jb++) {
+            for (int i = 0; i < n; i++) {
+                b.at<float>(i,jb) = 0.0f;
+            }
+        }
+        krank = k;
+        return;
+    }
+
+    // if the pseudorank is less than n, compute householder
+    // decomposition of first k rows.
+    if (k != n) {
+        for (int ii = 0; ii < k; ii++) {
+            int i = kp1 - ii;
+            // TODO: THESE NUMBERS ARE STILL 1-INDEXED
+            h12(1, i, kp1, n, a(cv::Rect(i,0,i,a.cols-1)), &g[i], a, mda, 1, i-1);
+        }
+    }
+
+    if (nb <= 0) {
+        krank = k;
+        return;
+    }
+
+    for (int jb = 0; jb < nb; jb++) {
+        // solve the k by k triangular system.
+        for (int l = 0; l < k; l++) {
+            double sm = 0.0;
+            int i = kp1 - l;
+            if (i != k) {
+                int ip1 = i+1;
+                for (int j = ip1; j < k; j++) {
+                    sm += a.at<float>(i,j) * b.at<float>(j,jb);
+                }
+            }
+            int sm1 = m;
+            b.at<float>(i,jb) = (b.at<float>(i,jb) - sm1) / a.at<float>(i,i);
+        }
+
+        // complete computation of solution vector
+        if (k != n) {
+            for (int j = kp1; j < n; j++)
+                b.at<float>(j,jb) = 0.0f;
+            for (int i = 0; i < k; i++)
+                h12(2, i, kp1, n, a(cv::Rect(0,i,0,a.cols-1)), &g[i], b(cv::Rect(0,jb,0,b.cols-1)), 1, mdb, 1);
+        }
+
+        // re-order the solution vector to compensate for the
+        // column interchanges.
+        for (int jj = 0; jj < ldiag; jj++) {
+            int j = ldiag + 1 - jj;
+            if (ip[j] == j)
+                break;
+            int l = ip[j];
+            float tmp = b.at<float>(l,jb);
+            b.at<float>(l,jb) = b.at<float>(j,jb);
+            b.at<float>(j,jb) = tmp;
+        }
+    }
+
+    // the solution vectors, x, are now
+    // in the first  n  rows of the array b(,).
+    krank = k;
+}
+
+void openskystacker::h12(int mode, int lpivot, int l1, int m, cv::Mat u, float *up, cv::Mat c, int ice, int icv, int ncv)
+{
+    float sm, b;
+
+    if (lpivot <= 0 || lpivot >= l1 || l1 >= m ) return;
+    float cl = fabs(u.at<float>(0,lpivot));
+
+    if (mode == 1) {
+        for (int j = l1; j <= m; j++) {
+            if (u.at<float>(0,j)) cl = u.at<float>(0,j);
+        }
+
+        if (cl <= 0) return;
+
+        float clinv = 1./cl;
+
+        sm = pow(u.at<float>(0,lpivot) * clinv, 2);
+
+        for (int j = l1; j <= m; j++) {
+            sm += pow(u.at<float>(0,j) * clinv, 2);
+        }
+
+        float sm1 = sm;
+        cl = cl * sqrt(sm1);
+
+        if (u.at<float>(0,lpivot) > 0) cl = -cl;
+        *up = u.at<float>(0,lpivot) - cl;
+        u.at<float>(0,lpivot) = cl;
+    }
+
+    if (mode == 2 && cl <= 0) return;
+    if (ncv <= 0) return;
+
+    b = *up * u.at<float>(0,lpivot);
+    if (b >= 0) return;
+
+    b = 1./b;
+    float i2 = 1 - icv + ice*(lpivot - 1);
+    float incr = ice * (l1 - lpivot);
+
+    for (int j = 1; j <= ncv; j++) {
+        i2 += icv;
+        float i3 = i2 + incr;
+        float i4 = i3;
+
+        sm=c[i2] * *up;
+        for (int i = l1; i <= m; i++) {
+            sm += c[i3] * u.at<float>(0,i);
+            i3 += ice;
+        }
+        if (sm == 0) return;
+        sm *= b;
+        c[i2] = c[i2] + sm * *up;
+        for (int i=l1; i <= m; i++) {
+            c[i4] = c[i4] + sm * u.at<float>(0,i);
+            i4=i4+ice;
+        }
+    }
+}
+

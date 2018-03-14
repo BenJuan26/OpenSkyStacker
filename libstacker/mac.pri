@@ -9,6 +9,6 @@ LIBS += -lopencv_imgcodecs
 LIBS += -lopencv_imgproc
 
 # FOCAS
-LIBS += $$PWD/src/3rdparty/focas/macx/hfti.o
+# LIBS += $$PWD/src/3rdparty/focas/macx/hfti.o
 LIBS += $$PWD/src/3rdparty/focas/macx/h12.o
 LIBS += $$PWD/src/3rdparty/focas/macx/diff.o

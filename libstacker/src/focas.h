@@ -69,8 +69,8 @@ void SortTriangles(std::vector<Triangle> *List_Triang_, int l, int r);
 void BinSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last);
 void CheckTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_,
                     int first, int last, int Table_match[]);
-// void h12(int mode, int lpivot, int l1, int m, float u[][MAX_MATCH], int iue, float *up, float c[][MAX_MATCH], int ice, int icv, int ncv);
-// void hfti(cv::Mat a, int mda, int m, int n, cv::Mat b, int mdb, int nb, float tau, int krank, float rnorm[], float h[], float g[], int ip[]);
+void h12(int mode, int lpivot, int l1, int m, cv::Mat u, float *up, cv::Mat c, int ice, int icv, int ncv);
+void hfti(cv::Mat a, int m, cv::Mat b, float tau, int &krank, float rnorm[], float h[], float g[], int ip[]);
 
 }
 
