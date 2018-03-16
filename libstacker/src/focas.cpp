@@ -386,11 +386,11 @@ void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, int &krank, fl
     float factor = 0.001f;
     int lmax;
 
-    int mda = a.rows;
-    int n = a.cols;
+    int mda = a.cols;
+    int n = a.rows;
 
-    int mdb = b.rows;
-    int nb = a.cols;
+    int mdb = b.cols;
+    int nb = a.rows;
 
     int k = 0;
     int ldiag = std::min(m,n);
