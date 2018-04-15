@@ -58,11 +58,11 @@ void TestOSS::testStackImages()
     QFETCH(int, threshold);
 
     ImageStacker *stacker = new ImageStacker();
-    QSignalSpy stackSpy(stacker, SIGNAL(Finished(cv::Mat,QString)));
-    QSignalSpy errorSpy(stacker, SIGNAL(ProcessingError(QString)));
+    QSignalSpy stackSpy(stacker, SIGNAL(finished(cv::Mat,QString)));
+    QSignalSpy errorSpy(stacker, SIGNAL(processingError(QString)));
 
     int err = 0;
-    std::vector<ImageRecord *> records = LoadImageList(jsonfile, &err);
+    std::vector<ImageRecord *> records = loadImageList(jsonfile, &err);
     QCOMPARE(err, 0);
 
     QString ref;
@@ -89,33 +89,33 @@ void TestOSS::testStackImages()
             break;
         case ImageRecord::DARK:
             darks.append(filename);
-            stacker->SetUseDarks(true);
+            stacker->setUseDarks(true);
             break;
         case ImageRecord::DARK_FLAT:
             darkFlats.append(filename);
-            stacker->SetUseDarkFlats(true);
+            stacker->setUseDarkFlats(true);
             break;
         case ImageRecord::FLAT:
             flats.append(filename);
-            stacker->SetUseFlats(true);
+            stacker->setUseFlats(true);
             break;
         case ImageRecord::BIAS:
             bias.append(filename);
-            stacker->SetUseBias(true);
+            stacker->setUseBias(true);
             break;
         }
     }
 
-    stacker->SetRefImageFileName(ref);
-    stacker->SetTargetImageFileNames(lights);
-    stacker->SetDarkFrameFileNames(darks);
-    stacker->SetDarkFlatFrameFileNames(darkFlats);
-    stacker->SetFlatFrameFileNames(flats);
-    stacker->SetBiasFrameFileNames(bias);
+    stacker->setRefImageFileName(ref);
+    stacker->setTargetImageFileNames(lights);
+    stacker->setDarkFrameFileNames(darks);
+    stacker->setDarkFlatFrameFileNames(darkFlats);
+    stacker->setFlatFrameFileNames(flats);
+    stacker->setBiasFrameFileNames(bias);
 
     qInstallMessageHandler(suppressDebugOutput);
     try {
-        stacker->Process(threshold, 1);
+        stacker->process(threshold, 1);
     } catch (std::exception) {
         QFAIL("Exception thrown");
     }

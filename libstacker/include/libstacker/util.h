@@ -54,24 +54,24 @@ struct StackingParams {
     int totalThreads;
 };
 
-LIBSTACKER_EXPORT cv::Mat GetBayerMatrix(QString filename);
-LIBSTACKER_EXPORT ImageRecord *GetImageRecord(QString filename);
-LIBSTACKER_EXPORT time_t EXIFTimeToCTime(std::string exifTime);
-LIBSTACKER_EXPORT time_t FITSTimeToCTime(std::string fitsTime);
-LIBSTACKER_EXPORT ImageType GetImageType(QString filename);
-LIBSTACKER_EXPORT cv::Mat GetCalibratedImage(QString filename, cv::Mat dark, cv::Mat flat, cv::Mat bias);
-LIBSTACKER_EXPORT cv::Mat ReadImage(QString filename);
-LIBSTACKER_EXPORT cv::Mat FITSToMat(QString filename);
-LIBSTACKER_EXPORT cv::Mat RawToMat(QString filename);
-LIBSTACKER_EXPORT cv::Mat ConvertAndScaleImage(cv::Mat image);
-LIBSTACKER_EXPORT std::vector<ImageRecord *> LoadImageList(QString filename, int *err);
-LIBSTACKER_EXPORT QImage Mat2QImage(const cv::Mat &src);
-LIBSTACKER_EXPORT cv::Mat GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *err);
-LIBSTACKER_EXPORT cv::Mat StackDarks(QStringList filenames, cv::Mat bias);
-LIBSTACKER_EXPORT cv::Mat StackDarkFlats(QStringList filenames, cv::Mat bias);
-LIBSTACKER_EXPORT cv::Mat StackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias);
-LIBSTACKER_EXPORT cv::Mat StackBias(QStringList filenames);
-LIBSTACKER_EXPORT StackingResult ProcessConcurrent(StackingParams params, int *numCompleted);
+LIBSTACKER_EXPORT cv::Mat getBayerMatrix(QString filename);
+LIBSTACKER_EXPORT ImageRecord *getImageRecord(QString filename);
+LIBSTACKER_EXPORT time_t exifTimeToCTime(std::string exifTime);
+LIBSTACKER_EXPORT time_t fitsTimeToCTime(std::string fitsTime);
+LIBSTACKER_EXPORT ImageType getImageType(QString filename);
+LIBSTACKER_EXPORT cv::Mat getCalibratedImage(QString filename, cv::Mat dark, cv::Mat flat, cv::Mat bias);
+LIBSTACKER_EXPORT cv::Mat readImage(QString filename);
+LIBSTACKER_EXPORT cv::Mat fitsToMat(QString filename);
+LIBSTACKER_EXPORT cv::Mat rawToMat(QString filename);
+LIBSTACKER_EXPORT cv::Mat convertAndScaleImage(cv::Mat image);
+LIBSTACKER_EXPORT std::vector<ImageRecord *> loadImageList(QString filename, int *err);
+LIBSTACKER_EXPORT QImage mat2QImage(const cv::Mat &src);
+LIBSTACKER_EXPORT cv::Mat generateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *err);
+LIBSTACKER_EXPORT cv::Mat stackDarks(QStringList filenames, cv::Mat bias);
+LIBSTACKER_EXPORT cv::Mat stackDarkFlats(QStringList filenames, cv::Mat bias);
+LIBSTACKER_EXPORT cv::Mat stackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias);
+LIBSTACKER_EXPORT cv::Mat stackBias(QStringList filenames);
+LIBSTACKER_EXPORT StackingResult processConcurrent(StackingParams params, int *numCompleted);
 }
 
 #endif // OSS_UTIL_H

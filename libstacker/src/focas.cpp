@@ -2,7 +2,7 @@
 
 using namespace openskystacker;
 
-std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> List)
+std::vector<Triangle> openskystacker::generateTriangleList(std::vector<Star> List)
 {
     int nobjs = NOBJS;
     if (List.size() < NOBJS) nobjs = static_cast<int>(List.size());
@@ -20,7 +20,7 @@ std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> Lis
         for (j = i + 1; j < nobjs; j++) {
             h1 = (List[i].x - List[j].x);
             h2 = (List[i].y - List[j].y);
-            k = SidesPos(i, j, nobjs);
+            k = sidesPos(i, j, nobjs);
             sides[k] = sqrt(h1*h1 + h2*h2);
         }
     }
@@ -29,9 +29,9 @@ std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> Lis
     for (i = 0; i < (nobjs-2); i++) {
         for (j = i+1; j < (nobjs-1); j++) {
             for (k = j+1; k < nobjs; k++) {
-                di = sides [SidesPos(i, j, nobjs)] ;
-                dj = sides [SidesPos(j, k, nobjs)] ;
-                dk = sides [SidesPos(k, i, nobjs)] ;
+                di = sides [sidesPos(i, j, nobjs)] ;
+                dj = sides [sidesPos(j, k, nobjs)] ;
+                dk = sides [sidesPos(k, i, nobjs)] ;
 
                 if (dk > dj) {
                     if (dk > di) {
@@ -75,7 +75,7 @@ std::vector<Triangle> openskystacker::GenerateTriangleList(std::vector<Star> Lis
     return List_triang;
 }
 
-int openskystacker::SidesPos(int i, int j, int n)
+int openskystacker::sidesPos(int i, int j, int n)
 {
     if (i < j)
         return(i*(2*n-i-3)/2 + j);
@@ -83,7 +83,7 @@ int openskystacker::SidesPos(int i, int j, int n)
         return(j*(2*n-j-3)/2 + i);
 }
 
-std::vector<std::vector<int> > openskystacker::FindMatches(int nobjs, int *k_, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB)
+std::vector<std::vector<int> > openskystacker::findMatches(int nobjs, int *k_, std::vector<Triangle> List_triangA, std::vector<Triangle> List_triangB)
 {
     std::vector<std::vector<int> > matches(3, std::vector<int>(MAX_MATCH, 0));
     int	i, j, l, n, first, last;
@@ -97,12 +97,12 @@ std::vector<std::vector<int> > openskystacker::FindMatches(int nobjs, int *k_, s
     }
 
     /* Sort List_triangB by x coordinate. */
-    SortTriangles(&List_triangB, 0, static_cast<int>(List_triangB.size()) - 1);
+    sortTriangles(&List_triangB, 0, static_cast<int>(List_triangB.size()) - 1);
 
     /* Find objects within tolerance distance in triangle space. */
     for (Triangle tri : List_triangA) {
-        BinSearchTriangles(tri.x, &List_triangB, &first, &last);
-        CheckTolerance(nobjs, tri, &List_triangB, first, last, Table_match);
+        binSearchTriangles(tri.x, &List_triangB, &first, &last);
+        checkTolerance(nobjs, tri, &List_triangB, first, last, Table_match);
     }
 
     /* Find the nobjs points with the most matches. */
@@ -143,7 +143,7 @@ std::vector<std::vector<int> > openskystacker::FindMatches(int nobjs, int *k_, s
     return matches;
 }
 
-void openskystacker::SortTriangles(std::vector<Triangle> *List_Triang_, int l, int r)
+void openskystacker::sortTriangles(std::vector<Triangle> *List_Triang_, int l, int r)
 {
     // make index operator easier
     std::vector<Triangle> &List_Triang = *List_Triang_;
@@ -204,12 +204,12 @@ void openskystacker::SortTriangles(std::vector<Triangle> *List_Triang_, int l, i
         List_Triang[i].s3 = List_Triang[r].s3;
         List_Triang[r].s3 = t.s3;
 
-        SortTriangles(&List_Triang, l, i-1);
-        SortTriangles(&List_Triang, i+1, r);
+        sortTriangles(&List_Triang, l, i-1);
+        sortTriangles(&List_Triang, i+1, r);
     }
 }
 
-void openskystacker::BinSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last)
+void openskystacker::binSearchTriangles(float key, std::vector<Triangle> *List_triang_, int *first, int *last)
 {
     std::vector<Triangle> &List_triang = *List_triang_;
     int ntriang = static_cast<int>(List_triang.size());
@@ -248,7 +248,7 @@ void openskystacker::BinSearchTriangles(float key, std::vector<Triangle> *List_t
 
 }
 
-void openskystacker::CheckTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_, int first, int last, int Table_match[])
+void openskystacker::checkTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *List_triangB_, int first, int last, int Table_match[])
 {
     std::vector<Triangle> &List_triangB = *List_triangB_;
     double tolerance = TOL;
@@ -278,7 +278,7 @@ void openskystacker::CheckTolerance(int nobjs, Triangle List_triangA, std::vecto
     }
 }
 
-std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::vector<int> > matches,
+std::vector<std::vector<float> > openskystacker::findTransform(std::vector<std::vector<int> > matches,
         int m, std::vector<Star> List1, std::vector<Star> List2, int *ok)
 {
     //float	xfrm[2][3];

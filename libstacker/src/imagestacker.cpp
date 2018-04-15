@@ -36,19 +36,19 @@ using namespace easyexif;
 
 ImageStacker::ImageStacker(QObject *parent) : QObject(parent),
         d_ptr(new ImageStackerPrivate(this)),
-        cancel_(false)
+        cancel(false)
 {
 
 }
 
 ImageStacker::~ImageStacker() {}
 
-void ImageStacker::Process(int tolerance, int threads) {
+void ImageStacker::process(int tolerance, int threads) {
     Q_D(ImageStacker);
     d->Process(tolerance, threads);
 }
 
-void ImageStacker::ReadQImage(QString filename)
+void ImageStacker::readQImage(QString filename)
 {
     Q_D(ImageStacker);
     d->ReadQImage(filename);
@@ -62,143 +62,143 @@ void ImageStacker::detectStars(QString filename, int threshold)
 
 // GETTER / SETTER
 
-bool ImageStacker::GetUseFlats() const
+bool ImageStacker::getUseFlats() const
 {
     Q_D(const ImageStacker);
     return d->GetUseFlats();
 }
 
-void ImageStacker::SetUseFlats(bool value)
+void ImageStacker::setUseFlats(bool value)
 {
     Q_D(ImageStacker);
     d->SetUseFlats(value);
 }
 
-bool ImageStacker::GetUseDarkFlats() const
+bool ImageStacker::getUseDarkFlats() const
 {
     Q_D(const ImageStacker);
     return d->GetUseDarkFlats();
 }
 
-void ImageStacker::SetUseDarkFlats(bool value)
+void ImageStacker::setUseDarkFlats(bool value)
 {
     Q_D(ImageStacker);
     d->SetUseDarkFlats(value);
 }
 
-bool ImageStacker::GetUseDarks() const
+bool ImageStacker::getUseDarks() const
 {
     Q_D(const ImageStacker);
     return d->GetUseDarks();
 }
 
-void ImageStacker::SetUseDarks(bool value)
+void ImageStacker::setUseDarks(bool value)
 {
     Q_D(ImageStacker);
     d->SetUseDarks(value);
 }
 
-bool ImageStacker::GetUseBias() const
+bool ImageStacker::getUseBias() const
 {
     Q_D(const ImageStacker);
     return d->GetUseBias();
 }
 
-void ImageStacker::SetUseBias(bool value)
+void ImageStacker::setUseBias(bool value)
 {
     Q_D(ImageStacker);
     d->SetUseBias(value);
 }
 
-QString ImageStacker::GetRefImageFileName() const {
+QString ImageStacker::getRefImageFileName() const {
     Q_D(const ImageStacker);
     return d->GetRefImageFileName();
 }
-void ImageStacker::SetRefImageFileName(const QString &value) {
+void ImageStacker::setRefImageFileName(const QString &value) {
     Q_D(ImageStacker);
     d->SetRefImageFileName(value);
 }
 
-QStringList ImageStacker::GetTargetImageFileNames() const {
+QStringList ImageStacker::getTargetImageFileNames() const {
     Q_D(const ImageStacker);
     return d->GetTargetImageFileNames();
 }
-void ImageStacker::SetTargetImageFileNames(const QStringList &value) {
+void ImageStacker::setTargetImageFileNames(const QStringList &value) {
     Q_D(ImageStacker);
     d->SetTargetImageFileNames(value);
 }
 
-QStringList ImageStacker::GetDarkFrameFileNames() const {
+QStringList ImageStacker::getDarkFrameFileNames() const {
     Q_D(const ImageStacker);
     return d->GetDarkFrameFileNames();
 }
-void ImageStacker::SetDarkFrameFileNames(const QStringList &value) {
+void ImageStacker::setDarkFrameFileNames(const QStringList &value) {
     Q_D(ImageStacker);
     d->SetDarkFrameFileNames(value);
 }
 
-QStringList ImageStacker::GetDarkFlatFrameFileNames() const {
+QStringList ImageStacker::getDarkFlatFrameFileNames() const {
     Q_D(const ImageStacker);
     return d->GetDarkFlatFrameFileNames();
 }
-void ImageStacker::SetDarkFlatFrameFileNames(const QStringList &value) {
+void ImageStacker::setDarkFlatFrameFileNames(const QStringList &value) {
     Q_D(ImageStacker);
     d->SetDarkFlatFrameFileNames(value);
 }
 
-QStringList ImageStacker::GetFlatFrameFileNames() const {
+QStringList ImageStacker::getFlatFrameFileNames() const {
     Q_D(const ImageStacker);
     return d->GetFlatFrameFileNames();
 }
-void ImageStacker::SetFlatFrameFileNames(const QStringList &value) {
+void ImageStacker::setFlatFrameFileNames(const QStringList &value) {
     Q_D(ImageStacker);
     d->SetFlatFrameFileNames(value);
 }
 
-QStringList ImageStacker::GetBiasFrameFileNames() const
+QStringList ImageStacker::getBiasFrameFileNames() const
 {
     Q_D(const ImageStacker);
     return d->GetBiasFrameFileNames();
 }
 
-void ImageStacker::SetBiasFrameFileNames(const QStringList &value)
+void ImageStacker::setBiasFrameFileNames(const QStringList &value)
 {
     Q_D(ImageStacker);
     d->SetBiasFrameFileNames(value);
 }
 
-QString ImageStacker::GetSaveFilePath() const {
+QString ImageStacker::getSaveFilePath() const {
     Q_D(const ImageStacker);
     return d->GetSaveFilePath();
 }
-void ImageStacker::SetSaveFilePath(const QString &value) {
+void ImageStacker::setSaveFilePath(const QString &value) {
     Q_D(ImageStacker);
     d->SetSaveFilePath(value);
 }
 
-cv::Mat ImageStacker::GetWorkingImage() const {
+cv::Mat ImageStacker::getWorkingImage() const {
     Q_D(const ImageStacker);
     return d->GetWorkingImage();
 }
-void ImageStacker::SetWorkingImage(const cv::Mat &value) {
+void ImageStacker::setWorkingImage(const cv::Mat &value) {
     Q_D(ImageStacker);
     d->SetWorkingImage(value);
 }
 
-cv::Mat ImageStacker::GetRefImage() const {
+cv::Mat ImageStacker::getRefImage() const {
     Q_D(const ImageStacker);
     return d->GetRefImage();
 }
-void ImageStacker::SetRefImage(const cv::Mat &value) {
+void ImageStacker::setRefImage(const cv::Mat &value) {
     Q_D(ImageStacker);
     d->SetRefImage(value);
 }
 
-cv::Mat ImageStacker::GetFinalImage() const {
+cv::Mat ImageStacker::getFinalImage() const {
     Q_D(const ImageStacker);
     return d->GetFinalImage();
 }
-void ImageStacker::SetFinalImage(const cv::Mat &value) {
+void ImageStacker::setFinalImage(const cv::Mat &value) {
     Q_D(ImageStacker);
     d->SetFinalImage(value);
 }
@@ -232,48 +232,48 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
     time_t now;
     time(&now);
 
-    ImageType refType = GetImageType(ref_image_file_name_);
+    ImageType refType = getImageType(ref_image_file_name_);
 
     for (int i = 0; i < target_image_file_names_.length(); i++) {
-        if (GetImageType(target_image_file_names_.at(i)) != refType) {
-            emit q->ProcessingError(QObject::tr("Images must be the same type."));
+        if (getImageType(target_image_file_names_.at(i)) != refType) {
+            emit q->processingError(QObject::tr("Images must be the same type."));
             return;
         }
     }
 
-    q->cancel_ = false;
+    q->cancel = false;
     current_operation_ = 1;
     total_operations_ = GetTotalOperations();
-    emit q->UpdateProgress(QObject::tr("Checking image sizes..."), 100 * current_operation_++ / total_operations_);
+    emit q->updateProgress(QObject::tr("Checking image sizes..."), 100 * current_operation_++ / total_operations_);
 
     int err = ValidateImageSizes();
     if (err) {
-        emit q->ProcessingError("Images must all be the same size.");
+        emit q->processingError("Images must all be the same size.");
         return;
     }
 
     cv::Mat masterDark, masterDarkFlat, masterFlat, masterBias;
 
     if (use_bias_) {
-        emit q->UpdateProgress(QObject::tr("Stacking bias frames..."), 100 * current_operation_++ / total_operations_);
-        masterBias = StackBias(bias_frame_file_names_);
+        emit q->updateProgress(QObject::tr("Stacking bias frames..."), 100 * current_operation_++ / total_operations_);
+        masterBias = stackBias(bias_frame_file_names_);
     }
     if (use_darks_) {
-        emit q->UpdateProgress(QObject::tr("Stacking dark frames..."), 100 * current_operation_++ / total_operations_);
-        masterDark = StackDarks(dark_frame_file_names_, masterBias);
+        emit q->updateProgress(QObject::tr("Stacking dark frames..."), 100 * current_operation_++ / total_operations_);
+        masterDark = stackDarks(dark_frame_file_names_, masterBias);
     }
     if (use_dark_flats_) {
-        emit q->UpdateProgress(QObject::tr("Stacking dark flat frames..."), 100 * current_operation_++ / total_operations_);
-        masterDarkFlat = StackDarkFlats(dark_flat_frame_file_names_, masterBias);
+        emit q->updateProgress(QObject::tr("Stacking dark flat frames..."), 100 * current_operation_++ / total_operations_);
+        masterDarkFlat = stackDarkFlats(dark_flat_frame_file_names_, masterBias);
     }
     if (use_flats_) {
-        emit q->UpdateProgress(QObject::tr("Stacking flat frames..."), 100 * current_operation_++ / total_operations_);
-        masterFlat = StackFlats(flat_frame_file_names_, masterDarkFlat, masterBias);
+        emit q->updateProgress(QObject::tr("Stacking flat frames..."), 100 * current_operation_++ / total_operations_);
+        masterFlat = stackFlats(flat_frame_file_names_, masterDarkFlat, masterBias);
     }
 
-    emit q->UpdateProgress(QObject::tr("Stacking light frames..."), 100 * current_operation_++ / total_operations_);
+    emit q->updateProgress(QObject::tr("Stacking light frames..."), 100 * current_operation_++ / total_operations_);
 
-    ref_image_ = GetCalibratedImage(ref_image_file_name_, masterDark , masterFlat, masterBias);
+    ref_image_ = getCalibratedImage(ref_image_file_name_, masterDark , masterFlat, masterBias);
     working_image_ = ref_image_.clone();
 
     int totalValidImages = 1;
@@ -296,7 +296,7 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
         *c = 0;
         completes.push_back(c);
         params.threadIndex = i;
-        QFuture<StackingResult> future = QtConcurrent::run(ProcessConcurrent, params, c);
+        QFuture<StackingResult> future = QtConcurrent::run(processConcurrent, params, c);
         futures.push_back(future);
     }
 
@@ -311,7 +311,7 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
             i++;
         }
 
-        emit q->UpdateProgress(QObject::tr("Stacking light frames..."), 100 * op / total_operations_);
+        emit q->updateProgress(QObject::tr("Stacking light frames..."), 100 * op / total_operations_);
         QThread::msleep(250);
     }
 
@@ -321,26 +321,26 @@ void ImageStackerPrivate::Process(int tolerance, int threads) {
     }
 
     if (totalValidImages < 2) {
-        emit q->ProcessingError(QObject::tr("No images could be aligned to the reference image. Try using a lower tolerance."));
+        emit q->processingError(QObject::tr("No images could be aligned to the reference image. Try using a lower tolerance."));
         return;
     }
 
     working_image_ /= totalValidImages;
 
     // LibRaw works in RGB while OpenCV works in BGR
-    if (GetImageType(ref_image_file_name_) == RAW_IMAGE)
+    if (getImageType(ref_image_file_name_) == RAW_IMAGE)
         cv::cvtColor(working_image_, working_image_, CV_RGB2BGR);
 
     time_t doneStacking;
     time(&doneStacking);
 
-    emit q->Finished(working_image_, QObject::tr("Stacking completed in %1 seconds.").arg(difftime(doneStacking, now)));
+    emit q->finished(working_image_, QObject::tr("Stacking completed in %1 seconds.").arg(difftime(doneStacking, now)));
 }
 
 void ImageStackerPrivate::ReadQImage(QString filename)
 {
     Q_Q(ImageStacker);
-    cv::Mat image = ReadImage(filename);
+    cv::Mat image = readImage(filename);
 
     double min, max;
     cv::minMaxLoc(image, &min, &max);
@@ -348,15 +348,15 @@ void ImageStackerPrivate::ReadQImage(QString filename)
     // stretch intensity levels
     image *= (1.0/max);
 
-    emit q->QImageReady(Mat2QImage(image));
+    emit q->qImageReady(mat2QImage(image));
 }
 
 void ImageStackerPrivate::detectStars(QString filename, int threshold)
 {
     Q_Q(ImageStacker);
-    cv::Mat image = ReadImage(filename);
+    cv::Mat image = readImage(filename);
     StarDetector sd;
-    std::vector<Star> list = sd.GetStars(image, threshold);
+    std::vector<Star> list = sd.getStars(image, threshold);
 
     emit q->doneDetectingStars(static_cast<int>(list.size()));
 }
@@ -382,7 +382,7 @@ int ImageStackerPrivate::ValidateImageSizes()
         refHeight = processor.imgdata.sizes.height;
         processor.free_image();
     } else {
-        cv::Mat ref = ReadImage(ref_image_file_name_);
+        cv::Mat ref = readImage(ref_image_file_name_);
         refWidth = ref.cols;
         refHeight = ref.rows;
     }
@@ -399,7 +399,7 @@ int ImageStackerPrivate::ValidateImageSizes()
             height = processor.imgdata.sizes.height;
             processor.free_image();
         } else {
-            cv::Mat ref = ReadImage(filename);
+            cv::Mat ref = readImage(filename);
             width = ref.cols;
             height = ref.rows;
         }
@@ -422,7 +422,7 @@ int ImageStackerPrivate::ValidateImageSizes()
                 height = processor.imgdata.sizes.height;
                 processor.free_image();
             } else {
-                cv::Mat ref = ReadImage(filename);
+                cv::Mat ref = readImage(filename);
                 width = ref.cols;
                 height = ref.rows;
             }
@@ -446,7 +446,7 @@ int ImageStackerPrivate::ValidateImageSizes()
                 height = processor.imgdata.sizes.height;
                 processor.free_image();
             } else {
-                cv::Mat ref = ReadImage(filename);
+                cv::Mat ref = readImage(filename);
                 width = ref.cols;
                 height = ref.rows;
             }
@@ -470,7 +470,7 @@ int ImageStackerPrivate::ValidateImageSizes()
                 height = processor.imgdata.sizes.height;
                 processor.free_image();
             } else {
-                cv::Mat ref = ReadImage(filename);
+                cv::Mat ref = readImage(filename);
                 width = ref.cols;
                 height = ref.rows;
             }
@@ -494,7 +494,7 @@ int ImageStackerPrivate::ValidateImageSizes()
                 height = processor.imgdata.sizes.height;
                 processor.free_image();
             } else {
-                cv::Mat ref = ReadImage(filename);
+                cv::Mat ref = readImage(filename);
                 width = ref.cols;
                 height = ref.rows;
             }

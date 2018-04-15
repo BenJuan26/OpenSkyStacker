@@ -7,7 +7,7 @@ using namespace openskystacker;
 using namespace CCfits;
 using namespace easyexif;
 
-cv::Mat openskystacker::GetBayerMatrix(QString filename) {
+cv::Mat openskystacker::getBayerMatrix(QString filename) {
     LibRaw libraw;
     libraw_data_t *imgdata = &libraw.imgdata;
     libraw_output_params_t *params = &imgdata->params;
@@ -26,12 +26,12 @@ cv::Mat openskystacker::GetBayerMatrix(QString filename) {
     return bayer.clone();
 }
 
-ImageRecord *openskystacker::GetImageRecord(QString filename)
+ImageRecord *openskystacker::getImageRecord(QString filename)
 {
     ImageRecord *record = new ImageRecord();
     record->filename = filename;
 
-    switch (GetImageType(filename)) {
+    switch (getImageType(filename)) {
     case RAW_IMAGE: {
         LibRaw processor;
 
@@ -71,7 +71,7 @@ ImageRecord *openskystacker::GetImageRecord(QString filename)
 
         record->iso = -1;
         record->shutter = exp;
-        record->timestamp = FITSTimeToCTime(date);
+        record->timestamp = fitsTimeToCTime(date);
         record->width = image.axis(0);
         record->height = image.axis(1);
 
@@ -86,7 +86,7 @@ ImageRecord *openskystacker::GetImageRecord(QString filename)
         if (!exif.parseFrom((unsigned char*)blob.constData(), blob.size())) {
             record->iso = exif.ISOSpeedRatings;
             record->shutter = exif.ExposureTime;
-            record->timestamp = EXIFTimeToCTime(exif.DateTime);
+            record->timestamp = exifTimeToCTime(exif.DateTime);
             record->width = exif.ImageWidth;
             record->height = exif.ImageHeight;
         } else {
@@ -110,7 +110,7 @@ ImageRecord *openskystacker::GetImageRecord(QString filename)
     return record;
 }
 
-time_t openskystacker::EXIFTimeToCTime(std::string exifTime)
+time_t openskystacker::exifTimeToCTime(std::string exifTime)
 {
     // EXIF format: YYYY:MM:DD HH:MM:SS
 
@@ -141,7 +141,7 @@ time_t openskystacker::EXIFTimeToCTime(std::string exifTime)
     return mktime(&tm);
 }
 
-time_t openskystacker::FITSTimeToCTime(std::string fitsTime)
+time_t openskystacker::fitsTimeToCTime(std::string fitsTime)
 {
     // ISO 8601 format: yyyy-mm-ddTHH:MM:SS[.sss]
 
@@ -172,7 +172,7 @@ time_t openskystacker::FITSTimeToCTime(std::string fitsTime)
     return mktime(&tm);
 }
 
-openskystacker::ImageType openskystacker::GetImageType(QString filename)
+openskystacker::ImageType openskystacker::getImageType(QString filename)
 {
     QFileInfo info(filename);
     QString ext = info.suffix();
@@ -186,8 +186,8 @@ openskystacker::ImageType openskystacker::GetImageType(QString filename)
     }
 }
 
-cv::Mat openskystacker::GetCalibratedImage(QString filename, cv::Mat dark, cv::Mat flat, cv::Mat bias) {
-    if (GetImageType(filename) == RAW_IMAGE) {
+cv::Mat openskystacker::getCalibratedImage(QString filename, cv::Mat dark, cv::Mat flat, cv::Mat bias) {
+    if (getImageType(filename) == RAW_IMAGE) {
         LibRaw libraw;
         libraw_data_t *imgdata = &libraw.imgdata;
         libraw_output_params_t *params = &imgdata->params;
@@ -224,7 +224,7 @@ cv::Mat openskystacker::GetCalibratedImage(QString filename, cv::Mat dark, cv::M
 
         return result;
     } else {
-        cv::Mat result = ReadImage(filename);
+        cv::Mat result = readImage(filename);
 
         if (bias.dims > 0)  cv::subtract(result, bias, result, cv::noArray(), CV_32F);
         if (dark.dims > 0) cv::subtract(result, dark, result, cv::noArray(), CV_32F);
@@ -234,30 +234,30 @@ cv::Mat openskystacker::GetCalibratedImage(QString filename, cv::Mat dark, cv::M
     }
 }
 
-cv::Mat openskystacker::ReadImage(QString filename)
+cv::Mat openskystacker::readImage(QString filename)
 {
     cv::Mat result;
 
-    openskystacker::ImageType type = GetImageType(filename);
+    openskystacker::ImageType type = getImageType(filename);
 
     // assumption: if it looks like a raw file, it is a raw file
     switch(type) {
     case RAW_IMAGE:
-        result = RawToMat(filename);
+        result = rawToMat(filename);
         break;
     case FITS_IMAGE:
-        result = FITSToMat(filename);
+        result = fitsToMat(filename);
         break;
     case RGB_IMAGE: default:
         result = cv::imread(filename.toUtf8().constData(), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
-        result = ConvertAndScaleImage(result);
+        result = convertAndScaleImage(result);
         break;
     }
 
     return result;
 }
 
-cv::Mat openskystacker::FITSToMat(QString filename)
+cv::Mat openskystacker::fitsToMat(QString filename)
 {
     std::unique_ptr<FITS> pInFile(new FITS(filename.toUtf8().constData(), Read, true));
     PHDU &image = pInFile->pHDU();
@@ -309,7 +309,7 @@ cv::Mat openskystacker::FITSToMat(QString filename)
     return result;
 }
 
-cv::Mat openskystacker::RawToMat(QString filename)
+cv::Mat openskystacker::rawToMat(QString filename)
 {
     LibRaw processor;
     libraw_data_t *imgdata = &processor.imgdata;
@@ -343,7 +343,7 @@ cv::Mat openskystacker::RawToMat(QString filename)
     return image;
 }
 
-cv::Mat openskystacker::ConvertAndScaleImage(cv::Mat image)
+cv::Mat openskystacker::convertAndScaleImage(cv::Mat image)
 {
     cv::Mat result;
 
@@ -379,7 +379,7 @@ cv::Mat openskystacker::ConvertAndScaleImage(cv::Mat image)
     return result;
 }
 
-std::vector<ImageRecord *> openskystacker::LoadImageList(QString filename, int *err)
+std::vector<ImageRecord *> openskystacker::loadImageList(QString filename, int *err)
 {
     std::vector<ImageRecord *> result;
 
@@ -424,7 +424,7 @@ std::vector<ImageRecord *> openskystacker::LoadImageList(QString filename, int *
         QString type = img.value("type").toString();
 
         bool checked = img.value("checked").toBool();
-        ImageRecord *record = GetImageRecord(imageFileName);
+        ImageRecord *record = getImageRecord(imageFileName);
 
         if (type == "ref") {
             record->type = ImageRecord::FrameType::LIGHT;
@@ -446,7 +446,7 @@ std::vector<ImageRecord *> openskystacker::LoadImageList(QString filename, int *
     return result;
 }
 
-QImage openskystacker::Mat2QImage(const cv::Mat &src)
+QImage openskystacker::mat2QImage(const cv::Mat &src)
 {
     QImage dest(src.cols, src.rows, QImage::Format_RGB32);
     int r, g, b;
@@ -471,19 +471,19 @@ QImage openskystacker::Mat2QImage(const cv::Mat &src)
 }
 
 // derived from FOCAS mktransform.c
-cv::Mat openskystacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *err) {
+cv::Mat openskystacker::generateAlignedImage(cv::Mat ref, cv::Mat target, int tolerance, int *err) {
     StarDetector sd;
-    std::vector<Star> List1 = sd.GetStars(ref, tolerance);
-    std::vector<Star> List2 = sd.GetStars(target, tolerance);
+    std::vector<Star> List1 = sd.getStars(ref, tolerance);
+    std::vector<Star> List2 = sd.getStars(target, tolerance);
 
-    std::vector<Triangle> List_triangA = GenerateTriangleList(List1);
-    std::vector<Triangle> List_triangB = GenerateTriangleList(List2);
+    std::vector<Triangle> List_triangA = generateTriangleList(List1);
+    std::vector<Triangle> List_triangB = generateTriangleList(List2);
 
     int nobjs = 40;
 
     int k = 0;
-    std::vector< std::vector<int> > matches = FindMatches(nobjs, &k, List_triangA, List_triangB);
-    std::vector< std::vector<float> > transformVec = FindTransform(matches, k, List1, List2, err);
+    std::vector< std::vector<int> > matches = findMatches(nobjs, &k, List_triangA, List_triangB);
+    std::vector< std::vector<float> > transformVec = findTransform(matches, k, List1, List2, err);
 
     if (err && *err != 0)
         return target;
@@ -498,14 +498,14 @@ cv::Mat openskystacker::GenerateAlignedImage(cv::Mat ref, cv::Mat target, int to
     return target;
 }
 
-cv::Mat openskystacker::StackDarks(QStringList filenames, cv::Mat bias)
+cv::Mat openskystacker::stackDarks(QStringList filenames, cv::Mat bias)
 {
     cv::Mat dark1;
-    bool raw = GetImageType(filenames.at(0)) == RAW_IMAGE;
+    bool raw = getImageType(filenames.at(0)) == RAW_IMAGE;
     if (raw) {
-        dark1 = GetBayerMatrix(filenames.at(0));
+        dark1 = getBayerMatrix(filenames.at(0));
     } else {
-        dark1 = ReadImage(filenames.at(0));
+        dark1 = readImage(filenames.at(0));
     }
     if (bias.dims > 0) dark1 -= bias;
 
@@ -515,9 +515,9 @@ cv::Mat openskystacker::StackDarks(QStringList filenames, cv::Mat bias)
     for (int i = 1; i < filenames.length(); i++) {
         cv::Mat dark;
         if (raw) {
-            dark = GetBayerMatrix(filenames.at(i));
+            dark = getBayerMatrix(filenames.at(i));
         } else {
-            dark = ReadImage(filenames.at(i));
+            dark = readImage(filenames.at(i));
         }
 
         if (bias.dims > 0) dark -= bias;
@@ -532,14 +532,14 @@ cv::Mat openskystacker::StackDarks(QStringList filenames, cv::Mat bias)
     return result;
 }
 
-cv::Mat openskystacker::StackDarkFlats(QStringList filenames, cv::Mat bias)
+cv::Mat openskystacker::stackDarkFlats(QStringList filenames, cv::Mat bias)
 {
     cv::Mat darkFlat1;
-    bool raw = GetImageType(filenames.at(0)) == RAW_IMAGE;
+    bool raw = getImageType(filenames.at(0)) == RAW_IMAGE;
     if (raw) {
-        darkFlat1 = GetBayerMatrix(filenames.at(0));
+        darkFlat1 = getBayerMatrix(filenames.at(0));
     } else {
-        darkFlat1 = ReadImage(filenames.at(0));
+        darkFlat1 = readImage(filenames.at(0));
     }
     if (bias.dims > 0) darkFlat1 -= bias;
 
@@ -549,9 +549,9 @@ cv::Mat openskystacker::StackDarkFlats(QStringList filenames, cv::Mat bias)
     for (int i = 1; i < filenames.length(); i++) {
         cv::Mat dark;
         if (raw) {
-            dark = GetBayerMatrix(filenames.at(i));
+            dark = getBayerMatrix(filenames.at(i));
         } else {
-            dark = ReadImage(filenames.at(i));
+            dark = readImage(filenames.at(i));
         }
 
         if (bias.dims > 0) dark -= bias;
@@ -566,15 +566,15 @@ cv::Mat openskystacker::StackDarkFlats(QStringList filenames, cv::Mat bias)
     return result;
 }
 
-cv::Mat openskystacker::StackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias)
+cv::Mat openskystacker::stackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias)
 {
     // most algorithms compute the median, but we will stick with mean for now
     cv::Mat flat1;
-    bool raw = GetImageType(filenames.at(0)) == RAW_IMAGE;
+    bool raw = getImageType(filenames.at(0)) == RAW_IMAGE;
     if (raw) {
-        flat1 = GetBayerMatrix(filenames.at(0));
+        flat1 = getBayerMatrix(filenames.at(0));
     } else {
-        flat1 = ReadImage(filenames.at(0));
+        flat1 = readImage(filenames.at(0));
     }
     if (bias.dims > 0) flat1 -= bias;
     if (darkFlat.dims > 0) flat1 -= darkFlat;
@@ -585,9 +585,9 @@ cv::Mat openskystacker::StackFlats(QStringList filenames, cv::Mat darkFlat, cv::
     for (int i = 1; i < filenames.length(); i++) {
         cv::Mat flat;
         if (raw) {
-            flat = GetBayerMatrix(filenames.at(i));
+            flat = getBayerMatrix(filenames.at(i));
         } else {
-            flat = ReadImage(filenames.at(i));
+            flat = readImage(filenames.at(i));
         }
 
         if (bias.dims > 0) flat -= bias;
@@ -607,14 +607,14 @@ cv::Mat openskystacker::StackFlats(QStringList filenames, cv::Mat darkFlat, cv::
     return result;
 }
 
-cv::Mat openskystacker::StackBias(QStringList filenames)
+cv::Mat openskystacker::stackBias(QStringList filenames)
 {
     cv::Mat bias1;
-    bool raw = GetImageType(filenames.at(0)) == RAW_IMAGE;
+    bool raw = getImageType(filenames.at(0)) == RAW_IMAGE;
     if (raw) {
-        bias1 = GetBayerMatrix(filenames.at(0));
+        bias1 = getBayerMatrix(filenames.at(0));
     } else {
-        bias1 = ReadImage(filenames.at(0));
+        bias1 = readImage(filenames.at(0));
     }
     cv::Mat result;
     bias1.convertTo(result, CV_32F);
@@ -622,9 +622,9 @@ cv::Mat openskystacker::StackBias(QStringList filenames)
     for (int i = 1; i < filenames.length(); i++) {
         cv::Mat bias;
         if (raw) {
-            bias = GetBayerMatrix(filenames.at(i));
+            bias = getBayerMatrix(filenames.at(i));
         } else {
-            bias = ReadImage(filenames.at(i));
+            bias = readImage(filenames.at(i));
         }
 
         cv::add(result, bias, result, cv::noArray(), CV_32F);
@@ -638,7 +638,7 @@ cv::Mat openskystacker::StackBias(QStringList filenames)
     return result;
 }
 
-StackingResult openskystacker::ProcessConcurrent(StackingParams params, int *numCompleted)
+StackingResult openskystacker::processConcurrent(StackingParams params, int *numCompleted)
 {
     QStringList lights = params.lights;
     cv::Mat ref = params.ref;
@@ -653,10 +653,10 @@ StackingResult openskystacker::ProcessConcurrent(StackingParams params, int *num
     cv::Mat workingImage = cv::Mat::zeros(ref.rows, ref.cols, ref.type());
 
     for (int k = threadIndex; k < lights.length(); k += totalThreads) {
-        cv::Mat targetImage = GetCalibratedImage(lights.at(k), masterDark, masterFlat, masterBias);
+        cv::Mat targetImage = getCalibratedImage(lights.at(k), masterDark, masterFlat, masterBias);
 
         int err = 0;
-        cv::Mat targetAligned = GenerateAlignedImage(ref, targetImage, tolerance, &err);
+        cv::Mat targetAligned = generateAlignedImage(ref, targetImage, tolerance, &err);
 
         *numCompleted = *numCompleted + 1;
 
