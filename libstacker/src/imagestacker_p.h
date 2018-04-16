@@ -17,87 +17,87 @@ public:
     ImageStackerPrivate(ImageStacker *parent = 0);
 
     // get/set
-    QString GetRefImageFileName() const;
-    void SetRefImageFileName(const QString &value);
+    QString getRefImageFileName() const;
+    void setRefImageFileName(const QString &value);
 
-    QStringList GetTargetImageFileNames() const;
-    void SetTargetImageFileNames(const QStringList &value);
+    QStringList getTargetImageFileNames() const;
+    void setTargetImageFileNames(const QStringList &value);
 
-    QStringList GetDarkFrameFileNames() const;
-    void SetDarkFrameFileNames(const QStringList &value);
+    QStringList getDarkFrameFileNames() const;
+    void setDarkFrameFileNames(const QStringList &value);
 
-    QStringList GetDarkFlatFrameFileNames() const;
-    void SetDarkFlatFrameFileNames(const QStringList &value);
+    QStringList getDarkFlatFrameFileNames() const;
+    void setDarkFlatFrameFileNames(const QStringList &value);
 
-    QStringList GetFlatFrameFileNames() const;
-    void SetFlatFrameFileNames(const QStringList &value);
+    QStringList getFlatFrameFileNames() const;
+    void setFlatFrameFileNames(const QStringList &value);
 
-    QString GetSaveFilePath() const;
-    void SetSaveFilePath(const QString &value);
+    QString getSaveFilePath() const;
+    void setSaveFilePath(const QString &value);
 
-    cv::Mat GetWorkingImage() const;
-    void SetWorkingImage(const cv::Mat &value);
+    cv::Mat getWorkingImage() const;
+    void setWorkingImage(const cv::Mat &value);
 
-    cv::Mat GetRefImage() const;
-    void SetRefImage(const cv::Mat &value);
+    cv::Mat getRefImage() const;
+    void setRefImage(const cv::Mat &value);
 
-    cv::Mat GetFinalImage() const;
-    void SetFinalImage(const cv::Mat &value);
+    cv::Mat getFinalImage() const;
+    void setFinalImage(const cv::Mat &value);
 
-    bool GetUseDarks() const;
-    void SetUseDarks(bool value);
+    bool getUseDarks() const;
+    void setUseDarks(bool value);
 
-    bool GetUseDarkFlats() const;
-    void SetUseDarkFlats(bool value);
+    bool getUseDarkFlats() const;
+    void setUseDarkFlats(bool value);
 
-    bool GetUseFlats() const;
-    void SetUseFlats(bool value);
+    bool getUseFlats() const;
+    void setUseFlats(bool value);
 
-    QStringList GetBiasFrameFileNames() const;
-    void SetBiasFrameFileNames(const QStringList &value);
+    QStringList getBiasFrameFileNames() const;
+    void setBiasFrameFileNames(const QStringList &value);
 
-    bool GetUseBias() const;
-    void SetUseBias(bool value);
+    bool getUseBias() const;
+    void setUseBias(bool value);
 
 //public slots:
     //! The main method for processing the images.
-    void Process(int tolerance, int threads);
+    void process(int tolerance, int threads);
 
     //! Gets an image from disk and asynchronously reads it as a QImage.
     /*! Emits QImageReady once the image is ready.
         @param filename The image file to read.
     */
-    void ReadQImage(QString filename);
+    void readQImage(QString filename);
 
     void detectStars(QString filename, int threshold);
 
 private:
-    int GetTotalOperations();
+    int getTotalOperations();
 
-    int ValidateImageSizes();
+    int validateImageSizes();
 
-    mutable QMutex mutex_;
+    mutable QMutex mutex;
 
-    int current_operation_;
-    int total_operations_;
+    int currentOperation;
+    int totalOperations;
 
-    bool use_darks_ = false;
-    bool use_dark_flats_ = false;
-    bool use_flats_ = false;
-    bool use_bias_ = false;
+    bool useDarks = false;
+    bool useDarkFlats = false;
+    bool useFlats = false;
+    bool useBias = false;
 
-    QString ref_image_file_name_;
-    QStringList target_image_file_names_;
-    QStringList dark_frame_file_names_;
-    QStringList dark_flat_frame_file_names_;
-    QStringList flat_frame_file_names_;
-    QStringList bias_frame_file_names_;
+    QString refImageFileName;
+    QStringList targetImageFileNames;
+    QStringList darkFrameFileNames;
+    QStringList darkFlatFrameFileNames;
+    QStringList flatFrameFileNames;
+    QStringList biasFrameFileNames;
 
-    QString save_file_path_;
+    QString saveFilePath;
 
-    cv::Mat working_image_;
-    cv::Mat ref_image_;
-    cv::Mat final_image_;
+    cv::Mat workingImage;
+    cv::Mat refImage;
+    cv::Mat finalImage;
 
 }; // class ImageStackerPrivate
 

@@ -25,8 +25,8 @@ public:
         @param image The image containing the stars.
         @return A list of detected stars.
     */
-    std::vector<Star> GetStars(cv::Mat image, int thresholdCoeff);
-    std::vector<Star> GetStars(cv::Mat image);
+    std::vector<Star> getStars(cv::Mat image, int thresholdCoeff);
+    std::vector<Star> getStars(cv::Mat image);
 
     //! Gets the value of the pixel at the given coordinates, truncating to the edges if the coordinates are outside the image bounds.
     /*!
@@ -35,14 +35,14 @@ public:
         @param y The y coordinate of the desired pixel.
         @return The value of the pixel at (x,y), truncated to the bounds of the image.
     */
-    float GetExtendedPixelValue(cv::Mat image, int x, int y);
+    float getExtendedPixelValue(cv::Mat image, int x, int y);
 
     //! Generates approximately what the sky background would look like without the stars.
     /*!
         @param image The full image with stars.
         @return The sky background.
     */
-    cv::Mat GenerateSkyBackground(cv::Mat image);
+    cv::Mat generateSkyBackground(cv::Mat image);
 
     using size_type = std::vector<Star>::size_type;
     //! Draw a white-on-black plot of the provided stars.
@@ -53,11 +53,11 @@ public:
         @param limit Draw only the brightest N stars, or all of the stars if a negative value is given.
         @param stars The list of stars to draw.
     */
-    void DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars);
+    void drawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars);
 
 private:
     class StarDetectorImpl;
-    std::unique_ptr<StarDetectorImpl> d_ptr;
+    std::unique_ptr<StarDetectorImpl> dPtr;
 };
 
 }

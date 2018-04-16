@@ -136,17 +136,17 @@ private:
 
     void positionAndResizeWindow();
 
-    Ui::MainWindow *ui_;
-    QThread *worker_thread_;
-    openskystacker::ImageStacker *stacker_;
-    ProcessingDialog *processing_dialog_;
-    QStringList image_file_filter_;
-    openskystacker::ImageTableModel table_model_;
-    bool has_failed_ = false;
-    QString error_message_;
+    Ui::MainWindow *ui;
+    QThread *workerThread;
+    openskystacker::ImageStacker *stacker;
+    ProcessingDialog *processingDialog;
+    QStringList imageFileFilter;
+    openskystacker::ImageTableModel tableModel;
+    bool hasFailed = false;
+    QString errorMessage;
 
 #ifdef WIN32
-    QWinTaskbarButton *taskbar_button_;
+    QWinTaskbarButton *taskbarButton;
 #endif //WIN32
 };
 

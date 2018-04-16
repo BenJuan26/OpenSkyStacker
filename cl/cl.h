@@ -9,27 +9,27 @@ using namespace openskystacker;
 class OSS : public QObject
 {
     Q_OBJECT
-    ImageStacker *stacker_;
-    QThread *worker_thread_;
-    int progress_bar_width_;
-    int max_message_length_ = 0;
-    QString output_file_name_;
+    ImageStacker *stacker;
+    QThread *workerThread;
+    int progressBarWidth;
+    int maxMessageLength = 0;
+    QString outputFileName;
 
 public:
     OSS(QObject *parent = 0);
     ~OSS();
 
 public slots:
-    void PrintProgressBar(QString message, int percentage);
-    void StackingFinished(cv::Mat, QString);
-    void StarDetectionFinished(int stars);
-    void StackingError(QString);
-    void Run();
+    void printProgressBar(QString message, int percentage);
+    void stackingFinished(cv::Mat, QString);
+    void starDetectionFinished(int stars);
+    void stackingError(QString);
+    void run();
 
 signals:
-    void StackImages(int, int);
-    void DetectStars(QString, int);
-    void Finished();
+    void stackImages(int, int);
+    void detectStars(QString, int);
+    void finished();
 };
 
 

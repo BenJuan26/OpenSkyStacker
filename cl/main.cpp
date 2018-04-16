@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("OpenSkyStacker");
 
     OSS *oss = new OSS(&a);
-    QObject::connect(oss, SIGNAL(Finished()), &a, SLOT(quit()));
+    QObject::connect(oss, SIGNAL(finished()), &a, SLOT(quit()));
 
-    QTimer::singleShot(0, oss, SLOT(Run()));
+    QTimer::singleShot(0, oss, SLOT(run()));
 
     return a.exec();
 }

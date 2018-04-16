@@ -53,7 +53,7 @@ private:
 
 using namespace openskystacker;
 
-StarDetector::StarDetector() : d_ptr(new StarDetectorImpl)
+StarDetector::StarDetector() : dPtr(new StarDetectorImpl)
 {
 
 }
@@ -63,27 +63,27 @@ StarDetector::~StarDetector()
 
 }
 
-std::vector<Star> StarDetector::GetStars(cv::Mat image, int thresholdCoeff)
+std::vector<Star> StarDetector::getStars(cv::Mat image, int thresholdCoeff)
 {
-    return d_ptr->GetStars(image, thresholdCoeff);
+    return dPtr->GetStars(image, thresholdCoeff);
 }
 
-std::vector<Star> StarDetector::GetStars(cv::Mat image)
+std::vector<Star> StarDetector::getStars(cv::Mat image)
 {
-    return d_ptr->GetStars(image);
+    return dPtr->GetStars(image);
 }
 
-cv::Mat StarDetector::GenerateSkyBackground(cv::Mat image) {
-    return d_ptr->GenerateSkyBackground(image);
+cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
+    return dPtr->GenerateSkyBackground(image);
 }
 
-void StarDetector::DrawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars)
+void StarDetector::drawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars)
 {
-    d_ptr->DrawDetectedStars(path, width, height, limit, stars);
+    dPtr->DrawDetectedStars(path, width, height, limit, stars);
 }
 
-float StarDetector::GetExtendedPixelValue(cv::Mat image, int x, int y) {
-    return d_ptr->GetExtendedPixelValue(image, x, y);
+float StarDetector::getExtendedPixelValue(cv::Mat image, int x, int y) {
+    return dPtr->GetExtendedPixelValue(image, x, y);
 }
 
 
@@ -134,11 +134,11 @@ std::vector<Star> StarDetector::StarDetectorImpl::GetStars(cv::Mat image, int th
     for (ulong i = 0; i < apList.size(); i++) {
         AdjoiningPixel ap = apList.at(i);
 
-        std::vector<AdjoiningPixel> deblendedApList = ap.Deblend(threshold);
+        std::vector<AdjoiningPixel> deblendedApList = ap.deblend(threshold);
 
         for (ulong j = 0; j < deblendedApList.size(); j++) {
             AdjoiningPixel dap = deblendedApList.at(j);
-            Star star = dap.CreateStar();
+            Star star = dap.createStar();
             allStars.push_back(star);
         }
     }
@@ -198,7 +198,7 @@ std::vector<AdjoiningPixel> StarDetector::StarDetectorImpl::GetAdjoiningPixels(c
             if (image.at<float>(y,x) > threshold) {
                 AdjoiningPixel ap = DetectAdjoiningPixel(image, x, y, threshold);
 
-                if (ap.GetPeakValue() > minPeak){
+                if (ap.getPeakValue() > minPeak){
                     list.push_back(ap);
                 }
 
@@ -222,7 +222,7 @@ AdjoiningPixel StarDetector::StarDetectorImpl::DetectAdjoiningPixel(cv::Mat imag
         y = pixel.y;
 
         if (image.at<float>(y, x) > threshold) {
-            ap.AddPixel(pixel);
+            ap.addPixel(pixel);
 
             // The pixel value is cleared.
             image.at<float>(y, x) = threshold - 1;
