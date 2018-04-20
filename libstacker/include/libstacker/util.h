@@ -63,6 +63,7 @@ LIBSTACKER_EXPORT cv::Mat getCalibratedImage(QString filename, cv::Mat dark, cv:
 LIBSTACKER_EXPORT cv::Mat readImage(QString filename);
 LIBSTACKER_EXPORT cv::Mat fitsToMat(QString filename);
 LIBSTACKER_EXPORT cv::Mat rawToMat(QString filename);
+LIBSTACKER_EXPORT QImage rawToQImage(QString filename);
 LIBSTACKER_EXPORT cv::Mat convertAndScaleImage(cv::Mat image);
 LIBSTACKER_EXPORT std::vector<ImageRecord *> loadImageList(QString filename, int *err);
 LIBSTACKER_EXPORT QImage mat2QImage(const cv::Mat &src);

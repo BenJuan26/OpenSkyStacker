@@ -661,9 +661,8 @@ void MainWindow::detectStars(int threshold)
 void MainWindow::setFileImage(QString filename) {
 
     QGraphicsScene* scene = new QGraphicsScene(this);
-    cv::Mat image = readImage(filename);
     QGraphicsPixmapItem *p = scene->addPixmap(
-            QPixmap::fromImage(mat2QImage(image)));
+            QPixmap::fromImage(rawToQImage(filename)));
     ui->imageHolder->setScene(scene);
     ui->imageHolder->fitInView(p, Qt::KeepAspectRatio);
 }

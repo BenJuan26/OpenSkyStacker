@@ -321,6 +321,7 @@ cv::Mat openskystacker::rawToMat(QString filename)
     params->use_camera_wb = 1;
     params->no_auto_bright = 1;
     params->output_bps = 16;
+    params->user_qual = 0;
 
     processor.open_file(filename.toUtf8().constData());
     processor.unpack();
@@ -342,6 +343,46 @@ cv::Mat openskystacker::rawToMat(QString filename)
     image.convertTo(image, CV_32F, 1/65535.0);
 
     return image;
+}
+
+QImage openskystacker::rawToQImage(QString filename)
+{
+    LibRaw processor;
+    libraw_data_t *imgdata = &processor.imgdata;
+    libraw_output_params_t *params = &imgdata->params;
+
+    // params for raw processing
+    params->use_auto_wb = 0;
+    params->use_camera_wb = 1;
+    params->no_auto_bright = 1;
+    params->output_bps = 8;
+    params->user_qual = 0;
+
+    processor.open_file(filename.toUtf8().constData());
+    processor.unpack();
+
+    // process raw into readable BGR bitmap
+    processor.dcraw_process();
+
+    unsigned char *imageData = processor.dcraw_make_mem_image()->data;
+
+    int w = processor.imgdata.sizes.width;
+    int h = processor.imgdata.sizes.height;
+    QImage dest(w, h, QImage::Format_RGB32);
+    int r, g, b;
+
+    for(int x = 0; x < w; x++) {
+        for(int y = 0; y < h; y += 3) {
+            int index = (x * w * 3) + y;
+            r = imageData[index];
+            g = imageData[index+1];
+            b = imageData[index+2];
+            dest.setPixel(x, y, qRgb(r,g,b));
+
+        }
+    }
+
+    return dest;
 }
 
 cv::Mat openskystacker::convertAndScaleImage(cv::Mat image)
