@@ -65,25 +65,25 @@ StarDetector::~StarDetector()
 
 std::vector<Star> StarDetector::getStars(cv::Mat image, int thresholdCoeff)
 {
-    return dPtr->GetStars(image, thresholdCoeff);
+    return dPtr->getStars(image, thresholdCoeff);
 }
 
 std::vector<Star> StarDetector::getStars(cv::Mat image)
 {
-    return dPtr->GetStars(image);
+    return dPtr->getStars(image);
 }
 
 cv::Mat StarDetector::generateSkyBackground(cv::Mat image) {
-    return dPtr->GenerateSkyBackground(image);
+    return dPtr->generateSkyBackground(image);
 }
 
 void StarDetector::drawDetectedStars(const std::string& path, uint width, uint height, size_type limit, std::vector<Star> stars)
 {
-    dPtr->DrawDetectedStars(path, width, height, limit, stars);
+    dPtr->drawDetectedStars(path, width, height, limit, stars);
 }
 
 float StarDetector::getExtendedPixelValue(cv::Mat image, int x, int y) {
-    return dPtr->GetExtendedPixelValue(image, x, y);
+    return dPtr->getExtendedPixelValue(image, x, y);
 }
 
 
