@@ -197,6 +197,7 @@ cv::Mat openskystacker::getCalibratedImage(QString filename, cv::Mat dark, cv::M
         params->use_camera_wb = 1;
         params->no_auto_bright = 1;
         params->output_bps = 16;
+        params->user_qual = 0; // Linear interpolation
 
         libraw.open_file(filename.toUtf8().constData());
         libraw.unpack();
