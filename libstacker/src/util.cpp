@@ -30,6 +30,7 @@ ImageRecord *openskystacker::getImageRecord(QString filename)
 {
     ImageRecord *record = new ImageRecord();
     record->filename = filename;
+    record->checked = true;
 
     switch (getImageType(filename)) {
     case RAW_IMAGE: {

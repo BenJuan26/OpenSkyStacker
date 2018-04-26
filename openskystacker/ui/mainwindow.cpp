@@ -232,8 +232,8 @@ void MainWindow::checkImages()
     QModelIndexList rows = selection->selectedRows();
 
     for (int i = 0; i < rows.count(); i++) {
-        ImageRecord *record = tableModel.At(rows.at(i).row());
-        record->checked = true;
+        QModelIndex index = tableModel.index(rows.at(i).row(), 0);
+        tableModel.setData(index, Qt::Checked, Qt::EditRole);
     }
 }
 
@@ -243,11 +243,9 @@ void MainWindow::uncheckImages()
     QModelIndexList rows = selection->selectedRows();
 
     for (int i = 0; i < rows.count(); i++) {
-        ImageRecord *record = tableModel.At(rows.at(i).row());
-        record->checked = false;
+        QModelIndex index = tableModel.index(rows.at(i).row(), 0);
+        tableModel.setData(index, Qt::Unchecked, Qt::EditRole);
     }
-
-    checkTableData();
 }
 
 void MainWindow::processingError(QString message)
