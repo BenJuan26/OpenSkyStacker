@@ -1,6 +1,6 @@
 # OpenSkyStacker
 
-Multi-platform deep-sky stacker for astrophotography.
+Multi-platform stacker for deep-sky astrophotography.
 
 [![Build Status](https://travis-ci.org/BenJuan26/OpenSkyStacker.svg?branch=master)](https://travis-ci.org/BenJuan26/OpenSkyStacker) [![Documentation](https://codedocs.xyz/BenJuan26/OpenSkyStacker.svg)](https://codedocs.xyz/BenJuan26/OpenSkyStacker/) [![Coverage Status](https://coveralls.io/repos/github/BenJuan26/OpenSkyStacker/badge.svg)](https://coveralls.io/github/BenJuan26/OpenSkyStacker)
 
