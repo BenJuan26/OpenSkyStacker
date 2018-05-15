@@ -543,6 +543,51 @@ void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, int &krank, fl
     krank = k;
 }
 
+void openskystacker::householder(int mode, int p, int l, cv::Mat u, float h, cv::Mat c) {
+    int m = max(u.rows, u.cols);
+    int v = c.cols;
+    float &up = u.at<float>(p);
+
+    if (mode == 1) {
+        float sum = 0;
+        for (int i = l; i < m; i++) {
+            float ui = u.at<float>(i);
+            sum += ui * ui;
+        }
+
+
+        float s = sqrt(up * up + sum);
+
+        if (up > 0)
+            s = -s;
+
+        h = up - s;
+        up = s;
+    }
+
+    // At this point the transformation is complete.
+    // What follows is the application of the transformation to c.
+
+    float b = up * h;
+
+    // TODO: handle the special case where c is row vectors instead of column vectors
+    if (b != 0.f && v != 0) {
+        for (int j = 0; j < v; j++) {
+            float sum = 0;
+            for (int i = l; i < m; i++) {
+                sum += c.at<float>(i,j) * u.at<float>(i);
+            }
+
+            float s = (c.at<float>(p,j) * h + sum) / b;
+            c.at<float>(p,j) += s * h;
+
+            for (int i = l; i < m; i++) {
+                c.at<float>(i,j) += s * u.at<float>(i);
+            }
+        }
+    }
+}
+
 void openskystacker::h12(int mode, int lpivot, int l1, int m, cv::Mat u, float *up, cv::Mat c, int ice, int icv, int ncv)
 {
     float sm, b;
