@@ -380,14 +380,13 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
 
 
 
-void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, int &krank, float rnorm[], float h[], float g[], int ip[])
+void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, cv::Mat x, int &krank, cv::Mat h, cv::Mat g, cv::Mat p)
 {
     float hmax = 0.0f;
     float factor = 0.001f;
-    int lmax;
+    int lambda;
 
-    int mda = a.cols;
-    int n = a.rows;
+    int n = a.cols;
 
     int mdb = b.cols;
     int nb = a.rows;
@@ -395,155 +394,60 @@ void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, int &krank, fl
     int k = 0;
     int ldiag = std::min(m,n);
 
-    if (ldiag <= 0) {
-        krank = k;
-        return;
-    }
-
     for (int j = 0; j < ldiag; j++) {
         if (j != 0) {
-            // update squared column lengths and find lmax
-            lmax = j;
-            for (int l=j; l < n; l++) {
-                  h[l] -= pow(a.at<float>(j-1,l), 2);
-                  if (h[l] > h[lmax]) lmax = l;
-            }
-        }
-
-        if (hmax + factor*h[lmax] <= hmax) {
-            // compute squared column lengths and find lmax
-            lmax = j;
-            for (int l=j; l <= n; l++) {
-                h[l] = 0.0;
-
-                for (int i=j; i <= m; i++) {
-                    h[l] += pow(a.at<float>(i,l), 2);
-                }
-
-                if (h[l] > h[lmax]) lmax = l;
+            for (int l = j; l < n; l++) {
+                h.at<float>(l) -= pow(a.at<float>(j-1, l), 2);
             }
 
-            hmax = h[lmax];
-        }
-
-        // lmax has been determined
-        // do column interchanges if needed.
-        ip[j] = lmax;
-
-        if (ip[j] != j) {
-            for (int i = 0; i < m; i++) {
-                float tmp = a.at<float>(i,j);
-                a.at<float>(i,j) = a.at<float>(i,lmax);
-                a.at<float>(i,lmax) = tmp;
-            }
-            h[lmax] = h[j];
-
-        }
-
-        // compute the j-th transformation and apply it to a and b
-        h12(1, j, j+1, m, a(cv::Rect(0,j,0,a.cols-1)), &h[j], a(cv::Rect(0,j+1,0,a.cols-1)), 1, mda, n-j);
-        h12(2, j, j+1, m, a(cv::Rect(0,j,0,a.cols-1)), &h[j], b, 1, mdb, nb);
-    }
-
-    // determine the pseudorank, k, using the tolerance, tau.
-    int j;
-    for (j = 0; j < ldiag; j++) {
-        if (fabs(a.at<float>(j,j)) > tau) {
-            break;
-        }
-    }
-    if (fabs(a.at<float>(j,j)) <= tau)
-        k = j - 1;
-    else
-        k = ldiag;
-
-    int kp1 = k + 1;
-
-    // compute the norms of the residual vectors.
-    if (nb > 0) {
-        for (int jb = 0; jb < nb; jb++) {
-            float tmp = 0.0f;
-            if (kp1 <= m) {
-                for (int i = kp1; i < m; i++) {
-                    tmp += pow(b.at<float>(i,jb),2);
-                }
-                rnorm[jb] = sqrt(tmp);
-            }
-        }
-    }
-
-    // special for pseudorank = 0
-    if (k <= 0) {
-        if (nb <= 0) {
-            krank = k;
-            return;
-        }
-        for (int jb = 0; jb < nb; jb++) {
-            for (int i = 0; i < n; i++) {
-                b.at<float>(i,jb) = 0.0f;
-            }
-        }
-        krank = k;
-        return;
-    }
-
-    // if the pseudorank is less than n, compute householder
-    // decomposition of first k rows.
-    if (k != n) {
-        for (int ii = 0; ii < k; ii++) {
-            int i = kp1 - ii;
-            // TODO: THESE NUMBERS ARE STILL 1-INDEXED
-            h12(1, i, kp1, n, a(cv::Rect(i,0,i,a.cols-1)), &g[i], a, mda, 1, i-1);
-        }
-    }
-
-    if (nb <= 0) {
-        krank = k;
-        return;
-    }
-
-    for (int jb = 0; jb < nb; jb++) {
-        // solve the k by k triangular system.
-        for (int l = 0; l < k; l++) {
-            double sm = 0.0;
-            int i = kp1 - l;
-            if (i != k) {
-                int ip1 = i+1;
-                for (int j = ip1; j < k; j++) {
-                    sm += a.at<float>(i,j) * b.at<float>(j,jb);
+            float maxh = 0.f;
+            for (int l = j; l < n; l++) {
+                if (h.at<float>(l) > hmax) {
+                    maxh = h.at<float>(l);
+                    lambda = l;
                 }
             }
-            int sm1 = m;
-            b.at<float>(i,jb) = (b.at<float>(i,jb) - sm1) / a.at<float>(i,i);
         }
 
-        // complete computation of solution vector
-        if (k != n) {
-            for (int j = kp1; j < n; j++)
-                b.at<float>(j,jb) = 0.0f;
-            for (int i = 0; i < k; i++)
-                h12(2, i, kp1, n, a(cv::Rect(0,i,0,a.cols-1)), &g[i], b(cv::Rect(0,jb,0,b.cols-1)), 1, mdb, 1);
+        if (j == 0 || (hmax + .001f*h.at<float>(lambda)) > hmax) {
+            for (int l = j; l < n; l++) {
+                float sum = 0.f;
+                for (int i = j; i < m; i++) {
+                    float ail = a.at<float>(i,l);
+                    sum += ail * ail;
+                }
+                h.at<float>(l) = sum;
+            }
+
+            for (int l = j; l < n; l++) {
+                if (h.at<float>(l) > hmax) {
+                    hmax = h.at<float>(l);
+                    lambda = l;
+                }
+            }
         }
 
-        // re-order the solution vector to compensate for the
-        // column interchanges.
-        for (int jj = 0; jj < ldiag; jj++) {
-            int j = ldiag + 1 - jj;
-            if (ip[j] == j)
-                break;
-            int l = ip[j];
-            float tmp = b.at<float>(l,jb);
-            b.at<float>(l,jb) = b.at<float>(j,jb);
-            b.at<float>(j,jb) = tmp;
+        p.at<int>(j) = lamdba;
+        if (lambda != j) {
+            // interchange columns j and lambda of a
+            cv::Mat colJ = a.col(j).clone();
+            a.col(lambda).copyTo(a.col(j));
+            colJ.copyTo(a.col(lambda));
+
+            h.at<float>(lambda) = h.at<float>(j);
         }
+
+        householder(1, j, j+1, a(cv::Rect(j,0,a.cols-j,a.rows)), h(cv::Rect(j,0,h.cols-j,h.rows)),
+                    a(cv::Rect(j+1,0,a.cols-j-1-n-j,a.rows)));
+        householder(2, j, j+1, a(cv::Rect(j,0,a.cols-j,a.rows)), h(cv::Rect(j,0,h.cols-j,h.rows)),
+                    b(cv::Rect(0,0,1,b.rows)));
+
+
+
     }
-
-    // the solution vectors, x, are now
-    // in the first  n  rows of the array b(,).
-    krank = k;
 }
 
-void openskystacker::householder(int mode, int p, int l, cv::Mat u, float h, cv::Mat c) {
+void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv::Mat c) {
     int m = max(u.rows, u.cols);
     int v = c.cols;
     float &up = u.at<float>(p);
