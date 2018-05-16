@@ -380,26 +380,31 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
 
 
 
-void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, cv::Mat x, int &krank, cv::Mat h, cv::Mat g, cv::Mat p)
+void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank, cv::Mat h, cv::Mat g, cv::Mat p)
 {
     float hmax = 0.0f;
-    float factor = 0.001f;
     int lambda;
 
+    int m = a.rows;
     int n = a.cols;
 
-    int mdb = b.cols;
-    int nb = a.rows;
+    krank = -1;
 
-    int k = 0;
+    // 1. Set μ := min(m,n).
     int ldiag = std::min(m,n);
 
+    // 2. For j := 1 ,..., μ, do Steps 3-12.
     for (int j = 0; j < ldiag; j++) {
+
+        // 3. If j = 1 go to Step 7.
         if (j != 0) {
+
+            // 4. For l := j, ..., n, set h(l) := h(l) - a(j-1,l)^2.
             for (int l = j; l < n; l++) {
                 h.at<float>(l) -= pow(a.at<float>(j-1, l), 2);
             }
 
+            // 5. Determine λ such that h(λ) := max{h(l): j <= l <= n}.
             float maxh = 0.f;
             for (int l = j; l < n; l++) {
                 if (h.at<float>(l) > hmax) {
@@ -409,7 +414,10 @@ void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, cv::Mat x, int
             }
         }
 
+        // 6. If (hmax + (10^-3)h(λ)) > hmax, go to Step 9.
         if (j == 0 || (hmax + .001f*h.at<float>(lambda)) > hmax) {
+
+            // 7. For l := j, ..., n, set h(l) := sum(a(i,l)^2), j <= i <= m
             for (int l = j; l < n; l++) {
                 float sum = 0.f;
                 for (int i = j; i < m; i++) {
@@ -419,6 +427,7 @@ void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, cv::Mat x, int
                 h.at<float>(l) = sum;
             }
 
+            // 8. Determine λ such that h(λ) := max{h(l): j <= l <= n}. Set hmax := h(λ)
             for (int l = j; l < n; l++) {
                 if (h.at<float>(l) > hmax) {
                     hmax = h.at<float>(l);
@@ -427,23 +436,94 @@ void openskystacker::hfti(cv::Mat a, int m, cv::Mat b, float tau, cv::Mat x, int
             }
         }
 
+        // 9. Set p(j) := λ. If p(j) = j, go to Step 11.
         p.at<int>(j) = lamdba;
+
+        // 10. Interchange columns j and λ of A and set h(λ) := h(j)
         if (lambda != j) {
-            // interchange columns j and lambda of a
-            cv::Mat colJ = a.col(j).clone();
-            a.col(lambda).copyTo(a.col(j));
-            colJ.copyTo(a.col(lambda));
+            interchangeCols(a, j, lambda);
 
             h.at<float>(lambda) = h.at<float>(j);
         }
 
+        // 11. Execute algorithm H1(j, j+1, m, a(l,j), h(j), a(i,j+1), n-j).
         householder(1, j, j+1, a(cv::Rect(j,0,a.cols-j,a.rows)), h(cv::Rect(j,0,h.cols-j,h.rows)),
                     a(cv::Rect(j+1,0,a.cols-j-1-n-j,a.rows)));
+        // 12. Execute algorithm H1(j, j+1, m, a(l,j), h(j), b, 1).
         householder(2, j, j+1, a(cv::Rect(j,0,a.cols-j,a.rows)), h(cv::Rect(j,0,h.cols-j,h.rows)),
                     b(cv::Rect(0,0,1,b.rows)));
 
+    }
 
+    // 13. The pseudorank k must now be determined. Note that the diagonal
+    //     elements of R (stored in a(j,j) through a(μ,μ)) are non-
+    //     increasing in magnitude. For example, the Fortran subroutine
+    //     HFTI chooses k as the largest index j such that |a(j,j)| > τ.
+    //     If all |a(j,j)| <= τ, the pseudorank k is set to zero, the
+    //     solution vector x is set to zero, and the algorithm is
+    //     terminated.
+    krank = -1;
+    for (int j = 0; j < ldiag; j++) {
+        if (abs(a.at<float>(j,j)) > tau)
+            krank = j;
+    }
+    if (krank < 0) {
+        krank = 0;
+        for (int i = 0; i < x.cols; i++) {
+            x.at<float>(i) = 0.f;
+        }
+        return;
+    }
 
+    // 14. If k = n, go to Step 17.
+    // 15. Here, k < n. Next, determine the orthogonal transformations Ki.
+    if (krank != n) {
+
+        // 16. For i := k, k-1, ..., 1, execute algorithm H1(i, k+1, n,
+        //     a(i,1), g(i), a(1,1), i-1). (The parameters a(i,1) and
+        //     a(1,1) each identify the first element of a row vector that
+        //     is to be referenced.
+        for (int i = krank; i >= 0; i--) {
+            // TODO: 4th and 6th arguments are row vectors
+            householder(1, i, krank+1, a(cv::Rect(0, i, a.cols, a.rows-i)), g(cv::Rect(i, 0, g.cols-i, g.rows)), a(cv::Rect(0,0,i-1,a.rows)));
+        }
+    }
+
+    // 17. Set x(k) := b(k) / a(k,k). If k <= 1, go to Step 19.
+    x.at<float>(krank) = b.at<float>(krank) / a.at<float>(krank,krank);
+
+    if (krank > 1) {
+        // 18. For i := k-1, k-2, ..., 1, x(i) := (b(i) - sum(a(i,j)x(j))/a(i,i), i+1 <= j <= k.
+        for (int i = krank-1; i >= 0; i++) {
+            float sum = 0.f;
+            for (int j = i+1; j <= krank; j++) {
+                sum += a.at<float>(i,j) * x.at<float>(j);
+            }
+            x.at<float>(i) = (b.at<float>(i) - sum) / a.at<float>(i,i);
+        }
+    }
+
+    // 19. If k = n, go to Step 22.
+    if (krank != n) {
+        // 20. For minimal length solution, set x(i) := 0, i := k+1, ..., n.
+        for (int i = krank+1; i < n; i++) {
+            x.at<float>(i) = 0;
+        }
+
+        // 21. For i := 1, ..., k, execute Algorithm H2(i, k+1, n, a(i,1),
+        //     g(i), x, 1. Here a(i,1) identifies the first element of a
+        //     row vector.
+        for (int i = 0; i <= krank; i++) {
+            // TODO: 4th argument is row vectors
+            householder(2, i, krank+1, a(cv::Rect(i,0,a.cols-i,a.rows)), g(cv::Rect(i,0,g.cols-i,1)), x);
+        }
+    }
+
+    // 22. For j := μ, μ - 1, ..., 1, do Step 23.
+    // 23. If p(j) != j, interchange the contents of x(j) and x(p(j)).
+    for (int j = ldiag-1; j >= 0; j--) {
+        if (p.at<int>(j) != j)
+            interchangeCols(x, j, p(j));
     }
 }
 
@@ -552,3 +632,10 @@ void openskystacker::h12(int mode, int lpivot, int l1, int m, cv::Mat u, float *
     }
 }
 
+
+void interchangeCols(cv::Mat mat, int col1, int col2)
+{
+    cv::Mat temp = a.col(col1).clone();
+    a.col(col2).copyTo(a.col(col1));
+    temp.copyTo(a.col(col2));
+}
