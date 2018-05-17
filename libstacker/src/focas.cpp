@@ -415,7 +415,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
         }
 
         // 6. If (hmax + (10^-3)h(λ)) > hmax, go to Step 9.
-        if (j == 0 || (hmax + .001f*h.at<float>(lambda)) > hmax) {
+        if (j == 0 || (hmax + .001f*h.at<float>(lambda)) <= hmax) {
 
             // 7. For l := j, ..., n, set h(l) := sum(a(i,l)^2), j <= i <= m
             for (int l = j; l < n; l++) {
@@ -446,11 +446,11 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
             h.at<float>(lambda) = h.at<float>(j);
         }
 
-        // 11. Execute algorithm H1(j, j+1, m, a(l,j), h(j), a(i,j+1), n-j).
-        householder(1, j, j+1, a(cv::Rect(j,0,a.cols-j,a.rows)), h(cv::Rect(j,0,h.cols-j,h.rows)),
+        // 11. Execute algorithm H1(j, j+1, m, a(1,j), h(j), a(1,j+1), n-j).
+        householder(1, j, j+1, a(cv::Rect(j,0,a.cols-j,1)), h.at<float>(j),
                     a(cv::Rect(j+1,0,a.cols-j-1-n-j,a.rows)));
-        // 12. Execute algorithm H1(j, j+1, m, a(l,j), h(j), b, 1).
-        householder(2, j, j+1, a(cv::Rect(j,0,a.cols-j,a.rows)), h(cv::Rect(j,0,h.cols-j,h.rows)),
+        // 12. Execute algorithm H1(j, j+1, m, a(1,j), h(j), b, 1).
+        householder(2, j, j+1, a(cv::Rect(j,0,a.cols-j,1)), h.at<float>(j),
                     b(cv::Rect(0,0,1,b.rows)));
 
     }
@@ -469,8 +469,10 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
     }
     if (krank < 0) {
         krank = 0;
-        for (int i = 0; i < x.cols; i++) {
-            x.at<float>(i) = 0.f;
+        for (int j = 0; j < x.cols; j++) {
+            for (int i = 0; i < x.rows; i++) {
+                x.at<float>(i,j) = 0.f;
+            }
         }
         return;
     }
@@ -485,21 +487,26 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
         //     is to be referenced.
         for (int i = krank; i >= 0; i--) {
             // TODO: 4th and 6th arguments are row vectors
-            householder(1, i, krank+1, a(cv::Rect(0, i, a.cols, a.rows-i)), g(cv::Rect(i, 0, g.cols-i, g.rows)), a(cv::Rect(0,0,i-1,a.rows)));
+            householder(1, i, krank+1, a(cv::Rect(0, i, 1, a.rows-i)), g.at<float>(i), a(cv::Rect(0,0,i-1,a.rows)), true);
         }
     }
 
     // 17. Set x(k) := b(k) / a(k,k). If k <= 1, go to Step 19.
-    x.at<float>(krank) = b.at<float>(krank) / a.at<float>(krank,krank);
+    for (int i = 0; i < x.rows; i++) {
+        x.at<float>(i,krank) = b.at<float>(i,krank) / a.at<float>(krank,krank);
+    }
+
 
     if (krank > 1) {
         // 18. For i := k-1, k-2, ..., 1, x(i) := (b(i) - sum(a(i,j)x(j))/a(i,i), i+1 <= j <= k.
         for (int i = krank-1; i >= 0; i++) {
-            float sum = 0.f;
-            for (int j = i+1; j <= krank; j++) {
-                sum += a.at<float>(i,j) * x.at<float>(j);
+            for (int row = 0; row < x.rows; row++) {
+                float sum = 0.f;
+                for (int j = i+1; j <= krank; j++) {
+                    sum += a.at<float>(i,j) * x.at<float>(j,row);
+                }
+                x.at<float>(i,row) = (b.at<float>(i,row) - sum) / a.at<float>(i,i);
             }
-            x.at<float>(i) = (b.at<float>(i) - sum) / a.at<float>(i,i);
         }
     }
 
@@ -515,7 +522,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
         //     row vector.
         for (int i = 0; i <= krank; i++) {
             // TODO: 4th argument is row vectors
-            householder(2, i, krank+1, a(cv::Rect(i,0,a.cols-i,a.rows)), g(cv::Rect(i,0,g.cols-i,1)), x);
+            householder(2, i, krank+1, a(cv::Rect(0,i,1,a.rows-i)), g.at<float>(i), x);
         }
     }
 
@@ -527,7 +534,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
     }
 }
 
-void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv::Mat c) {
+void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv::Mat c, bool cHasRowVectors) {
     int m = max(u.rows, u.cols);
     int v = c.cols;
     float &up = u.at<float>(p);
@@ -559,14 +566,29 @@ void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv
         for (int j = 0; j < v; j++) {
             float sum = 0;
             for (int i = l; i < m; i++) {
-                sum += c.at<float>(i,j) * u.at<float>(i);
+                if (cHasRowVectors) {
+                    sum += c.at<float>(j,i) * u.at<float>(i);
+                } else {
+                    sum += c.at<float>(i,j) * u.at<float>(i);
+                }
             }
 
-            float s = (c.at<float>(p,j) * h + sum) / b;
-            c.at<float>(p,j) += s * h;
+            float s;
+            if (cHasRowVectors) {
+                s = (c.at<float>(j,p) * h + sum) / b;
+                c.at<float>(j,p) += s * h;
+            } else {
+                s = (c.at<float>(p,j) * h + sum) / b;
+                c.at<float>(p,j) += s * h;
+            }
+
 
             for (int i = l; i < m; i++) {
-                c.at<float>(i,j) += s * u.at<float>(i);
+                if (cHasRowVectors) {
+                    c.at<float>(j,i) += s * u.at<float>(i);
+                } else {
+                    c.at<float>(i,j) += s * u.at<float>(i);
+                }
             }
         }
     }

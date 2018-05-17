@@ -71,7 +71,7 @@ void CheckTolerance(int nobjs, Triangle List_triangA, std::vector<Triangle> *Lis
                     int first, int last, int Table_match[]);
 void h12(int mode, int lpivot, int l1, int m, cv::Mat u, float *up, cv::Mat c, int ice, int icv, int ncv);
 void hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank, cv::Mat h, cv::Mat g, cv::Mat p);
-void householder(int mode, int p, int l, cv::Mat u, float h, cv::Mat c);
+void householder(int mode, int p, int l, cv::Mat u, float h, cv::Mat c, bool cHasRowVectors = false);
 void interchangeCols(cv::Mat mat, int col1, int col2);
 
 }
