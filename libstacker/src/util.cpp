@@ -26,6 +26,42 @@ cv::Mat openskystacker::getBayerMatrix(QString filename) {
     return bayer.clone();
 }
 
+QString openskystacker::getTimeString(int seconds) {
+    QString value;
+    if (seconds < 60) {
+        value = QObject::tr(seconds == 1 ? "%1 second" : "%1 seconds").arg(seconds);
+    } else if (seconds < 3600) {
+        int min = seconds / 60;
+        int sec = seconds % 60;
+        QString minString = QObject::tr(min == 1 ? "%1 minute" : "%1 minutes").arg(min);
+        QString secString = QObject::tr(sec == 1 ? " and %1 second" : " and %1 seconds").arg(sec);
+        value = minString + secString;
+    } else if (seconds < 86400) {
+        int hrs = seconds / 3600;
+        int hrsRemainder = seconds % 3600;
+        int min = hrsRemainder / 60;
+        int sec = hrsRemainder % 60;
+        QString hrsString = QObject::tr(hrs == 1 ? "%1 hour" : "%1 hours").arg(hrs);
+        QString minString = QObject::tr(min == 1 ? ", %1 minute" : ", %1 minutes").arg(min);
+        QString secString = QObject::tr(sec == 1 ? ", and %1 second" : ", and %1 seconds").arg(sec);
+        value = hrsString + minString + secString;
+    } else {
+        int days = seconds / 86400;
+        int daysRemainder = seconds % 86400;
+        int hrs = daysRemainder / 3600;
+        int hrsRemainder = daysRemainder % 3600;
+        int min = hrsRemainder / 60;
+        int sec = hrsRemainder % 60;
+        QString daysString = QObject::tr(days == 1 ? "%1 day" : "%1 days").arg(days);
+        QString hrsString = QObject::tr(hrs == 1 ? ", %1 hour" : ", %1 hours").arg(hrs);
+        QString minString = QObject::tr(min == 1 ? ", %1 minute" : ", %1 minutes").arg(min);
+        QString secString = QObject::tr(sec == 1 ? ", and %1 second" : ", and %1 seconds").arg(sec);
+        value = daysString + hrsString + minString + secString;
+    }
+
+    return value;
+}
+
 ImageRecord *openskystacker::getImageRecord(QString filename)
 {
     ImageRecord *record = new ImageRecord();
