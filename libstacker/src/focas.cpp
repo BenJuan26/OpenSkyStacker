@@ -379,14 +379,15 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
 }
 
 
-
+// Algorithm HFTI(a,m,n,b,τ,x,k,h,g,p)
 void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank, cv::Mat h, cv::Mat g, cv::Mat p)
 {
-    float hmax = 0.0f;
-    int lambda;
-
+    // These values are inferred from the parameters
     int m = a.rows;
     int n = a.cols;
+
+    float hmax = 0.0f;
+    int lambda;
 
     krank = -1;
 
@@ -534,36 +535,43 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
     }
 }
 
+// Algorithms H1(p,l,m,u,h,c,v) [use steps 1-11] and H2(p,l,m,u,h,c,v) [use steps 5-11]
 void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv::Mat c, bool cHasRowVectors) {
+    // These values are inferred from the parameters
     int m = max(u.rows, u.cols);
     int v = c.cols;
+
     float &up = u.at<float>(p);
 
     if (mode == 1) {
+        // 1. Set s := sqrt(u(p)^2 + sum(u(i)^2)), l <= i <= m.
         float sum = 0;
         for (int i = l; i < m; i++) {
             float ui = u.at<float>(i);
             sum += ui * ui;
         }
-
-
         float s = sqrt(up * up + sum);
 
+        // 2. If u(p) > 0, set s := -s.
         if (up > 0)
             s = -s;
 
+        // 3. Set h := u(p) - s, u(p) := s
         h = up - s;
         up = s;
     }
 
-    // At this point the transformation is complete.
-    // What follows is the application of the transformation to c.
+    // 4. The construction of the transformation is complete. At Step 5 the
+    //    application of the transformation to the vectors c(j) begins.
 
+    // 5. b := u(p)h
     float b = up * h;
 
-    // TODO: handle the special case where c is row vectors instead of column vectors
+    // 6. If b = 0 or v = 0, go to Step 11.
     if (b != 0.f && v != 0) {
+        // 7. For j := 1, ..., v, do Steps 8-10.
         for (int j = 0; j < v; j++) {
+            // 8. Set s := (c(p,j) + sum(c(i,j)u(i))) / b, l <= i <= m.
             float sum = 0;
             for (int i = l; i < m; i++) {
                 if (cHasRowVectors) {
@@ -572,17 +580,17 @@ void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv
                     sum += c.at<float>(i,j) * u.at<float>(i);
                 }
             }
-
             float s;
             if (cHasRowVectors) {
                 s = (c.at<float>(j,p) * h + sum) / b;
                 c.at<float>(j,p) += s * h;
             } else {
                 s = (c.at<float>(p,j) * h + sum) / b;
+                // 9. Set c(p,j) := c(p,j) + sh.
                 c.at<float>(p,j) += s * h;
             }
 
-
+            // 10. For i := l, ..., m, set c(i,j) := c(i,j) + su(i)
             for (int i = l; i < m; i++) {
                 if (cHasRowVectors) {
                     c.at<float>(j,i) += s * u.at<float>(i);
@@ -592,6 +600,8 @@ void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv
             }
         }
     }
+
+    // 11. Algorithm H1 or H2 is completed.
 }
 
 void openskystacker::h12(int mode, int lpivot, int l1, int m, cv::Mat u, float *up, cv::Mat c, int ice, int icv, int ncv)
