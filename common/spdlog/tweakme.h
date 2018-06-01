@@ -139,5 +139,5 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Uncomment to customize level names (e.g. "MT TRACE")
 //
-#define SPDLOG_LEVEL_NAMES { "debug", "info", "warning", "error", "critical", "fatal", "off" }
+#define SPDLOG_LEVEL_NAMES { "trace", "debug", "info", "warning", "critical", "fatal", "off" }
 ///////////////////////////////////////////////////////////////////////////////

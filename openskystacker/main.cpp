@@ -16,20 +16,18 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
     const char *msg = qMsg.toUtf8().constData();
 
-    // Since spdlog has no notion of "fatal", all levels were bumped down by
-    //  one and fatal was added at the end. This is defined in spdlog/tweakme.h.
     switch (type) {
     case QtDebugMsg:
-        logger->trace(msg);
-        break;
-    case QtInfoMsg:
         logger->debug(msg);
         break;
-    case QtWarningMsg:
+    case QtInfoMsg:
         logger->info(msg);
         break;
-    case QtCriticalMsg:
+    case QtWarningMsg:
         logger->warn(msg);
+        break;
+    case QtCriticalMsg:
+        logger->error(msg);
         break;
     case QtFatalMsg:
         logger->critical(msg);
