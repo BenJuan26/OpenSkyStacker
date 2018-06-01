@@ -40,6 +40,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
 int main(int argc, char *argv[])
 {
+    QApplication a(argc, argv);
 
 #ifdef Q_OS_UNIX
     // On UNIX platforms, put the logs in ~/.openskystacker
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
 #else
     // on Windows, put the logs beside the application
     std::string logDir = QApplication::applicationDirPath().toUtf8().constData();
+    printf("logDir: %s\n", logDir.c_str());
 #endif
 
 #ifndef QT_NO_DEBUG
@@ -62,10 +64,16 @@ int main(int argc, char *argv[])
 #endif
 
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
-    logger = spdlog::rotating_logger_mt("logger", logDir + "/log.txt", 1048576, 2);
-    qInstallMessageHandler(messageHandler);
+    try {
+        logger = spdlog::rotating_logger_mt("logger", logDir + "/log.txt", 1048576, 2);
+    } catch (std::exception) {
+        printf("Couldn't create logger\n");
+    }
 
-    QApplication a(argc, argv);
+    if (!logger) {
+        printf("Couldn't create logger\n");
+    }
+    qInstallMessageHandler(messageHandler);
 
 //    QTranslator translator;
 //    if (!translator.load("openskystacker_es", QCoreApplication::applicationDirPath())) {
