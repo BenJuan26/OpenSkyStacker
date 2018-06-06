@@ -36,10 +36,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
     }
 }
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-
+void initLogger() {
 #ifdef Q_OS_UNIX
     // On UNIX platforms, put the logs in ~/.openskystacker
     QString qLogDir = QDir::homePath() + "/.openskystacker";
@@ -54,8 +51,8 @@ int main(int argc, char *argv[])
     printf("logDir: %s\n", logDir.c_str());
 #endif
 
+// Only show Debug-level messages when built in debug mode
 #ifndef QT_NO_DEBUG
-    // Only show Debug-level messages when built in debug mode
     spdlog::set_level(spdlog::level::trace);
 #else
     spdlog::set_level(spdlog::level::debug);
@@ -72,6 +69,12 @@ int main(int argc, char *argv[])
         printf("Couldn't create logger\n");
     }
     qInstallMessageHandler(messageHandler);
+}
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    initLogger();
 
 //    QTranslator translator;
 //    if (!translator.load("openskystacker_es", QCoreApplication::applicationDirPath())) {
