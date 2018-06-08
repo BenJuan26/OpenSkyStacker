@@ -108,6 +108,8 @@ void MainWindow::finishedStacking(cv::Mat image) {
         return;
     }
 
+    qInfo("Resulting image saved to %s", path.toUtf8().constData());
+
     setMemImage(mat2QImage(image));
 }
 
@@ -635,6 +637,7 @@ void MainWindow::checkTableData()
 
 void MainWindow::stackerDoneDetectingStars(int stars)
 {
+    qDebug("Detected %d stars", stars);
     emit doneDetectingStars(stars);
 }
 
