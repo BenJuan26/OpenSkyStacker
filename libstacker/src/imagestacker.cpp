@@ -228,6 +228,7 @@ int ImageStackerPrivate::getTotalOperations()
 }
 
 void ImageStackerPrivate::process(int tolerance, int threads) {
+    qInfo("Started stacking");
     Q_Q(ImageStacker);
     time_t now;
     time(&now);
@@ -236,6 +237,9 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
 
     for (int i = 0; i < targetImageFileNames.length(); i++) {
         if (getImageType(targetImageFileNames.at(i)) != refType) {
+            qCritical("Image type mismatch: %s does not match the type of the reference image, %s",
+                      targetImageFileNames.at(i).toUtf8().constData(),
+                      refImageFileName.toUtf8().constData());
             emit q->processingError(QObject::tr("Images must be the same type."));
             return;
         }
@@ -244,6 +248,7 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
     q->cancel = false;
     currentOperation = 1;
     totalOperations = getTotalOperations();
+    qDebug("Checking image sizes");
     emit q->updateProgress(QObject::tr("Checking image sizes..."), 100 * currentOperation++ / totalOperations);
 
     int err = validateImageSizes();
@@ -255,22 +260,27 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
     cv::Mat masterDark, masterDarkFlat, masterFlat, masterBias;
 
     if (useBias) {
+        qDebug("Stacking bias frames");
         emit q->updateProgress(QObject::tr("Stacking bias frames..."), 100 * currentOperation++ / totalOperations);
         masterBias = stackBias(biasFrameFileNames);
     }
     if (useDarks) {
+        qDebug("Stacking dark frames");
         emit q->updateProgress(QObject::tr("Stacking dark frames..."), 100 * currentOperation++ / totalOperations);
         masterDark = stackDarks(darkFrameFileNames, masterBias);
     }
     if (useDarkFlats) {
+        qDebug("Stacking dark flat frames");
         emit q->updateProgress(QObject::tr("Stacking dark flat frames..."), 100 * currentOperation++ / totalOperations);
         masterDarkFlat = stackDarkFlats(darkFlatFrameFileNames, masterBias);
     }
     if (useFlats) {
+        qDebug("Stacking flat frames");
         emit q->updateProgress(QObject::tr("Stacking flat frames..."), 100 * currentOperation++ / totalOperations);
         masterFlat = stackFlats(flatFrameFileNames, masterDarkFlat, masterBias);
     }
 
+    qDebug("Stacking light frames");
     emit q->updateProgress(QObject::tr("Stacking light frames..."), 100 * currentOperation++ / totalOperations);
 
     refImage = getCalibratedImage(refImageFileName, masterDark , masterFlat, masterBias);
@@ -301,6 +311,7 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
     }
 
     bool done = false;
+    int maxOp = currentOperation;
     while (!done) {
         done = true;
         int op = currentOperation;
@@ -311,7 +322,13 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
             i++;
         }
 
-        emit q->updateProgress(QObject::tr("Stacking light frames..."), 100 * op / totalOperations);
+        if (op > maxOp) {
+            int percent = 100 * op / totalOperations;
+            maxOp = op;
+            qDebug("Finished stacking %d of %d light frames", maxOp - currentOperation, targetImageFileNames.length());
+            emit q->updateProgress(QObject::tr("Stacking light frames..."), percent);
+        }
+
         QThread::msleep(250);
     }
 
@@ -320,7 +337,10 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
         totalValidImages += future.result().totalValidImages;
     }
 
+    qDebug("Done adding images");
+
     if (totalValidImages < 2) {
+        qCritical("No images could be aligned to the reference image");
         emit q->processingError(QObject::tr("No images could be aligned to the reference image. Try using a lower tolerance."));
         return;
     }
@@ -333,6 +353,8 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
 
     time_t doneStacking;
     time(&doneStacking);
+
+    qDebug("Final image ready");
 
     emit q->finished(workingImage, QObject::tr("Stacking completed in %1 seconds.").arg(difftime(doneStacking, now)));
 }
@@ -404,7 +426,9 @@ int ImageStackerPrivate::validateImageSizes()
             height = ref.rows;
         }
 
-        if (width != refWidth ||  height != refHeight) {
+        if (width != refWidth || height != refHeight) {
+            qCritical("%s is %d x %d; must match the reference image which is %d x %d",
+                      filename.toUtf8().constData(), width, height, refWidth, refHeight);
             return -1;
         }
     }
@@ -428,6 +452,8 @@ int ImageStackerPrivate::validateImageSizes()
             }
 
             if (width != refWidth ||  height != refHeight) {
+                qCritical("%s is %d x %d; must match the reference image which is %d x %d",
+                          filename.toUtf8().constData(), width, height, refWidth, refHeight);
                 return -1;
             }
         }
@@ -452,6 +478,8 @@ int ImageStackerPrivate::validateImageSizes()
             }
 
             if (width != refWidth ||  height != refHeight) {
+                qCritical("%s is %d x %d; must match the reference image which is %d x %d",
+                          filename.toUtf8().constData(), width, height, refWidth, refHeight);
                 return -1;
             }
         }
@@ -476,6 +504,8 @@ int ImageStackerPrivate::validateImageSizes()
             }
 
             if (width != refWidth ||  height != refHeight) {
+                qCritical("%s is %d x %d; must match the reference image which is %d x %d",
+                          filename.toUtf8().constData(), width, height, refWidth, refHeight);
                 return -1;
             }
         }
@@ -500,6 +530,8 @@ int ImageStackerPrivate::validateImageSizes()
             }
 
             if (width != refWidth ||  height != refHeight) {
+                qCritical("%s is %d x %d; must match the reference image which is %d x %d",
+                          filename.toUtf8().constData(), width, height, refWidth, refHeight);
                 return -1;
             }
         }

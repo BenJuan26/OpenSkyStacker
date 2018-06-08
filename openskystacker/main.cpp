@@ -53,9 +53,9 @@ void initLogger() {
 
 // Only show Debug-level messages when built in debug mode
 #ifndef QT_NO_DEBUG
-    spdlog::set_level(spdlog::level::trace);
-#else
     spdlog::set_level(spdlog::level::debug);
+#else
+    spdlog::set_level(spdlog::level::info);
 #endif
 
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
