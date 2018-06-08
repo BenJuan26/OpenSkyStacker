@@ -72,6 +72,7 @@ LIBSTACKER_EXPORT cv::Mat stackDarks(QStringList filenames, cv::Mat bias);
 LIBSTACKER_EXPORT cv::Mat stackDarkFlats(QStringList filenames, cv::Mat bias);
 LIBSTACKER_EXPORT cv::Mat stackFlats(QStringList filenames, cv::Mat darkFlat, cv::Mat bias);
 LIBSTACKER_EXPORT cv::Mat stackBias(QStringList filenames);
+LIBSTACKER_EXPORT QString getTimeString(int seconds);
 LIBSTACKER_EXPORT StackingResult processConcurrent(StackingParams params, int *numCompleted);
 }
 

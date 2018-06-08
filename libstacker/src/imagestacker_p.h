@@ -73,8 +73,7 @@ public:
 
 private:
     int getTotalOperations();
-
-    int validateImageSizes();
+    int validateImageSizes(); 
 
     mutable QMutex mutex;
 

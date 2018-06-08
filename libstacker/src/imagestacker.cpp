@@ -356,7 +356,10 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
 
     qDebug("Final image ready");
 
-    emit q->finished(workingImage, QObject::tr("Stacking completed in %1 seconds.").arg(difftime(doneStacking, now)));
+    QString completeString = QObject::tr("Stacking completed in ");
+    QString timeString = getTimeString(difftime(doneStacking, now));
+
+    emit q->finished(workingImage, completeString + timeString + ".");
 }
 
 void ImageStackerPrivate::readQImage(QString filename)
