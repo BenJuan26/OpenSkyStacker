@@ -1,5 +1,6 @@
 #include "testoss.h"
 #include <libstacker/imagestacker.h>
+#include <adjoiningpixel.h>
 #include <QThread>
 
 using namespace openskystacker;
@@ -46,6 +47,56 @@ void TestOSS::testStackImages_data()
     QTest::newRow("Raw M42") << samplesPath + "/Raw/all.json" << 20;
     QTest::newRow("JPEG M42") << samplesPath + "/JPEG/all.json" << 20;
     QTest::newRow("FITS Heart and Soul") << samplesPath + "/FITS/all.json" << 50;
+}
+
+void TestOSS::testAdjoiningPixel()
+{
+    Pixel pixel(5, 10, 0.5);
+    AdjoiningPixel ap;
+
+    ap.addPixel(pixel);
+    QCOMPARE(ap.getPeak().x, 5);
+    QCOMPARE(ap.getPeak().y, 10);
+    QCOMPARE(ap.getPeak().value, 0.5);
+    QCOMPARE(ap.getPeakValue(), 0.5);
+
+    std::vector<Pixel> pixVector;
+    pixVector.push_back(Pixel(100, 100, 0.5));
+    pixVector.push_back(Pixel(20, 20, 0.25));
+
+    ap.setPixels(pixVector);
+    QCOMPARE(ap.getGravityCenter().x, 73);
+    QCOMPARE(ap.getGravityCenter().y, 73);
+
+    pixVector.clear();
+    pixVector.push_back(Pixel(75, 75, 1.0));
+    pixVector.push_back(Pixel(76, 75, 1.0));
+    pixVector.push_back(Pixel(74, 75, 1.0));
+    pixVector.push_back(Pixel(75, 76, 1.0));
+    pixVector.push_back(Pixel(74, 75, 1.0));
+    pixVector.push_back(Pixel(74, 74, 0.5));
+    pixVector.push_back(Pixel(74, 76, 0.5));
+    pixVector.push_back(Pixel(76, 76, 0.5));
+    pixVector.push_back(Pixel(76, 74, 0.5));
+    pixVector.push_back(Pixel(74, 73, 0.25));
+    pixVector.push_back(Pixel(73, 74, 0.25));
+    pixVector.push_back(Pixel(73, 76, 0.25));
+    pixVector.push_back(Pixel(77, 74, 0.25));
+    pixVector.push_back(Pixel(77, 76, 0.25));
+    pixVector.push_back(Pixel(76, 77, 0.25));
+
+    AdjoiningPixel ap2;
+    ap2.setPixels(pixVector);
+    QVERIFY(ap2 > ap);
+    QVERIFY(ap < ap2);
+
+    std::vector<AdjoiningPixel> deblended = ap2.deblend(10);
+    QCOMPARE(static_cast<int>(deblended.size()), 1);
+
+    Star star = deblended.at(0).createStar();
+    QCOMPARE(star.peak, 1.0);
+    QCOMPARE(star.x, 75);
+    QCOMPARE(star.y, 75);
 }
 
 void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &) {

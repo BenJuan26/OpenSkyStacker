@@ -21,6 +21,8 @@ private slots:
     void testStackImages();
     void testStackImages_data();
 
+    void testAdjoiningPixel();
+
 public:
     TestOSS(QString);
 };

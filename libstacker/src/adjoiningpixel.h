@@ -18,6 +18,9 @@ namespace openskystacker {
 */
 class AdjoiningPixel
 {
+#ifdef TEST_OSS
+    friend class TestOSS;
+#endif
 public:
     AdjoiningPixel();
     ~AdjoiningPixel();
