@@ -1,11 +1,53 @@
 #include "testoss.h"
 #include <libstacker/imagestacker.h>
+#include <libstacker/stardetector.h>
 #include <adjoiningpixel.h>
 #include <QThread>
 
 using namespace openskystacker;
 
 TestOSS::TestOSS(QString dir) : samplesPath(dir) {}
+
+void TestOSS::drawFakeStar(cv::Mat image, int x, int y)
+{
+    cv::Vec3f vec5(1.0, 1.0, 1.0);
+    cv::Vec3f vec4(0.8, 0.8, 0.8);
+    cv::Vec3f vec3(0.6, 0.6, 0.6);
+    cv::Vec3f vec2(0.4, 0.4, 0.4);
+
+    image.at<cv::Vec3f>(y, x) = vec5;
+    image.at<cv::Vec3f>(y, x-1) = vec5;
+    image.at<cv::Vec3f>(y, x+1) = vec5;
+    image.at<cv::Vec3f>(y-1, x) = vec5;
+    image.at<cv::Vec3f>(y+1, x) = vec5;
+
+    image.at<cv::Vec3f>(y-2, x) = vec4;
+    image.at<cv::Vec3f>(y+2, x) = vec4;
+    image.at<cv::Vec3f>(y, x+2) = vec4;
+    image.at<cv::Vec3f>(y, x-2) = vec4;
+    image.at<cv::Vec3f>(y-1, x-1) = vec4;
+    image.at<cv::Vec3f>(y-1, x+1) = vec4;
+    image.at<cv::Vec3f>(y+1, x+1) = vec4;
+    image.at<cv::Vec3f>(y+1, x-1) = vec4;
+
+    image.at<cv::Vec3f>(y-3, x) = vec3;
+    image.at<cv::Vec3f>(y+3, x) = vec3;
+    image.at<cv::Vec3f>(y, x-3) = vec3;
+    image.at<cv::Vec3f>(y, x+3) = vec3;
+    image.at<cv::Vec3f>(y-2, x+1) = vec3;
+    image.at<cv::Vec3f>(y-1, x+2) = vec3;
+    image.at<cv::Vec3f>(y+1, x+2) = vec3;
+    image.at<cv::Vec3f>(y+2, x+1) = vec3;
+    image.at<cv::Vec3f>(y+2, x-1) = vec3;
+    image.at<cv::Vec3f>(y+1, x-2) = vec3;
+    image.at<cv::Vec3f>(y-1, x-2) = vec3;
+    image.at<cv::Vec3f>(y-2, x-1) = vec3;
+
+    image.at<cv::Vec3f>(y-2, x-2) = vec2;
+    image.at<cv::Vec3f>(y-2, x+2) = vec2;
+    image.at<cv::Vec3f>(y+2, x-2) = vec2;
+    image.at<cv::Vec3f>(y+2, x+2) = vec2;
+}
 
 void TestOSS::initTestCase()
 {
@@ -51,10 +93,9 @@ void TestOSS::testStackImages_data()
 
 void TestOSS::testAdjoiningPixel()
 {
-    Pixel pixel(5, 10, 0.5);
     AdjoiningPixel ap;
+    ap.addPixel(Pixel(5, 10, 0.5));
 
-    ap.addPixel(pixel);
     QCOMPARE(ap.getPeak().x, 5);
     QCOMPARE(ap.getPeak().y, 10);
     QCOMPARE(ap.getPeak().value, 0.5);
@@ -97,6 +138,36 @@ void TestOSS::testAdjoiningPixel()
     QCOMPARE(star.peak, 1.0);
     QCOMPARE(star.x, 75);
     QCOMPARE(star.y, 75);
+}
+
+void TestOSS::testStarDetector()
+{
+    cv::Mat image(100, 100, CV_32FC3);
+    image = cv::Scalar(0.1, 0.1, 0.1);
+
+    drawFakeStar(image, 35, 40);
+    drawFakeStar(image, 60, 80);
+
+    StarDetector sd;
+    std::vector<Star> stars = sd.getStars(image);
+
+    QCOMPARE(static_cast<int>(stars.size()), 0);
+
+    stars = sd.getStars(image, 5);
+
+    QCOMPARE(static_cast<int>(stars.size()), 2);
+    QCOMPARE(stars.at(0).x, 35);
+    QCOMPARE(stars.at(0).y, 40);
+    QCOMPARE(stars.at(1).x, 60);
+    QCOMPARE(stars.at(1).y, 80);
+
+    sd.drawDetectedStars("teststars.jpg", 100, 100, -1, stars);
+
+    cv::Mat bg = sd.generateSkyBackground(image);
+    double min, max;
+    cv::minMaxLoc(bg, &min, &max);
+
+    QVERIFY(max < 0.2);
 }
 
 void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &) {

@@ -1,6 +1,8 @@
 #ifndef TESTOSS_H
 #define TESTOSS_H
 
+#include <opencv2/core/core.hpp>
+
 #include <QObject>
 #include <QtTest/QtTest>
 
@@ -12,6 +14,8 @@ class TestOSS: public QObject
     Q_OBJECT
     QString samplesPath;
 
+    void drawFakeStar(cv::Mat image, int x, int y);
+
 private slots:
     void initTestCase();
 
@@ -22,6 +26,7 @@ private slots:
     void testStackImages_data();
 
     void testAdjoiningPixel();
+    void testStarDetector();
 
 public:
     TestOSS(QString);

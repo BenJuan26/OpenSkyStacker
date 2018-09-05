@@ -28,15 +28,6 @@ public:
     std::vector<Star> getStars(cv::Mat image, int thresholdCoeff);
     std::vector<Star> getStars(cv::Mat image);
 
-    //! Gets the value of the pixel at the given coordinates, truncating to the edges if the coordinates are outside the image bounds.
-    /*!
-        @param image The image to get the pixel value from.
-        @param x The x coordinate of the desired pixel.
-        @param y The y coordinate of the desired pixel.
-        @return The value of the pixel at (x,y), truncated to the bounds of the image.
-    */
-    float getExtendedPixelValue(cv::Mat image, int x, int y);
-
     //! Generates approximately what the sky background would look like without the stars.
     /*!
         @param image The full image with stars.

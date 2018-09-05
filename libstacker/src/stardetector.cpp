@@ -38,7 +38,6 @@ public:
     std::vector<Star> getStars(cv::Mat image, int thresholdCoeff);
     std::vector<Star> getStars(cv::Mat image);
 
-    float getExtendedPixelValue(cv::Mat image, int x, int y);
     cv::Mat generateSkyBackground(cv::Mat image);
 
     using size_type = std::vector<Star>::size_type;
@@ -81,13 +80,6 @@ void StarDetector::drawDetectedStars(const std::string& path, uint width, uint h
 {
     dPtr->drawDetectedStars(path, width, height, limit, stars);
 }
-
-float StarDetector::getExtendedPixelValue(cv::Mat image, int x, int y) {
-    return dPtr->getExtendedPixelValue(image, x, y);
-}
-
-
-
 
 
 
@@ -243,13 +235,4 @@ AdjoiningPixel StarDetector::StarDetectorImpl::detectAdjoiningPixel(cv::Mat imag
     }
 
     return ap;
-}
-
-float StarDetector::StarDetectorImpl::getExtendedPixelValue(cv::Mat image, int x, int y) {
-    if (x < 0) x = 0;
-    if (x >= image.cols) x = image.cols - 1;
-    if (y < 0) y = 0;
-    if (y >= image.rows) y = image.rows - 1;
-
-    return image.at<float>(y, x);
 }
