@@ -10,19 +10,15 @@ if [ "$LCOV" == "" ] || [ "$GENHTML" == "" ]; then
 fi
 
 BASE_DIR=../..
-BUILD_DIR=$BASE_DIR/build
+BUILD_DIR=$BASE_DIR/build/libstacker
 
 UNAME="$(uname)"
-if [ "$UNAME" = "Darwin" ];then
-    OBJECTS_DIR=$BUILD_DIR/o/macx
-else
-    OBJECTS_DIR=$BUILD_DIR/o/linux
-fi
+OBJECTS_DIR=$BUILD_DIR/o
 
 BIN_DIR=$BASE_DIR/bin
-TEST_BIN=$BIN_DIR/testoss
+TEST_BIN=$BIN_DIR/oss-test
 
-SRC_DIR=$BASE_DIR/src
+SRC_DIR=$BASE_DIR/libstacker/src
 
 set -e
 
@@ -30,14 +26,14 @@ set -e
 $LCOV -d $OBJECTS_DIR -z
 
 # Run the tests using a virtual frame buffer (since we are headless)
-$XVFB $TEST_BIN
+$TEST_BIN -d $BASE_DIR/samples
 
 # Parse gcov results
 $LCOV -d $OBJECTS_DIR -b $SRC_DIR -c -o $BUILD_DIR/coverage.info
 
 # Filter out unwanted files
 if [ "$UNAME" = "Darwin" ]; then
-    $LCOV -r "$BUILD_DIR/coverage.info" "/usr/local/*" "*/src/processing/exif.*" "*/Qt*.framework/*" "*/build/moc/*" "*/build/ui/*" "*/v1/*" -o "$BUILD_DIR/coverage-filtered.info"
+    $LCOV -r "$BUILD_DIR/coverage.info" "/usr/local/*" "*/src/exif.*" "*/Qt*.framework/*" "*/build/moc/*" "*/build/ui/*" "*/v1/*" "*/moc_*.cpp" -o "$BUILD_DIR/coverage-filtered.info"
 else
     $LCOV -r "$BUILD_DIR/coverage.info" "/usr/include/*" QtCore QtGui QtTest QtWidgets "build/moc/*" "build/ui/*" -o "$BUILD_DIR/coverage-filtered.info"
 fi
