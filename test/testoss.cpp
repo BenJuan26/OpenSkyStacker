@@ -1,6 +1,7 @@
 #include "testoss.h"
 #include <libstacker/imagestacker.h>
 #include <libstacker/stardetector.h>
+#include <libstacker/util.h>
 #include <adjoiningpixel.h>
 #include <QThread>
 
@@ -168,6 +169,54 @@ void TestOSS::testStarDetector()
     cv::minMaxLoc(bg, &min, &max);
 
     QVERIFY(max < 0.2);
+}
+
+void TestOSS::testGetBayerMatrix()
+{
+    QString path = samplesPath + "/Raw/Lights/DSC_4494.NEF";
+    cv::Mat bayer = getBayerMatrix(path);
+
+    QCOMPARE(bayer.rows, 4352);
+    QCOMPARE(bayer.cols, 2868);
+    QCOMPARE(bayer.type(), CV_16UC1);
+}
+
+void TestOSS::testGetImageRecord_data() {
+    QTest::addColumn<QString>("filename");
+    QTest::addColumn<float>("iso");
+    QTest::addColumn<float>("shutter");
+    QTest::addColumn<long>("timestamp");
+    QTest::addColumn<int>("width");
+    QTest::addColumn<int>("height");
+
+
+    QTest::newRow("Raw M42") << samplesPath + "/Raw/Lights/DSC_4494.NEF" << 800.f << 60.f
+            << 1168396735L << 4320 << 2868;
+    QTest::newRow("JPEG M42") << samplesPath + "/JPEG/Lights/DSC_4494.jpg" << 800.f << 60.f
+            << 1489673463L << 0 << 0;
+    QTest::newRow("FITS Heart and Soul")
+            << samplesPath + "/FITS/HeartAndSoul_Light_Ha_300sec_1x1_frame1_-15.1C.fit"
+            << -1.f << 300.f << 1503136924L << 4656 << 3520;
+}
+
+void TestOSS::testGetImageRecord()
+{
+    QFETCH(QString, filename);
+    QFETCH(float, iso);
+    QFETCH(float, shutter);
+    QFETCH(long, timestamp);
+    QFETCH(int, width);
+    QFETCH(int, height);
+
+    ImageRecord *record = getImageRecord(filename);
+
+    QCOMPARE(record->iso, iso);
+    QCOMPARE(record->shutter, shutter);
+    QCOMPARE(record->timestamp, timestamp);
+    QCOMPARE(record->width, width);
+    QCOMPARE(record->height, height);
+
+    delete record;
 }
 
 void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &) {

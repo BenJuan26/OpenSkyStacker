@@ -28,6 +28,10 @@ private slots:
     void testAdjoiningPixel();
     void testStarDetector();
 
+    void testGetBayerMatrix();
+    void testGetImageRecord_data();
+    void testGetImageRecord();
+
 public:
     TestOSS(QString);
 };
