@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 
 RUN apt-get update && \
     apt-get install -y git qt5-default libraw-dev libccfits-dev wget python-pip \
-    cmake pkg-config libjpeg8-dev libjasper-dev libpng12-dev libtiff5-dev && \
+    cmake pkg-config libjpeg8-dev libjasper-dev libpng12-dev libtiff5-dev tzdata && \
     pip install --upgrade pip==9.0.3 && pip install cpp-coveralls && \
     wget https://github.com/opencv/opencv/archive/3.3.0.tar.gz -O opencv-3.3.0.tar.gz && \
     tar -zxvf opencv-3.3.0.tar.gz && cd opencv-3.3.0 && mkdir build && cd build && \
@@ -12,6 +12,8 @@ RUN apt-get update && \
 
 RUN wget -q --no-check-certificate "https://onedrive.live.com/download?cid=EA3654387692D1CD&resid=EA3654387692D1CD%216873&authkey=AP8nVyDkhYtALXE" -O samples.tar.gz && \
     tar -zxvf samples.tar.gz && rm samples.tar.gz
+
+ENV TZ America/Toronto
 
 COPY . OpenSkyStacker
 WORKDIR OpenSkyStacker

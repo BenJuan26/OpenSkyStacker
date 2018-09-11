@@ -31,6 +31,8 @@ private slots:
     void testGetBayerMatrix();
     void testGetImageRecord_data();
     void testGetImageRecord();
+    void testExifTimeToCTime();
+    void testFitsTimeToCTime();
 
 public:
     TestOSS(QString);

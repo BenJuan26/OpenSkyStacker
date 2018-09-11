@@ -9,6 +9,10 @@ using namespace openskystacker;
 
 TestOSS::TestOSS(QString dir) : samplesPath(dir) {}
 
+void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &) {
+
+}
+
 void TestOSS::drawFakeStar(cv::Mat image, int x, int y)
 {
     cv::Vec3f vec5(1.0, 1.0, 1.0);
@@ -55,6 +59,17 @@ void TestOSS::initTestCase()
     qRegisterMetaType<cv::Mat>("cv::Mat");
 }
 
+void TestOSS::testDetectStars_data()
+{
+    QTest::addColumn<QString>("filename");
+    QTest::addColumn<int>("threshold");
+    QTest::addColumn<int>("numstars");
+
+    QTest::newRow("Raw M42") << samplesPath + "/Raw/Lights/DSC_4494.NEF" << 20 << 60;
+    QTest::newRow("FITS Heart and Soul")
+            << samplesPath + "/FITS/HeartAndSoul_Light_Ha_300sec_1x1_frame1_-15.1C.fit" << 50 << 200;
+}
+
 void TestOSS::testDetectStars()
 {
     QFETCH(QString, filename);
@@ -71,17 +86,6 @@ void TestOSS::testDetectStars()
     QVERIFY(result > numstars);
 }
 
-void TestOSS::testDetectStars_data()
-{
-    QTest::addColumn<QString>("filename");
-    QTest::addColumn<int>("threshold");
-    QTest::addColumn<int>("numstars");
-
-    QTest::newRow("Raw M42") << samplesPath + "/Raw/Lights/DSC_4494.NEF" << 20 << 60;
-    QTest::newRow("FITS Heart and Soul")
-            << samplesPath + "/FITS/HeartAndSoul_Light_Ha_300sec_1x1_frame1_-15.1C.fit" << 50 << 200;
-}
-
 void TestOSS::testStackImages_data()
 {
     QTest::addColumn<QString>("jsonfile");
@@ -91,6 +95,85 @@ void TestOSS::testStackImages_data()
     QTest::newRow("JPEG M42") << samplesPath + "/JPEG/all.json" << 20;
     QTest::newRow("FITS Heart and Soul") << samplesPath + "/FITS/all.json" << 50;
 }
+
+void TestOSS::testStackImages()
+{
+    QFETCH(QString, jsonfile);
+    QFETCH(int, threshold);
+
+    ImageStacker *stacker = new ImageStacker();
+    QSignalSpy stackSpy(stacker, SIGNAL(finished(cv::Mat,QString)));
+    QSignalSpy errorSpy(stacker, SIGNAL(processingError(QString)));
+
+    int err = 0;
+    std::vector<ImageRecord *> records = loadImageList(jsonfile, &err);
+    QCOMPARE(err, 0);
+
+    QString ref;
+    QStringList lights;
+    QStringList darks;
+    QStringList darkFlats;
+    QStringList flats;
+    QStringList bias;
+    bool referenceSet = false;
+    for (ImageRecord *record : records) {
+        if (!record->checked)
+            continue;
+
+        QString filename = record->filename;
+
+        switch(record->type) {
+        case ImageRecord::LIGHT:
+            if (!referenceSet) {
+                ref = filename;
+                referenceSet = true;
+            } else {
+                lights.append(filename);
+            }
+            break;
+        case ImageRecord::DARK:
+            darks.append(filename);
+            stacker->setUseDarks(true);
+            break;
+        case ImageRecord::DARK_FLAT:
+            darkFlats.append(filename);
+            stacker->setUseDarkFlats(true);
+            break;
+        case ImageRecord::FLAT:
+            flats.append(filename);
+            stacker->setUseFlats(true);
+            break;
+        case ImageRecord::BIAS:
+            bias.append(filename);
+            stacker->setUseBias(true);
+            break;
+        }
+    }
+
+    stacker->setRefImageFileName(ref);
+    stacker->setTargetImageFileNames(lights);
+    stacker->setDarkFrameFileNames(darks);
+    stacker->setDarkFlatFrameFileNames(darkFlats);
+    stacker->setFlatFrameFileNames(flats);
+    stacker->setBiasFrameFileNames(bias);
+
+    qInstallMessageHandler(suppressDebugOutput);
+    try {
+        stacker->process(threshold, 1);
+    } catch (std::exception) {
+        QFAIL("Exception thrown");
+    }
+
+    qInstallMessageHandler(0);
+
+    if (errorSpy.count() > 0) {
+        QList<QVariant> list = errorSpy.takeFirst();
+        QString result = list.at(0).toString();
+        QFAIL(result.toUtf8().constData());
+    }
+    QCOMPARE(stackSpy.count(), 1);
+}
+
 
 void TestOSS::testAdjoiningPixel()
 {
@@ -219,86 +302,16 @@ void TestOSS::testGetImageRecord()
     delete record;
 }
 
-void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &) {
-
+void TestOSS::testExifTimeToCTime()
+{
+    time_t time = exifTimeToCTime("2018:09:10 03:05:10");
+    QCOMPARE(time, 1536563110L);
 }
 
-void TestOSS::testStackImages()
+void TestOSS::testFitsTimeToCTime()
 {
-    QFETCH(QString, jsonfile);
-    QFETCH(int, threshold);
-
-    ImageStacker *stacker = new ImageStacker();
-    QSignalSpy stackSpy(stacker, SIGNAL(finished(cv::Mat,QString)));
-    QSignalSpy errorSpy(stacker, SIGNAL(processingError(QString)));
-
-    int err = 0;
-    std::vector<ImageRecord *> records = loadImageList(jsonfile, &err);
-    QCOMPARE(err, 0);
-
-    QString ref;
-    QStringList lights;
-    QStringList darks;
-    QStringList darkFlats;
-    QStringList flats;
-    QStringList bias;
-    bool referenceSet = false;
-    for (ImageRecord *record : records) {
-        if (!record->checked)
-            continue;
-
-        QString filename = record->filename;
-
-        switch(record->type) {
-        case ImageRecord::LIGHT:
-            if (!referenceSet) {
-                ref = filename;
-                referenceSet = true;
-            } else {
-                lights.append(filename);
-            }
-            break;
-        case ImageRecord::DARK:
-            darks.append(filename);
-            stacker->setUseDarks(true);
-            break;
-        case ImageRecord::DARK_FLAT:
-            darkFlats.append(filename);
-            stacker->setUseDarkFlats(true);
-            break;
-        case ImageRecord::FLAT:
-            flats.append(filename);
-            stacker->setUseFlats(true);
-            break;
-        case ImageRecord::BIAS:
-            bias.append(filename);
-            stacker->setUseBias(true);
-            break;
-        }
-    }
-
-    stacker->setRefImageFileName(ref);
-    stacker->setTargetImageFileNames(lights);
-    stacker->setDarkFrameFileNames(darks);
-    stacker->setDarkFlatFrameFileNames(darkFlats);
-    stacker->setFlatFrameFileNames(flats);
-    stacker->setBiasFrameFileNames(bias);
-
-    qInstallMessageHandler(suppressDebugOutput);
-    try {
-        stacker->process(threshold, 1);
-    } catch (std::exception) {
-        QFAIL("Exception thrown");
-    }
-
-    qInstallMessageHandler(0);
-
-    if (errorSpy.count() > 0) {
-        QList<QVariant> list = errorSpy.takeFirst();
-        QString result = list.at(0).toString();
-        QFAIL(result.toUtf8().constData());
-    }
-    QCOMPARE(stackSpy.count(), 1);
+    time_t time = fitsTimeToCTime("2018-09-10T03:05:10");
+    QCOMPARE(time, 1536563110L);
 }
 
 // QTEST_GUILESS_MAIN(TestOSS)
