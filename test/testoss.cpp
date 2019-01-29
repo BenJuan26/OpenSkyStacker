@@ -84,6 +84,8 @@ void TestOSS::testDetectStars()
     QList<QVariant> list = spy.takeFirst();
     int result = list.at(0).toInt();
     QVERIFY(result > numstars);
+
+    delete stacker;
 }
 
 void TestOSS::testStackImages_data()
@@ -172,6 +174,8 @@ void TestOSS::testStackImages()
         QFAIL(result.toUtf8().constData());
     }
     QCOMPARE(stackSpy.count(), 1);
+
+    delete stacker;
 }
 
 
