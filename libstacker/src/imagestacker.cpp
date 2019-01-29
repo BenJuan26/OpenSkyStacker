@@ -286,9 +286,22 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
     refImage = getCalibratedImage(refImageFileName, masterDark , masterFlat, masterBias);
     workingImage = refImage.clone();
 
-    int totalValidImages = 1;
-    if (threads >= targetImageFileNames.length())
+    if (threads < 1) {
+        emit q->processingError(QObject::tr("Number of threads must be at least 1."));
+        return;
+    }
+
+    int idealThreads = QThread::idealThreadCount();
+    if (threads > idealThreads) {
+        qInfo(QObject::tr("Number of threads was greater than the total number of logical threads; truncating to %1 threads").arg(idealThreads).toUtf8().constData());
+        threads = idealThreads;
+    }
+
+    if (threads >= targetImageFileNames.length()) {
         threads = targetImageFileNames.length() - 1;
+    }
+
+    int totalValidImages = 1;
 
     StackingParams params;
     params.lights = targetImageFileNames;
