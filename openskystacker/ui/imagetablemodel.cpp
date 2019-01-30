@@ -1,4 +1,6 @@
 #include "imagetablemodel.h"
+#include <QApplication>
+#include <QPalette>
 
 using namespace openskystacker;
 
@@ -28,7 +30,7 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 {
     switch (role) {
     case Qt::BackgroundRole:
-        return QVariant(QBrush (QColor(Qt::white)));
+        return QVariant(QBrush(QColor(QApplication::palette().color(QPalette::Window))));
 
     case Qt::FontRole:
         if (list[index.row()]->reference) {
@@ -112,6 +114,9 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 
 QVariant ImageTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    if (role == Qt::BackgroundRole) {
+        return QVariant(QBrush(QColor(QApplication::palette().color(QPalette::Base))));
+    }
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole) return {};
 
     switch(section) {
