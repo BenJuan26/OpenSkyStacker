@@ -6,11 +6,9 @@ Multi-platform stacker for deep-sky astrophotography.
 
 OpenSkyStacker assists in the processing of deep-sky images. *Stacking* in this context means taking the average of several exposures of the same object to reduce the noise and boost the signal-to-noise ratio. This is especially helpful in the field of astrophotography because many objects of interest are so dim that, without processing, they might be indistinguishable from noise.
 
-OpenSkyStacker is not unique in what it accomplishes, as there is other stacking software out there, but it is unique in that it is free, open-source, and available for nearly any operating system.
-
 ## Download
 
-[Download here](https://github.com/BenJuan26/OpenSkyStacker/releases) for Windows, Mac, and Ubuntu. Linux users on other distros can [compile from source](https://github.com/BenJuan26/OpenSkyStacker/wiki/Build-from-source).
+[Download here](https://github.com/BenJuan26/OpenSkyStacker/releases) for Windows and Mac. Linux users can [compile from source](https://github.com/BenJuan26/OpenSkyStacker/wiki/Build-from-source).
 
 ## Getting started
 
