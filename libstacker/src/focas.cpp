@@ -285,10 +285,13 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
     std::vector<std::vector<float> > xfrm(2, std::vector<float>(3,0));
 
     int	i, j, i1, i2;
-    int	krank, ip[3];
-    float	tau = 0.1f, rnorm[2], h[3], g[3];
-    cv::Mat	a(3, MAX_MATCH, CV_32FC1);
-    cv::Mat b(2, MAX_MATCH, CV_32FC1);
+    int	krank;
+    float	tau = 0.1f;
+    cv::Mat	a(MAX_MATCH, 3, CV_32FC1);
+    cv::Mat b(MAX_MATCH, 2, CV_32FC1);
+    cv::Mat h(1, 3, CV_32FC1);
+    cv::Mat g(1, 3, CV_32FC1);
+    cv::Mat p(1, 3, CV_16UC1);
     float	x, y, r2, sum, rms;
 
     /* Require a minimum number of points. */
@@ -308,10 +311,11 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
         b.at<float>(1,i) = List2[matches[1][i]].y;
     }
 
-    hfti(a, j, b, tau, krank, rnorm, h, g, ip);
+    // first j rows
+    hfti(a, b, tau, krank, h, g, p);
     for (i=0; i<2; i++)
         for (j=0; j<3; j++)
-        xfrm[i][j] = b[i][j];
+            xfrm[i][j] = b.at<float>(j, i);
 
     /* Start with all matches compute RMS and reject outliers.	      */
     /* The outliers are found from the 60% point in the sorted residuals. */
@@ -368,26 +372,35 @@ std::vector<std::vector<float> > openskystacker::FindTransform(std::vector<std::
             return xfrm;
         }
 
-        hfti(a, m, b, tau, krank, rnorm, h, g,ip);
+        // first m rows
+        hfti(a, b, tau, krank, h, g, p);
 
         for (i=0; i<2; i++)
             for (j=0; j<3; j++)
-                xfrm[i][j] = b[i][j];
+                xfrm[i][j] = b.at<float>(i, j);
     }
 
     return xfrm;
 }
 
 
+void openskystacker::interchangeCols(cv::Mat mat, int col1, int col2)
+{
+    cv::Mat temp = mat.col(col1).clone();
+    mat.col(col2).copyTo(mat.col(col1));
+    temp.copyTo(mat.col(col2));
+}
+
+
 // Algorithm HFTI(a,m,n,b,τ,x,k,h,g,p)
-void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank, cv::Mat h, cv::Mat g, cv::Mat p)
+void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h, cv::Mat g, cv::Mat p)
 {
     // These values are inferred from the parameters
     int m = a.rows;
     int n = a.cols;
 
     float hmax = 0.0f;
-    int lambda;
+    int lambda = 0;
 
     krank = -1;
 
@@ -438,7 +451,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
         }
 
         // 9. Set p(j) := λ. If p(j) = j, go to Step 11.
-        p.at<int>(j) = lamdba;
+        p.at<int>(j) = lambda;
 
         // 10. Interchange columns j and λ of A and set h(λ) := h(j)
         if (lambda != j) {
@@ -470,9 +483,9 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
     }
     if (krank < 0) {
         krank = 0;
-        for (int j = 0; j < x.cols; j++) {
-            for (int i = 0; i < x.rows; i++) {
-                x.at<float>(i,j) = 0.f;
+        for (int j = 0; j < b.cols; j++) {
+            for (int i = 0; i < b.rows; i++) {
+                b.at<float>(i,j) = 0.f;
             }
         }
         return;
@@ -493,20 +506,20 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
     }
 
     // 17. Set x(k) := b(k) / a(k,k). If k <= 1, go to Step 19.
-    for (int i = 0; i < x.rows; i++) {
-        x.at<float>(i,krank) = b.at<float>(i,krank) / a.at<float>(krank,krank);
+    for (int i = 0; i < b.rows; i++) {
+        b.at<float>(i,krank) /= a.at<float>(krank,krank);
     }
 
 
     if (krank > 1) {
         // 18. For i := k-1, k-2, ..., 1, x(i) := (b(i) - sum(a(i,j)x(j))/a(i,i), i+1 <= j <= k.
         for (int i = krank-1; i >= 0; i++) {
-            for (int row = 0; row < x.rows; row++) {
+            for (int row = 0; row < b.rows; row++) {
                 float sum = 0.f;
                 for (int j = i+1; j <= krank; j++) {
-                    sum += a.at<float>(i,j) * x.at<float>(j,row);
+                    sum += a.at<float>(i,j) * b.at<float>(j,row);
                 }
-                x.at<float>(i,row) = (b.at<float>(i,row) - sum) / a.at<float>(i,i);
+                b.at<float>(i,row) = (b.at<float>(i,row) - sum) / a.at<float>(i,i);
             }
         }
     }
@@ -515,7 +528,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
     if (krank != n) {
         // 20. For minimal length solution, set x(i) := 0, i := k+1, ..., n.
         for (int i = krank+1; i < n; i++) {
-            x.at<float>(i) = 0;
+            b.at<float>(i) = 0;
         }
 
         // 21. For i := 1, ..., k, execute Algorithm H2(i, k+1, n, a(i,1),
@@ -523,7 +536,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
         //     row vector.
         for (int i = 0; i <= krank; i++) {
             // TODO: 4th argument is row vectors
-            householder(2, i, krank+1, a(cv::Rect(0,i,1,a.rows-i)), g.at<float>(i), x);
+            householder(2, i, krank+1, a(cv::Rect(0,i,1,a.rows-i)), g.at<float>(i), b);
         }
     }
 
@@ -531,14 +544,14 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, cv::Mat x, int &krank
     // 23. If p(j) != j, interchange the contents of x(j) and x(p(j)).
     for (int j = ldiag-1; j >= 0; j--) {
         if (p.at<int>(j) != j)
-            interchangeCols(x, j, p(j));
+            interchangeCols(b, j, p.at<int>(j));
     }
 }
 
 // Algorithms H1(p,l,m,u,h,c,v) [use steps 1-11] and H2(p,l,m,u,h,c,v) [use steps 5-11]
 void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv::Mat c, bool cHasRowVectors) {
     // These values are inferred from the parameters
-    int m = max(u.rows, u.cols);
+    int m = qMax(u.rows, u.cols);
     int v = c.cols;
 
     float &up = u.at<float>(p);
@@ -602,72 +615,4 @@ void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv
     }
 
     // 11. Algorithm H1 or H2 is completed.
-}
-
-void openskystacker::h12(int mode, int lpivot, int l1, int m, cv::Mat u, float *up, cv::Mat c, int ice, int icv, int ncv)
-{
-    float sm, b;
-
-    if (lpivot <= 0 || lpivot >= l1 || l1 >= m ) return;
-    float cl = fabs(u.at<float>(0,lpivot));
-
-    if (mode == 1) {
-        for (int j = l1; j <= m; j++) {
-            if (u.at<float>(0,j)) cl = u.at<float>(0,j);
-        }
-
-        if (cl <= 0) return;
-
-        float clinv = 1./cl;
-
-        sm = pow(u.at<float>(0,lpivot) * clinv, 2);
-
-        for (int j = l1; j <= m; j++) {
-            sm += pow(u.at<float>(0,j) * clinv, 2);
-        }
-
-        float sm1 = sm;
-        cl = cl * sqrt(sm1);
-
-        if (u.at<float>(0,lpivot) > 0) cl = -cl;
-        *up = u.at<float>(0,lpivot) - cl;
-        u.at<float>(0,lpivot) = cl;
-    }
-
-    if (mode == 2 && cl <= 0) return;
-    if (ncv <= 0) return;
-
-    b = *up * u.at<float>(0,lpivot);
-    if (b >= 0) return;
-
-    b = 1./b;
-    float i2 = 1 - icv + ice*(lpivot - 1);
-    float incr = ice * (l1 - lpivot);
-
-    for (int j = 1; j <= ncv; j++) {
-        i2 += icv;
-        float i3 = i2 + incr;
-        float i4 = i3;
-
-        sm=c[i2] * *up;
-        for (int i = l1; i <= m; i++) {
-            sm += c[i3] * u.at<float>(0,i);
-            i3 += ice;
-        }
-        if (sm == 0) return;
-        sm *= b;
-        c[i2] = c[i2] + sm * *up;
-        for (int i=l1; i <= m; i++) {
-            c[i4] = c[i4] + sm * u.at<float>(0,i);
-            i4=i4+ice;
-        }
-    }
-}
-
-
-void interchangeCols(cv::Mat mat, int col1, int col2)
-{
-    cv::Mat temp = a.col(col1).clone();
-    a.col(col2).copyTo(a.col(col1));
-    temp.copyTo(a.col(col2));
 }
