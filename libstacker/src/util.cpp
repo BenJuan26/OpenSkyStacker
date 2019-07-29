@@ -17,6 +17,7 @@ cv::Mat openskystacker::getBayerMatrix(QString filename) {
     params->use_camera_wb = 1;
     params->no_auto_bright = 1;
     params->output_bps = 16;
+    params->user_flip = 0;
 
     libraw.open_file(filename.toUtf8().constData());
     libraw.unpack();
@@ -235,6 +236,7 @@ cv::Mat openskystacker::getCalibratedImage(QString filename, cv::Mat dark, cv::M
         params->no_auto_bright = 1;
         params->output_bps = 16;
         params->user_qual = 0; // Linear interpolation
+        params->user_flip = 0;
 
         libraw.open_file(filename.toUtf8().constData());
         libraw.unpack();
@@ -359,6 +361,7 @@ cv::Mat openskystacker::rawToMat(QString filename)
     params->no_auto_bright = 1;
     params->output_bps = 16;
     params->user_qual = 0;
+    params->user_flip = 0;
 
     processor.open_file(filename.toUtf8().constData());
     processor.unpack();
@@ -367,12 +370,12 @@ cv::Mat openskystacker::rawToMat(QString filename)
     processor.dcraw_process();
 
     libraw_processed_image_t *proc = processor.dcraw_make_mem_image();
-    cv::Mat tmp = cv::Mat(cv::Size(processor.imgdata.sizes.width, processor.imgdata.sizes.height),
+    cv::Mat tmp = cv::Mat(cv::Size(proc->width, proc->height),
                     CV_16UC3, proc->data);
 
     // copy data -- slower, but then we can rely on OpenCV's reference counting
     // also, we have to convert RGB->BGR anyway
-    cv::Mat image = cv::Mat(processor.imgdata.sizes.width, processor.imgdata.sizes.height, CV_16UC3);
+    cv::Mat image = cv::Mat(proc->width, proc->height, CV_16UC3);
     cvtColor(tmp, image, CV_RGB2BGR);
 
     delete proc;
@@ -394,6 +397,7 @@ QImage openskystacker::rawToQImage(QString filename)
     params->no_auto_bright = 1;
     params->output_bps = 8;
     params->user_qual = 0;
+    params->user_flip = 0;
 
     processor.open_file(filename.toUtf8().constData());
     processor.unpack();
