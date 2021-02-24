@@ -393,6 +393,11 @@ void openskystacker::interchangeCols(cv::Mat mat, int col1, int col2)
 
 
 // Algorithm HFTI(a,m,n,b,τ,x,k,h,g,p)
+// At the conclusion of the algorithm the solution vector x is stored in the
+// storage array called x and the vector c is stored in the array called b. The
+// algorithm is organized so that the names b and x could identify the same
+// storage arrays. This avoids the need for an extra storage array for x. In this
+// case the length of the b-array must be max(m, n).
 void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h, cv::Mat g, cv::Mat p)
 {
     // These values are inferred from the parameters
@@ -463,14 +468,14 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
         // 11. Execute algorithm H1(j, j+1, m, a(1,j), h(j), a(1,j+1), n-j).
         householder(1, j, j+1, a(cv::Rect(j,0,a.cols-j,1)), h.at<float>(j),
                     a(cv::Rect(j+1,0,a.cols-j-1-n-j,a.rows)));
-        // 12. Execute algorithm H1(j, j+1, m, a(1,j), h(j), b, 1).
+        // 12. Execute algorithm H2(j, j+1, m, a(1,j), h(j), b, 1).
         householder(2, j, j+1, a(cv::Rect(j,0,a.cols-j,1)), h.at<float>(j),
                     b(cv::Rect(0,0,1,b.rows)));
 
     }
 
     // 13. The pseudorank k must now be determined. Note that the diagonal
-    //     elements of R (stored in a(j,j) through a(μ,μ)) are non-
+    //     elements of R (stored in a(1,1) through a(μ,μ)) are non-
     //     increasing in magnitude. For example, the Fortran subroutine
     //     HFTI chooses k as the largest index j such that |a(j,j)| > τ.
     //     If all |a(j,j)| <= τ, the pseudorank k is set to zero, the
@@ -492,7 +497,9 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
     }
 
     // 14. If k = n, go to Step 17.
-    // 15. Here, k < n. Next, determine the orthogonal transformations Ki.
+    // 15. Here, k < n. Next, determine the orthogonal transformations K(i),
+    //     whose product constitutes K of the equation:
+    //     [R(1,1):R(1,2)]K = [W: 0]
     if (krank != n) {
 
         // 16. For i := k, k-1, ..., 1, execute algorithm H1(i, k+1, n,
@@ -512,7 +519,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
 
 
     if (krank > 1) {
-        // 18. For i := k-1, k-2, ..., 1, x(i) := (b(i) - sum(a(i,j)x(j))/a(i,i), i+1 <= j <= k.
+        // 18. For i := k-1, k-2, ..., 1, x(i) := (b(i) - sum(a(i,j)x(j)))/a(i,i), i+1 <= j <= k.
         for (int i = krank-1; i >= 0; i++) {
             for (int row = 0; row < b.rows; row++) {
                 float sum = 0.f;
