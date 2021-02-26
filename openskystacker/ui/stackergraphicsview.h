@@ -25,7 +25,7 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    int _numScheduledScalings;
+    int numScheduledScalings;
     int startX;
     int startY;
 };

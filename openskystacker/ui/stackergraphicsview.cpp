@@ -10,18 +10,18 @@ void StackerGraphicsView::wheelEvent(QWheelEvent *event)
     QPoint movement = event->pixelDelta();
     int threshold = 8;
     int movementPace = movement.y();
-    if (_numScheduledScalings > 0 && movementPace < 0) {
-        _numScheduledScalings = 0;
-    } else if  (_numScheduledScalings < 0 && movementPace > 0) {
-        _numScheduledScalings = 0;
+    if (numScheduledScalings > 0 && movementPace < 0) {
+        numScheduledScalings = 0;
+    } else if  (numScheduledScalings < 0 && movementPace > 0) {
+        numScheduledScalings = 0;
     } else {
-        _numScheduledScalings += movementPace;
+        numScheduledScalings += movementPace;
     }
 
-    if (_numScheduledScalings > threshold) {
-        _numScheduledScalings = threshold;
-    } else if (_numScheduledScalings < -threshold) {
-        _numScheduledScalings = -threshold;
+    if (numScheduledScalings > threshold) {
+        numScheduledScalings = threshold;
+    } else if (numScheduledScalings < -threshold) {
+        numScheduledScalings = -threshold;
     }
 
     QTimeLine *anim = new QTimeLine(350, this);
@@ -34,7 +34,7 @@ void StackerGraphicsView::wheelEvent(QWheelEvent *event)
 
 void StackerGraphicsView::scalingTime(qreal x)
 {
-    qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
+    qreal factor = 1.0 + qreal(numScheduledScalings) / 300.0;
     scale(factor, factor);
 
     Q_UNUSED(x);
@@ -42,10 +42,10 @@ void StackerGraphicsView::scalingTime(qreal x)
 
 void StackerGraphicsView::animFinished()
 {
-    if (_numScheduledScalings > 0) {
-        _numScheduledScalings--;
-    } else if (_numScheduledScalings < 0) {
-        _numScheduledScalings++;
+    if (numScheduledScalings > 0) {
+        numScheduledScalings--;
+    } else if (numScheduledScalings < 0) {
+        numScheduledScalings++;
     }
     sender()->~QObject();
 }

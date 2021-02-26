@@ -32,50 +32,50 @@ public:
     ~ImageStacker();
 
     //! Flag set to asynchronously cancel processing.
-    bool cancel_;
+    bool cancel;
 
     // get/set
-    QString GetRefImageFileName() const;
-    void SetRefImageFileName(const QString &value);
+    QString getRefImageFileName() const;
+    void setRefImageFileName(const QString &value);
 
-    QStringList GetTargetImageFileNames() const;
-    void SetTargetImageFileNames(const QStringList &value);
+    QStringList getTargetImageFileNames() const;
+    void setTargetImageFileNames(const QStringList &value);
 
-    QStringList GetDarkFrameFileNames() const;
-    void SetDarkFrameFileNames(const QStringList &value);
+    QStringList getDarkFrameFileNames() const;
+    void setDarkFrameFileNames(const QStringList &value);
 
-    QStringList GetDarkFlatFrameFileNames() const;
-    void SetDarkFlatFrameFileNames(const QStringList &value);
+    QStringList getDarkFlatFrameFileNames() const;
+    void setDarkFlatFrameFileNames(const QStringList &value);
 
-    QStringList GetFlatFrameFileNames() const;
-    void SetFlatFrameFileNames(const QStringList &value);
+    QStringList getFlatFrameFileNames() const;
+    void setFlatFrameFileNames(const QStringList &value);
 
-    QString GetSaveFilePath() const;
-    void SetSaveFilePath(const QString &value);
+    QString getSaveFilePath() const;
+    void setSaveFilePath(const QString &value);
 
-    cv::Mat GetWorkingImage() const;
-    void SetWorkingImage(const cv::Mat &value);
+    cv::Mat getWorkingImage() const;
+    void setWorkingImage(const cv::Mat &value);
 
-    cv::Mat GetRefImage() const;
-    void SetRefImage(const cv::Mat &value);
+    cv::Mat getRefImage() const;
+    void setRefImage(const cv::Mat &value);
 
-    cv::Mat GetFinalImage() const;
-    void SetFinalImage(const cv::Mat &value);
+    cv::Mat getFinalImage() const;
+    void setFinalImage(const cv::Mat &value);
 
-    bool GetUseDarks() const;
-    void SetUseDarks(bool value);
+    bool getUseDarks() const;
+    void setUseDarks(bool value);
 
-    bool GetUseDarkFlats() const;
-    void SetUseDarkFlats(bool value);
+    bool getUseDarkFlats() const;
+    void setUseDarkFlats(bool value);
 
-    bool GetUseFlats() const;
-    void SetUseFlats(bool value);
+    bool getUseFlats() const;
+    void setUseFlats(bool value);
 
-    QStringList GetBiasFrameFileNames() const;
-    void SetBiasFrameFileNames(const QStringList &value);
+    QStringList getBiasFrameFileNames() const;
+    void setBiasFrameFileNames(const QStringList &value);
 
-    bool GetUseBias() const;
-    void SetUseBias(bool value);
+    bool getUseBias() const;
+    void setUseBias(bool value);
 
 signals:
     //! Provides the final image and a message when processing is finished.
@@ -83,31 +83,31 @@ signals:
         @param image The final processed image.
         @param message The message to accompany the process completion.
     */
-    void Finished(cv::Mat image, QString message);
+    void finished(cv::Mat image, QString message);
 
     //! Provides a percentage of completion and a description of what's happening.
     /*!
         @param message A description of the current section of processing.
         @param percentComplete An integer, out of 100, representing the percentage of completion.
     */
-    void UpdateProgress(QString message, int percentComplete);
+    void updateProgress(QString message, int percentComplete);
 
     //! Emits a QImage after asynchronously reading it.
-    void QImageReady(QImage image);
+    void qImageReady(QImage image);
 
     //! Emitted when an error occurs during processing.
-    void ProcessingError(QString message);
+    void processingError(QString message);
 
     void doneDetectingStars(int);
 public slots:
     //! The main method for processing the images.
-    void Process(int tolerance, int threads);
+    void process(int tolerance, int threads);
 
     //! Gets an image from disk and asynchronously reads it as a QImage.
-    /*! Emits QImageReady once the image is ready.
+    /*! Emits qImageReady once the image is ready.
         @param filename The image file to read.
     */
-    void ReadQImage(QString filename);
+    void readQImage(QString filename);
 
     void detectStars(QString filename, int threshold);
 

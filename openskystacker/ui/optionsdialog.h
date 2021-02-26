@@ -25,7 +25,7 @@ public:
     void SetThresh(int value);
 
     QString GetPath() const;
-    void SetPath(const QString &path);
+    void SetPath(const QString &path_);
 
     int GetThreads() const;
     void SetThreads(int threads);
@@ -46,9 +46,9 @@ private slots:
 
 private:
     Ui::OptionsDialog *ui;
-    int thresh_;
-    int threads_;
-    QString path_;
+    int thresh;
+    int threads;
+    QString path;
 };
 
 #endif // OPTIONSDIALOG_H

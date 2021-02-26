@@ -46,6 +46,7 @@ FORMS    += ui/mainwindow.ui \
     ui/processingdialog.ui \
     ui/optionsdialog.ui
 
+INCLUDEPATH += ../common
 INCLUDEPATH += ../libstacker/include
 LIBS += -L../lib -lstacker
 

@@ -56,12 +56,12 @@ void OptionsDialog::setDetectedStars(int stars)
 
 int OptionsDialog::GetThresh() const
 {
-    return thresh_;
+    return thresh;
 }
 
 void OptionsDialog::SetThresh(int value)
 {
-    thresh_ = value;
+    thresh = value;
 }
 
 void OptionsDialog::handleButtonDetectStars()
@@ -97,30 +97,30 @@ void OptionsDialog::on_buttonBrowse_released()
 
 QString OptionsDialog::GetPath() const
 {
-    return path_;
+    return path;
 }
 
-void OptionsDialog::SetPath(const QString &path)
+void OptionsDialog::SetPath(const QString &path_)
 {
-    path_ = path;
+    path = path_;
 }
 
 void OptionsDialog::on_spinboxThreads_valueChanged(int value)
 {
-    threads_ = value;
+    threads = value;
 }
 
 int OptionsDialog::GetThreads() const
 {
-    return threads_;
+    return threads;
 }
 
 void OptionsDialog::SetThreads(int threads)
 {
-    threads_ = threads;
+    threads = threads;
 }
 
 void OptionsDialog::on_lineEditFileName_textChanged(const QString &text)
 {
-    path_ = text;
+    path = text;
 }
