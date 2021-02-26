@@ -14,6 +14,7 @@ class OSS : public QObject
     int progressBarWidth;
     int maxMessageLength = 0;
     QString outputFileName;
+    bool verbose = false;
 
 public:
     OSS(QObject *parent = 0);

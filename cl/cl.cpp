@@ -33,6 +33,11 @@ OSS::~OSS()
 
 void OSS::printProgressBar(QString message, int percentage)
 {
+    if (verbose) {
+        printf("%d%% %s\n", percentage, message.toUtf8().constData());
+        return;
+    }
+
     QString p = QString(" %1% [").arg(QString::number(percentage).rightJustified(3, ' '));
 
     float progress = percentage / 100.0f;
@@ -57,9 +62,8 @@ void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &)
 
 void OSS::run()
 {
-    qInstallMessageHandler(suppressDebugOutput);
     QCommandLineParser parser;
-    parser.addVersionOption();
+    //parser.addVersionOption();
     parser.setApplicationDescription("Multi-platform deep-sky stacker for astrophotography.");
     parser.addHelpOption();
 
@@ -79,6 +83,8 @@ void OSS::run()
     QCommandLineOption threadsOption("j", tr("Number of processing threads. Default: 1"), "threads", "1");
     parser.addOption(threadsOption);
 
+    parser.addOption({{"v", "verbose"}, "Verbose output."});
+
     parser.process(QCoreApplication::arguments());
 
     if (!parser.isSet(listOption)) {
@@ -94,6 +100,12 @@ void OSS::run()
         printf("Error: Thread count argument must be an integer between 1 and 100\n");
         parser.showHelp(1);
         return;
+    }
+
+    if (!parser.isSet("v")) {
+        qInstallMessageHandler(suppressDebugOutput);
+    } else {
+        verbose = true;
     }
 
     int err = 0;
