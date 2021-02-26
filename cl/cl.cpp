@@ -20,6 +20,7 @@ OSS::OSS(QObject *parent) : QObject(parent),
     connect(stacker_, SIGNAL(Finished(cv::Mat,QString)), this, SLOT(StackingFinished(cv::Mat,QString)));
     connect(this, SIGNAL(DetectStars(QString,int)), stacker_, SLOT(detectStars(QString,int)));
     connect(stacker_, SIGNAL(doneDetectingStars(int)), this, SLOT(StarDetectionFinished(int)));
+    connect(stacker_, SIGNAL(ProcessingError(QString)), this, SLOT(StackingError(QString)));
 }
 
 OSS::~OSS()
@@ -203,6 +204,6 @@ void OSS::StarDetectionFinished(int stars)
 
 void OSS::StackingError(QString message)
 {
-    printf("Error: %s\n", message.toUtf8().constData());
+    printf("\nError: %s\n", message.toUtf8().constData());
     QCoreApplication::exit(1);
 }
