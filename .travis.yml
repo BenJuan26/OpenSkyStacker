@@ -11,4 +11,4 @@ script:
     qmake -qt=qt5 CONFIG+=coverage &&
     make && make install && ldconfig &&
     bin/oss-test -d ../samples &&
-    coveralls -b libstacker -i libstacker > /dev/null'
+    if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then coveralls -b libstacker -i libstacker > /dev/null; fi'
