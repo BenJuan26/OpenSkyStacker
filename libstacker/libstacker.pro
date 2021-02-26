@@ -13,7 +13,7 @@ CONFIG += c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS LIBSTACKER__
 
-DESTDIR = ../lib
+DESTDIR = ../bin
 BUILD_DIR = ../build/libstacker
 MOC_DIR = $$BUILD_DIR/moc
 RCC_DIR = $$BUILD_DIR/rcc

@@ -14,12 +14,13 @@ void TestOSS::initTestCase()
 void TestOSS::testDetectStars()
 {
     QFETCH(QString, filename);
+    QFETCH(int, threshold);
     QFETCH(int, numstars);
 
     ImageStacker *stacker = new ImageStacker();
     QSignalSpy spy(stacker, SIGNAL(doneDetectingStars(int)));
 
-    stacker->detectStars(filename, 20);
+    stacker->detectStars(filename, threshold);
 
     QCOMPARE(spy.count(), 1);
     QList<QVariant> list = spy.takeFirst();

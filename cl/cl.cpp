@@ -20,6 +20,7 @@ OSS::OSS(QObject *parent) : QObject(parent),
     connect(stacker, SIGNAL(finished(cv::Mat,QString)), this, SLOT(stackingFinished(cv::Mat,QString)));
     connect(this, SIGNAL(detectStars(QString,int)), stacker, SLOT(detectStars(QString,int)));
     connect(stacker, SIGNAL(doneDetectingStars(int)), this, SLOT(starDetectionFinished(int)));
+    connect(stacker, SIGNAL(processingError(QString)), this, SLOT(stackingError(QString)));
 }
 
 OSS::~OSS()
@@ -32,6 +33,11 @@ OSS::~OSS()
 
 void OSS::printProgressBar(QString message, int percentage)
 {
+    if (verbose) {
+        printf("%d%% %s\n", percentage, message.toUtf8().constData());
+        return;
+    }
+
     QString p = QString(" %1% [").arg(QString::number(percentage).rightJustified(3, ' '));
 
     float progress = percentage / 100.0f;
@@ -50,11 +56,14 @@ void OSS::printProgressBar(QString message, int percentage)
     cout << p.leftJustified(maxMessageLength, ' ').toUtf8().constData() << "\r" << flush;
 }
 
+void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &) {
+
+}
+
 void OSS::run()
 {
-
     QCommandLineParser parser;
-    parser.addVersionOption();
+    //parser.addVersionOption();
     parser.setApplicationDescription("Multi-platform deep-sky stacker for astrophotography.");
     parser.addHelpOption();
 
@@ -74,6 +83,8 @@ void OSS::run()
     QCommandLineOption threadsOption("j", tr("Number of processing threads. Default: 1"), "threads", "1");
     parser.addOption(threadsOption);
 
+    parser.addOption({{"v", "verbose"}, "Verbose output."});
+
     parser.process(QCoreApplication::arguments());
 
     if (!parser.isSet(listOption)) {
@@ -89,6 +100,12 @@ void OSS::run()
         printf("Error: Thread count argument must be an integer between 1 and 100\n");
         parser.showHelp(1);
         return;
+    }
+
+    if (!parser.isSet("v")) {
+        qInstallMessageHandler(suppressDebugOutput);
+    } else {
+        verbose = true;
     }
 
     int err = 0;
@@ -203,6 +220,6 @@ void OSS::starDetectionFinished(int stars)
 
 void OSS::stackingError(QString message)
 {
-    printf("Error: %s\n", message.toUtf8().constData());
+    printf("\nError: %s\n", message.toUtf8().constData());
     QCoreApplication::exit(1);
 }

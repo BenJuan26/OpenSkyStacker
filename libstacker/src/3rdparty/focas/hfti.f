@@ -11,27 +11,33 @@ c
       factor=0.001
 c
       k=0
+c     1. Set μ := min(m,n).
       ldiag=min0(m,n)
       if (ldiag.le.0) go to 270
+c     2. For j := 1 ,..., μ, do Steps 3-12.
 	  do 80 j=1,ldiag
+c     3. If j = 1 go to Step 7.
 	  if (j.eq.1) go to 20
 c
 c     update squared column lengths and find lmax
-c    ..
+c     4. For l := j, ..., n, set h(l) := h(l) - a(j-1,l)^2.
 	  lmax=j
 	      do 10 l=j,n
 	      h(l)=h(l)-a(j-1,l)**2
+c     5. Determine λ such that h(λ) := max{h(l): j <= l <= n}.
 	      if (h(l).gt.h(lmax)) lmax=l
    10	      continue
+c     6. If (hmax + (10^-3)h(λ)) > hmax, go to Step 9.
 	  if(diff(hmax+factor*h(lmax),hmax)) 20,20,50
 c
 c     compute squared column lengths and find lmax
-c    ..
+c     7. For l := j, ..., n, set h(l) := sum(a(i,l)^2), j <= i <= m
    20	  lmax=j
 	      do 40 l=j,n
 	      h(l)=0.
 		  do 30 i=j,m
    30		  h(l)=h(l)+a(i,l)**2
+c     8. Determine λ such that h(λ) := max{h(l): j <= l <= n}. Set hmax := h(λ)
 	      if (h(l).gt.h(lmax)) lmax=l
    40	      continue
 	  hmax=h(lmax)
@@ -39,10 +45,11 @@ c    ..
 c     lmax has been determined
 c
 c     do column interchanges if needed.
-c    ..
+c     9. Set p(j) := λ. If p(j) = j, go to Step 11.
    50	  continue
 	  ip(j)=lmax
 	  if (ip(j).eq.j) go to 70
+c     10. Interchange columns j and λ of A and set h(λ) := h(j)
 	      do 60 i=1,m
 	      tmp=a(i,j)
 	      a(i,j)=a(i,lmax)
@@ -54,15 +61,29 @@ c    ..
 c       print 69, "call h12(1,", j, ",", j, "+1,", m, ",a(1,", j,       &
 c    &   "),1,h(", j, "),a(1,", j, "+1),1,", mda, ",", n, "-", j, ")"
 c  69   format(9(A,I3),A)
+c     11. Execute algorithm H1(j, j+1, m, a(1,j), h(j), a(1,j+1), n-j).
+        do 68 i=1,n
+        print 65, h(i)
+   65   format(F9.2)
+   68   continue
+
+
    70	  call h12 (1,j,j+1,m,a(1,j),1,h(j),a(1,j+1),1,mda,n-j)
         
 c       print 69, "call h12(2,", j, ",", j, "+1,", m, ",a(1,", j,       &
 c    &   "),1,h(", j, "),b,1,",mdb, ",", mdb, ")"
 c  79   format(7(A,I3),A)
+c     12. Execute algorithm H2(j, j+1, m, a(1,j), h(j), b, 1).
    80	  call h12 (2,j,j+1,m,a(1,j),1,h(j),b,1,mdb,nb)
 c
 c     determine the pseudorank, k, using the tolerance, tau.
-c    ..
+c     13. The pseudorank k must now be determined. Note that the diagonal
+c         elements of R (stored in a(1,1) through a(μ,μ)) are non-
+c         increasing in magnitude. For example, the Fortran subroutine
+c         HFTI chooses k as the largest index j such that |a(j,j)| > τ.
+c         If all |a(j,j)| <= τ, the pseudorank k is set to zero, the
+c         solution vector x is set to zero, and the algorithm is
+c         terminated.
 	  do 90 j=1,ldiag
 	  if (abs(a(j,j)).le.tau) go to 100
    90	  continue
@@ -91,8 +112,11 @@ c					    special for pseudorank = 0
 c
 c     if the pseudorank is less than n compute householder
 c     decomposition of first k rows.
-c    ..
+c     14. If k = n, go to Step 17.
   160 if (k.eq.n) go to 180
+c     15. Here, k < n. Next, determine the orthogonal transformations K(i),
+c         whose product constitutes K of the equation:
+c         [R(1,1):R(1,2)]K = [W: 0]
 	  do 170 ii=1,k
 	  i=kp1-ii
 
