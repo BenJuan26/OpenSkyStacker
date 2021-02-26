@@ -51,9 +51,13 @@ void OSS::printProgressBar(QString message, int percentage)
     cout << p.leftJustified(maxMessageLength, ' ').toUtf8().constData() << "\r" << flush;
 }
 
+void suppressDebugOutput(QtMsgType, const QMessageLogContext &, const QString &) {
+
+}
+
 void OSS::run()
 {
-
+    qInstallMessageHandler(suppressDebugOutput);
     QCommandLineParser parser;
     parser.addVersionOption();
     parser.setApplicationDescription("Multi-platform deep-sky stacker for astrophotography.");
