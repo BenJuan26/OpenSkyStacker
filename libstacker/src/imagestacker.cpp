@@ -297,8 +297,8 @@ void ImageStackerPrivate::process(int tolerance, int threads) {
         threads = idealThreads;
     }
 
-    if (threads >= targetImageFileNames.length()) {
-        threads = targetImageFileNames.length() - 1;
+    if (threads > targetImageFileNames.length()) {
+        threads = targetImageFileNames.length();
     }
 
     int totalValidImages = 1;

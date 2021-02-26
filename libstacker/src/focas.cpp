@@ -465,6 +465,20 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
             h.at<float>(lambda) = h.at<float>(j);
         }
 
+        qDebug() << "h:";
+        for (int row = 0; row < h.rows; row++) {
+            bool first = true;
+            for (int col = 0; col < h.cols; col++) {
+                if (!first) {
+                    printf(", ");
+                }
+                first = false;
+                printf("%f", h.at<float>(row, col));
+            }
+            printf("\n");
+        }
+        qDebug() << "j:" << j;
+
         // 11. Execute algorithm H1(j, j+1, m, a(1,j), h(j), a(1,j+1), n-j).
         householder(1, j, j+1, a(cv::Rect(j,0,a.cols-j,1)), h.at<float>(j),
                     a(cv::Rect(j+1,0,a.cols-j-1-n-j,a.rows)));
