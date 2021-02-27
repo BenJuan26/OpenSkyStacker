@@ -18,7 +18,7 @@ OBJECTS_DIR = $$BUILD_DIR/o
 CONFIG -= app_bundle
 
 INCLUDEPATH += ../libstacker/include
-LIBS += -L../lib -lstacker
+LIBS += -L../bin -lstacker
 
 win32: include(../libstacker/win32.pri)
 macx: include(../libstacker/mac.pri)

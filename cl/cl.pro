@@ -21,7 +21,7 @@ TARGET = openskystacker-cl
 CONFIG -= app_bundle
 
 INCLUDEPATH += ../libstacker/include
-LIBS += -L../lib -lstacker
+LIBS += -L../bin -lstacker
 
 isEmpty(PREFIX): PREFIX=/usr/local
 target.path = $${PREFIX}/bin
