@@ -62,13 +62,13 @@ c       print 69, "call h12(1,", j, ",", j, "+1,", m, ",a(1,", j,       &
 c    &   "),1,h(", j, "),a(1,", j, "+1),1,", mda, ",", n, "-", j, ")"
 c  69   format(9(A,I3),A)
 c     11. Execute algorithm H1(j, j+1, m, a(1,j), h(j), a(1,j+1), n-j).
-        do 68 i=1,n
-        print 65, h(i)
-   65   format(F9.2)
-   68   continue
+   70   do 75 i=1,n
+        print 72, h(i)
+   72   format(F9.2)
+   75   continue
 
 
-   70	  call h12 (1,j,j+1,m,a(1,j),1,h(j),a(1,j+1),1,mda,n-j)
+   	  call h12 (1,j,j+1,m,a(1,j),1,h(j),a(1,j+1),1,mda,n-j)
         
 c       print 69, "call h12(2,", j, ",", j, "+1,", m, ",a(1,", j,       &
 c    &   "),1,h(", j, "),b,1,",mdb, ",", mdb, ")"
