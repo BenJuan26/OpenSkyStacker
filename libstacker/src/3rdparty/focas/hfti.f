@@ -67,7 +67,6 @@ c     11. Execute algorithm H1(j, j+1, m, a(1,j), h(j), a(1,j+1), n-j).
    65   format(F9.2)
    68   continue
 
-
    70	  call h12 (1,j,j+1,m,a(1,j),1,h(j),a(1,j+1),1,mda,n-j)
         
 c       print 69, "call h12(2,", j, ",", j, "+1,", m, ",a(1,", j,       &
