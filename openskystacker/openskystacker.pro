@@ -48,7 +48,7 @@ FORMS    += ui/mainwindow.ui \
 
 INCLUDEPATH += ../common
 INCLUDEPATH += ../libstacker/include
-LIBS += -L../lib -lstacker
+LIBS += -L../bin -lstacker
 
 isEmpty(PREFIX): PREFIX = /usr/local
 
