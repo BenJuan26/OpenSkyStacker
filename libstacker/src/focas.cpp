@@ -304,15 +304,15 @@ std::vector<std::vector<float> > openskystacker::findTransform(std::vector<std::
     /* Compute the initial transformation with the 12 best matches. */
     j = (m < 12) ? m : 12;
     for (i=0; i<j; i++) {
-        a.at<float>(0,i) = List1[matches[0][i]].x;
-        a.at<float>(1,i) = List1[matches[0][i]].y;
-        a.at<float>(2,i) = 1.;
-        b.at<float>(0,i) = List2[matches[1][i]].x;
-        b.at<float>(1,i) = List2[matches[1][i]].y;
+        a.at<float>(i,0) = List1[matches[0][i]].x;
+        a.at<float>(i,1) = List1[matches[0][i]].y;
+        a.at<float>(i,2) = 1.;
+        b.at<float>(i,0) = List2[matches[1][i]].x;
+        b.at<float>(i,1) = List2[matches[1][i]].y;
     }
 
     // first j rows
-    hfti(a, b, tau, krank, h, g, p);
+    hfti(a(cv::Rect(0, 0, a.cols, j)), b, tau, krank, h, g, p);
     for (i=0; i<2; i++)
         for (j=0; j<3; j++)
             xfrm[i][j] = b.at<float>(j, i);
@@ -331,17 +331,17 @@ std::vector<std::vector<float> > openskystacker::findTransform(std::vector<std::
             x -= List2[i2].x;
             y -= List2[i2].y;
             r2 = x * x + y * y;
-            for (j=i; j>0 && r2<a.at<float>(1,j-1); j--)
-                a.at<float>(1,j) = a.at<float>(1,j-1);
-            a.at<float>(0,i) = r2;
-            a.at<float>(1,j) = r2;
+            for (j=i; j>0 && r2<a.at<float>(j-1,1); j--)
+                a.at<float>(j) = a.at<float>(j-1,1);
+            a.at<float>(i,0) = r2;
+            a.at<float>(j,1) = r2;
             sum += r2;
         }
 
         /* Set clipping limit and quit when no points are clipped. */
         i = 0.6 * m;
         r2 = CLIP * a.at<float>(1,i);
-        if (r2 >= a.at<float>(1,m-1)) {
+        if (r2 >= a.at<float>(m-1,1)) {
             rms = sqrt(sum / m);
             break;
         }
@@ -351,16 +351,16 @@ std::vector<std::vector<float> > openskystacker::findTransform(std::vector<std::
         /* Clip outliers and redo the fit. */
         j = 0;
         for (i=0; i<m; i++) {
-            if (a.at<float>(0,i) < r2) {
+            if (a.at<float>(i,0) < r2) {
                 i1 = matches[0][i];
                 i2 = matches[1][i];
                 matches[0][j] = i1;
                 matches[1][j] = i2;
-                a.at<float>(0,j) = List1[i1].x;
-                a.at<float>(1,j) = List1[i1].y;
-                a.at<float>(2,j) = 1.;
-                b.at<float>(0,j) = List2[i2].x;
-                b.at<float>(1,j) = List2[i2].y;
+                a.at<float>(j,0) = List1[i1].x;
+                a.at<float>(j,1) = List1[i1].y;
+                a.at<float>(j,2) = 1.;
+                b.at<float>(j,0) = List2[i2].x;
+                b.at<float>(j,1) = List2[i2].y;
                 j++;
             }
         }
@@ -373,11 +373,11 @@ std::vector<std::vector<float> > openskystacker::findTransform(std::vector<std::
         }
 
         // first m rows
-        hfti(a, b, tau, krank, h, g, p);
+        hfti(a(cv::Rect(0, 0, a.cols, m)), b, tau, krank, h, g, p);
 
         for (i=0; i<2; i++)
             for (j=0; j<3; j++)
-                xfrm[i][j] = b.at<float>(i, j);
+                xfrm[i][j] = b.at<float>(j, i);
     }
 
     return xfrm;
@@ -406,6 +406,18 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
 
     float hmax = 0.0f;
     int lambda = 0;
+
+    for (int row = 0; row < a.rows; row++) {
+        bool first = true;
+        for (int col = 0; col < a.cols; col++) {
+            if (!first) {
+                printf(",");
+            }
+            first = false;
+            printf("%.2f", a.at<float>(row, col));
+        }
+        printf("\n");
+    }
 
     krank = -1;
 
