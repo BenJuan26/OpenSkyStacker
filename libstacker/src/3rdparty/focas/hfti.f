@@ -9,6 +9,12 @@ c
       szero=0.
       dzero=0.d0
       factor=0.001
+      do 6 row=1,m
+        do 5 col=1,n
+          write(*,'(F7.2,A)',advance='no') a(row,col), ','
+   5    continue
+        write(*,'(A)') ''
+   6  continue
 c
       k=0
 c     1. Set μ := min(m,n).
@@ -58,16 +64,16 @@ c     10. Interchange columns j and λ of A and set h(λ) := h(j)
 c
 c     compute the j-th transformation and apply it to a and b.
 c    ..
-c       print 69, "call h12(1,", j, ",", j, "+1,", m, ",a(1,", j,       &
-c    &   "),1,h(", j, "),a(1,", j, "+1),1,", mda, ",", n, "-", j, ")"
-c  69   format(9(A,I3),A)
+   70   print 71, "call h12(1,", j, ",", j, "+1,", m, ",a(1,", j,       &
+     &   "),1,h(", j, "),a(1,", j, "+1),1,", mda, ",", n, "-", j, ")"
+   71   format(9(A,I3),A)
 c     11. Execute algorithm H1(j, j+1, m, a(1,j), h(j), a(1,j+1), n-j).
-        do 68 i=1,n
-        print 65, h(i)
-   65   format(F9.2)
-   68   continue
+c       do 68 i=1,n
+c       print 65, h(i)
+c  65   format(F9.2)
+c  68   continue
 
-   70	  call h12 (1,j,j+1,m,a(1,j),1,h(j),a(1,j+1),1,mda,n-j)
+        call h12 (1,j,j+1,m,a(1,j),1,h(j),a(1,j+1),1,mda,n-j)
         
 c       print 69, "call h12(2,", j, ",", j, "+1,", m, ",a(1,", j,       &
 c    &   "),1,h(", j, "),b,1,",mdb, ",", mdb, ")"
