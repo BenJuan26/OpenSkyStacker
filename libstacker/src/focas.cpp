@@ -492,11 +492,11 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
         qDebug() << "j:" << j;
 
         // 11. Execute algorithm H1(j, j+1, m, a(1,j), h(j), a(1,j+1), n-j).
-        householder(1, j, j+1, a(cv::Rect(j,0,a.cols-j,1)), h.at<float>(j),
-                    a(cv::Rect(j+1,0,a.cols-j-1-n-j,a.rows)));
+        householder(1, j, j+1, a(cv::Rect(0,j,a.cols,1)), h.at<float>(j),
+                    a(cv::Rect(0,j+1,a.cols,n-j-1)));
         // 12. Execute algorithm H2(j, j+1, m, a(1,j), h(j), b, 1).
-        householder(2, j, j+1, a(cv::Rect(j,0,a.cols-j,1)), h.at<float>(j),
-                    b(cv::Rect(0,0,1,b.rows)));
+        householder(2, j, j+1, a(cv::Rect(0,j,a.cols,1)), h.at<float>(j),
+                    b(cv::Rect(0,0,b.cols,1)));
 
     }
 
@@ -534,7 +534,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
         //     is to be referenced.
         for (int i = krank; i >= 0; i--) {
             // TODO: 4th and 6th arguments are row vectors
-            householder(1, i, krank+1, a(cv::Rect(0, i, 1, a.rows-i)), g.at<float>(i), a(cv::Rect(0,0,i-1,a.rows)), true);
+            householder(1, i, krank+1, a(cv::Rect(0, i, a.cols, 1)), g.at<float>(i), a(cv::Rect(0,0,i-1,a.rows)), true);
         }
     }
 
@@ -569,7 +569,7 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
         //     row vector.
         for (int i = 0; i <= krank; i++) {
             // TODO: 4th argument is row vectors
-            householder(2, i, krank+1, a(cv::Rect(0,i,1,a.rows-i)), g.at<float>(i), b);
+            householder(2, i, krank+1, a(cv::Rect(0,i,a.cols,1)), g.at<float>(i), b);
         }
     }
 
@@ -581,7 +581,23 @@ void openskystacker::hfti(cv::Mat a, cv::Mat b, float tau, int &krank, cv::Mat h
     }
 }
 
-// Algorithms H1(p,l,m,u,h,c,v) [use steps 1-11] and H2(p,l,m,u,h,c,v) [use steps 5-11]
+// Algorithms H1(p,l,m,υ,h,C,v) [use steps 1-11] and H2(p,l,m,υ,h,C,v) [use steps 5-11]
+//
+// The input to Algorithm H1 consists of the integers p, l, m, and v; the m-vector υ, and,
+// if v > 0, an array C containing the m-vectors c(j), j=1,...,v.
+//
+// The storage array C may either be an m × v containing the vectors c(j) as column vectors
+// or a v × m array containing the vectors c(j) as row vectors. These two possible storage modes
+// will not be distinguished in describing Algorithms H1 and H2. However, in references to
+// Algorithm H1 or H2 that occur elsewhere in this book we shall regard the column storage as
+// normal and make special note of those cases in which the set of vectors c(j) upon which
+// Algorithm H1 or H2 is to operate are stored as row vectors in the storage array C.
+//
+// Algorithm H1 computes the vector u, the number b, the vector y = Qu, and if v > 0, the
+// vectors č(j) = Qc(j), j=1,...,v. The output of Algorithm H1 consists of the pth
+// component of u stored in the location named h, the components l through m of u stored
+// in these positions of the storage array named υ, and, if v > 0, the vectors č(j),
+// j=1,...,v, stored in the storage array named C.
 void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv::Mat c, bool cHasRowVectors) {
     // These values are inferred from the parameters
     int m = qMax(u.rows, u.cols);
@@ -604,20 +620,21 @@ void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv
 
         // 3. Set h := u(p) - s, u(p) := s
         h = up - s;
-        up = s;
+        u.at<float>(p) = s;
     }
 
     // 4. The construction of the transformation is complete. At Step 5 the
     //    application of the transformation to the vectors c(j) begins.
 
     // 5. b := u(p)h
-    float b = up * h;
+    float b = u.at<float>(p) * h;
 
     // 6. If b = 0 or v = 0, go to Step 11.
     if (b != 0.f && v != 0) {
         // 7. For j := 1, ..., v, do Steps 8-10.
         for (int j = 0; j < v; j++) {
             // 8. Set s := (c(p,j) + sum(c(i,j)u(i))) / b, l <= i <= m.
+            // 9. Set c(p,j) := c(p,j) + sh.
             float sum = 0;
             for (int i = l; i < m; i++) {
                 if (cHasRowVectors) {
@@ -627,12 +644,12 @@ void openskystacker::householder(int mode, int p, int l, cv::Mat u, float &h, cv
                 }
             }
             float s;
+
             if (cHasRowVectors) {
                 s = (c.at<float>(j,p) * h + sum) / b;
                 c.at<float>(j,p) += s * h;
             } else {
                 s = (c.at<float>(p,j) * h + sum) / b;
-                // 9. Set c(p,j) := c(p,j) + sh.
                 c.at<float>(p,j) += s * h;
             }
 
